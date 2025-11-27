@@ -96,7 +96,7 @@ const TopServerDetails = () => {
 
     return (
         <Container>
-            <Card className={`!p-4 !px-8 max-w-6xl mx-auto w-full`}>
+            <Card className={`!p-4 !px-8 max-w-6xl mx-auto w-full !bg-gray-700`}>
                 <UtilContainer>
                     <div className={'flex items-center gap-x-3'}>
                         <Title className='text-3xl'>{name}</Title>
@@ -107,6 +107,63 @@ const TopServerDetails = () => {
                             </a>
                         )}
                     </div>
+                    
+                    {/* Stats in the middle */}
+                    <div className='hidden md:flex items-center gap-2 flex-1 justify-center'>
+                        <StatBlock className='bg-gray-800 border-gray-600'>
+                            <span className='w-5 text-gray-300'>
+                                <FaGlobe />
+                            </span>
+                            <CopyOnClick text={allocation}>
+                                <Blur className={`text-sm text-gray-100`}>{allocation}</Blur>
+                            </CopyOnClick>
+                        </StatBlock>
+
+                        <StatBlock className='bg-gray-800 border-gray-600'>
+                            <span className='w-5 text-gray-300'>
+                                <FaMicrochip />
+                            </span>
+                            <span className='text-sm text-gray-100'>
+                                {status === 'offline' ? (
+                                    <Limit limit={textLimits.cpu}>0%</Limit>
+                                ) : (
+                                    <Limit limit={textLimits.cpu}>{stats.cpu.toFixed(2)}%</Limit>
+                                )}
+                            </span>
+                        </StatBlock>
+
+                        <StatBlock className='bg-gray-800 border-gray-600'>
+                            <span className='w-5 text-gray-300'>
+                                <FaMemory />
+                            </span>
+                            <span className='text-sm text-gray-100'>
+                                {status === 'offline' ? (
+                                    <Limit limit={textLimits.memory}>0 MiB</Limit>
+                                ) : (
+                                    <Limit limit={textLimits.memory}>{bytesToString(stats.memory)}</Limit>
+                                )}
+                            </span>
+                        </StatBlock>
+
+                        <StatBlock className='bg-gray-800 border-gray-600'>
+                            <span className='w-5 text-gray-300'>
+                                <FaFloppyDisk />
+                            </span>
+                            <span className='text-sm text-gray-100'>
+                                <Limit limit={textLimits.disk}>{bytesToString(stats.disk)}</Limit>
+                            </span>
+                        </StatBlock>
+
+                        <StatBlock className='bg-gray-800 border-gray-600'>
+                            <span className='w-5 text-gray-300'>
+                                <FaHashtag />
+                            </span>
+                            <CopyOnClick text={id}>
+                                <span className='text-sm text-gray-100'>{id}</span>
+                            </CopyOnClick>
+                        </StatBlock>
+                    </div>
+                    
                     <Can action={['control.start', 'control.stop', 'control.restart']} matchAny>
                         <PowerButtons className='md:grid grid-cols-3 gap-2 hidden' />
                         <PowerButtons className='md:hidden grid-cols-3 gap-2 grid mt-5 pt-5' />

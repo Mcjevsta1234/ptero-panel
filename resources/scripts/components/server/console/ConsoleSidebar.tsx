@@ -159,6 +159,23 @@ const ConsoleSidebar = () => {
 
     return (
         <div className="flex flex-col gap-3">
+            {/* Uptime - moved to top */}
+            <div className="bg-gray-700 border border-gray-600 rounded-lg p-3">
+                <div className="flex items-center gap-3">
+                    <div className="w-8 h-8 bg-green-500/20 rounded flex items-center justify-center flex-shrink-0">
+                        <svg className="w-4 h-4 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                        </svg>
+                    </div>
+                    <div className="flex-1">
+                        <div className="text-xs text-gray-400 uppercase tracking-wide">Uptime</div>
+                        <div className="text-base font-semibold text-white">
+                            {isOffline ? 'Offline' : stats.uptime > 0 ? <UptimeDuration uptime={stats.uptime / 1000} /> : 'Starting'}
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
             {/* Server Plan */}
             <div className="bg-gray-700 border border-gray-600 rounded-lg p-3">
                 <div className="text-xs text-gray-400 uppercase tracking-wide mb-1">Server Plan</div>
@@ -195,7 +212,7 @@ const ConsoleSidebar = () => {
                     </div>
                 </div>
                 {cpuHistory.length > 0 && (
-                    <div className="h-10">
+                    <div className="h-6">
                         <Line data={createChartData(cpuHistory, '#3b82f6')} options={percentChartOptions} />
                     </div>
                 )}
@@ -217,7 +234,7 @@ const ConsoleSidebar = () => {
                     </div>
                 </div>
                 {memoryHistory.length > 0 && (
-                    <div className="h-10">
+                    <div className="h-6">
                         <Line data={createChartData(memoryHistory, '#10b981')} options={percentChartOptions} />
                     </div>
                 )}
@@ -239,7 +256,7 @@ const ConsoleSidebar = () => {
                     </div>
                 </div>
                 {diskHistory.length > 0 && (
-                    <div className="h-10">
+                    <div className="h-6">
                         <Line data={createChartData(diskHistory, '#a855f7')} options={percentChartOptions} />
                     </div>
                 )}
@@ -268,27 +285,10 @@ const ConsoleSidebar = () => {
                     </div>
                 </div>
                 {networkHistory.length > 0 && (
-                    <div className="h-10">
+                    <div className="h-6">
                         <Line data={createChartData(networkHistory, '#06b6d4', true)} options={chartOptions} />
                     </div>
                 )}
-            </div>
-
-            {/* Uptime */}
-            <div className="bg-gray-700 border border-gray-600 rounded-lg p-3">
-                <div className="flex items-center gap-3">
-                    <div className="w-8 h-8 bg-green-500/20 rounded flex items-center justify-center flex-shrink-0">
-                        <svg className="w-4 h-4 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-                        </svg>
-                    </div>
-                    <div className="flex-1">
-                        <div className="text-xs text-gray-400 uppercase tracking-wide">Uptime</div>
-                        <div className="text-base font-semibold text-white">
-                            {isOffline ? 'Offline' : stats.uptime > 0 ? <UptimeDuration uptime={stats.uptime / 1000} /> : 'Starting'}
-                        </div>
-                    </div>
-                </div>
             </div>
 
             {/* Quick Links */}
