@@ -1,39 +1,35 @@
 # WitchyWorlds Panel Customizations
 
-This document outlines all the customizations made to the Reviactyl panel for WitchyWorlds.
+This document outlines all the customizations made to create the WitchyWorlds panel.
 
-## Changes Made
+## Complete Rebranding
 
-### 1. Footer Customization
-- Changed footer branding from "Reviactyl™ © {year}" to "WitchyWorlds™ © 2025"
-- Changed custom copyright text from "Powered by Reviactyl" to "Panel Revision 1"
-- **Files modified:**
-  - `resources/scripts/reviactyl/ui/Footer.tsx`
-  - `config/designify.php`
-  - `app/Http/ViewComposers/DesignifyComposer.php`
+### Brand Changes
+- All "Reviactyl" references replaced with "WitchyWorlds"
+- "Designify" theme system renamed to "Witchcrafter"
+- Footer branding changed to "WitchyWorlds™ © 2025"
+- Copyright changed to "Panel Revision 1"
+- All file paths updated from `@/reviactyl/` to `@/witchyworlds/`
+- State management updated from `reviactyl` to `witchyworlds`
+- TypeScript interfaces updated from `Reviactyl*` to `WitchyWorlds*`
 
-### 2. Social Links Section
-Added a configurable social links section to the server console page with the following links:
-- Billing Area: https://client.witchyworlds.top
-- Status Page: https://status.witchyworlds.top
-- Discord: https://discord.gg/Af7k4fX8de
-- Website: https://witchyworlds.top
+### Files Renamed
+- `config/designify.php` → `config/witchcrafter.php`
+- `app/Http/ViewComposers/DesignifyComposer.php` → `app/Http/ViewComposers/WitchcrafterComposer.php`
+- `resources/scripts/state/reviactyl.ts` → `resources/scripts/state/witchyworlds.ts`
+- `resources/scripts/reviactyl/` → `resources/scripts/witchyworlds/`
+- `public/reviactyl/` → `public/witchyworlds/`
 
-**Files created/modified:**
-- `resources/scripts/components/server/console/SocialsSection.tsx` (new component)
-- `resources/scripts/components/server/console/ServerConsoleContainer.tsx` (updated to include socials)
-- `resources/scripts/state/reviactyl.ts` (added social link interfaces)
-- `config/designify.php` (added social link configuration)
-- `app/Http/ViewComposers/DesignifyComposer.php` (added social links to config)
+## Configuration System (Witchcrafter)
 
-### 3. README Updates
-- Changed sponsor section from "Tietokettu" to "WitchyWorlds" with "Panel Revision 1"
-- **Files modified:**
-  - `README.md`
+The theme and customization system is now called **Witchcrafter**:
+- Configuration file: `config/witchcrafter.php`
+- Admin panel accessible at: `/admin/witchcrafter`
+- Controls all theme colors, fonts, backgrounds, and UI customization
 
-## Admin Panel Configuration
+### Social Links Configuration
 
-Social links can be configured in the Designify admin panel by modifying the following configuration values in `config/designify.php`:
+Social links are configured in `config/witchcrafter.php`:
 
 ```php
 'socialBilling' => 'https://client.witchyworlds.top',
@@ -42,7 +38,30 @@ Social links can be configured in the Designify admin panel by modifying the fol
 'socialWebsite' => 'https://witchyworlds.top',
 ```
 
-## Addon Features
+These links appear in the Quick Links section on the server console page.
+
+## UI Enhancements
+
+### Modern Server Console Layout
+- Clean stats grid at the top showing CPU, Memory, Disk, and Uptime
+- 4-column responsive layout for server statistics
+- Larger, more readable stats cards with percentage indicators
+- Console and network stats below in 3:1 column ratio
+- Quick Links sidebar on the right
+
+**Files created/modified:**
+- `resources/scripts/components/server/console/ServerStatsGrid.tsx` (new component)
+- `resources/scripts/components/server/console/ServerConsoleContainer.tsx` (updated layout)
+- `resources/scripts/components/server/console/SocialsSection.tsx` (social links sidebar)
+
+### Social Links Section
+Quick access links displayed on the server console page:
+- Billing Area
+- Status Page
+- Discord
+- Website
+
+The section uses WitchyWorlds branding colors and only displays links that are configured.
 
 The following addon features are referenced in the routes configuration. These addons need to be installed separately:
 
