@@ -209,9 +209,9 @@ const ConsoleSidebar = () => {
     const planName = serverNode ? serverNode.split(' ')[0].toLowerCase() : 'standard';
 
     return (
-        <div className="flex flex-col gap-3">
+        <div className="flex flex-col gap-3 w-full h-full">
             {/* Uptime - moved to top */}
-            <div className="bg-gray-700 border border-gray-600 rounded-lg p-3">
+            <div className="bg-gray-700 border border-gray-600 rounded-lg p-3 flex-shrink-0">
                 <div className="flex items-center gap-3">
                     <div className="w-8 h-8 bg-green-500/20 rounded flex items-center justify-center flex-shrink-0">
                         <svg className="w-4 h-4 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -228,7 +228,7 @@ const ConsoleSidebar = () => {
             </div>
             
             {/* Server Plan */}
-            <div className="bg-gray-700 border border-gray-600 rounded-lg p-3">
+            <div className="bg-gray-700 border border-gray-600 rounded-lg p-3 flex-shrink-0">
                 <div className="text-xs text-gray-400 uppercase tracking-wide mb-1">Server Plan</div>
                 <div className="text-sm font-medium text-white flex items-center gap-2">
                     <svg className="w-4 h-4 text-witchyworlds flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
@@ -241,7 +241,7 @@ const ConsoleSidebar = () => {
 
             {/* IP Address with Blur */}
             <CopyOnClick text={serverAllocation ? `${serverAllocation.alias || serverAllocation.ip}:${serverAllocation.port}` : 'N/A'}>
-                <div className="bg-gray-700 border border-gray-600 rounded-lg p-3 cursor-pointer hover:border-witchyworlds transition-colors">
+                <div className="bg-gray-700 border border-gray-600 rounded-lg p-3 cursor-pointer hover:border-witchyworlds transition-colors flex-shrink-0">
                     <div className="text-xs text-gray-400 uppercase tracking-wide mb-1">Address</div>
                     <div className="text-sm font-medium text-white blur-sm hover:blur-none transition-all">
                         {serverAllocation ? `${serverAllocation.alias || serverAllocation.ip}:${serverAllocation.port}` : 'N/A'}
@@ -250,7 +250,7 @@ const ConsoleSidebar = () => {
             </CopyOnClick>
 
             {/* CPU */}
-            <div className="bg-gray-700 border border-gray-600 rounded-lg p-3">
+            <div className="bg-gray-700 border border-gray-600 rounded-lg p-3 flex-1 min-h-0">
                 <div className="flex items-center gap-3 mb-1">
                     <div className="w-8 h-8 bg-blue-500/20 rounded flex items-center justify-center flex-shrink-0">
                         <svg className="w-4 h-4 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -270,7 +270,7 @@ const ConsoleSidebar = () => {
             </div>
 
             {/* RAM */}
-            <div className="bg-gray-700 border border-gray-600 rounded-lg p-3">
+            <div className="bg-gray-700 border border-gray-600 rounded-lg p-3 flex-1 min-h-0">
                 <div className="flex items-center gap-3 mb-1">
                     <div className="w-8 h-8 bg-emerald-500/20 rounded flex items-center justify-center flex-shrink-0">
                         <svg className="w-4 h-4 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -292,7 +292,7 @@ const ConsoleSidebar = () => {
             </div>
 
             {/* Disk */}
-            <div className="bg-gray-700 border border-gray-600 rounded-lg p-3">
+            <div className="bg-gray-700 border border-gray-600 rounded-lg p-3 flex-1 min-h-0">
                 <div className="flex items-center gap-3 mb-1">
                     <div className="w-8 h-8 bg-purple-500/20 rounded flex items-center justify-center flex-shrink-0">
                         <svg className="w-4 h-4 text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -314,7 +314,7 @@ const ConsoleSidebar = () => {
             </div>
 
             {/* Network I/O */}
-            <div className="bg-gray-700 border border-gray-600 rounded-lg p-3">
+            <div className="bg-gray-700 border border-gray-600 rounded-lg p-3 flex-1 min-h-0">
                 <div className="flex items-center gap-3 mb-1">
                     <div className="w-8 h-8 bg-cyan-500/20 rounded flex items-center justify-center flex-shrink-0">
                         <svg className="w-4 h-4 text-cyan-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
