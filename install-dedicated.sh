@@ -97,8 +97,10 @@ if command -v mysqldump &> /dev/null; then
     DB_PORT=${DB_PORT:-3306}
     
     echo "Attempting automatic database backup with env credentials..."
+    set +e  # Temporarily disable exit on error for backup attempt
     attempt_backup "$DB_HOST" "$DB_PORT" "$DB_DATABASE" "$DB_USERNAME" "$DB_PASSWORD" "automatic"
     AUTO_STATUS=$?
+    set -e  # Re-enable exit on error
     if [ $AUTO_STATUS -ne 0 ]; then
         print_warning "Automatic backup failed. Would you like to enter credentials manually to retry? (y/n)"
         read -r retry_manual
@@ -109,8 +111,10 @@ if command -v mysqldump &> /dev/null; then
             read -p "Database [$DB_DATABASE]: " MAN_DB; MAN_DB=${MAN_DB:-$DB_DATABASE}
             read -p "Username [$DB_USERNAME]: " MAN_USER; MAN_USER=${MAN_USER:-$DB_USERNAME}
             read -s -p "Password [hidden]: " MAN_PASS; echo ""
+            set +e  # Temporarily disable exit on error for manual backup attempt
             attempt_backup "$MAN_HOST" "$MAN_PORT" "$MAN_DB" "$MAN_USER" "$MAN_PASS" "manual"
             MAN_STATUS=$?
+            set -e  # Re-enable exit on error
             if [ $MAN_STATUS -ne 0 ]; then
                 print_warning "Manual backup attempt failed. Proceed WITHOUT a backup? (y/n)"
                 read -r proceed_no_backup
