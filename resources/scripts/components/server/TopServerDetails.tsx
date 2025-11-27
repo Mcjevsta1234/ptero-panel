@@ -13,9 +13,11 @@ import tw from 'twin.macro';
 import Title from '@/witchyworlds/ui/Title';
 import { StatBlock } from '@/witchyworlds/ui/StatBlock';
 import { useStoreState } from 'easy-peasy';
+import { ApplicationStore } from '@/state';
 import Blur from '@/witchyworlds/ui/Blur';
 import { useTranslation } from 'react-i18next';
-import { FaFloppyDisk, FaGlobe, FaHashtag, FaMemory, FaMicrochip } from 'react-icons/fa6';
+import { FaFloppyDisk, FaGlobe, FaHashtag, FaMemory, FaMicrochip, FaDiscord } from 'react-icons/fa6';
+import { CreditCardIcon, StatusOnlineIcon, GlobeIcon, BookOpenIcon, LightningBoltIcon } from '@heroicons/react/solid';
 
 type Stats = Record<'memory' | 'cpu' | 'disk', number>;
 
@@ -27,11 +29,29 @@ const Limit = ({ limit, children }: { limit: string | null; children: React.Reac
 );
 
 const Container = styled.div`
-    ${tw`relative z-10 pt-4 pl-2`};
+    ${tw`relative z-10 pt-4`};
 `;
 
-const UtilContainer = styled.div`
-    ${tw`mx-auto w-full md:flex items-center justify-between max-w-[75rem]`};
+const SocialIcon = styled.a`
+    ${tw`relative flex items-center justify-center w-9 h-9 bg-gray-800 hover:bg-gray-600 rounded-lg transition-colors cursor-pointer group`}
+    
+    svg {
+        ${tw`w-5 h-5 text-gray-300`}
+    }
+    
+    &:hover svg {
+        ${tw`text-witchyworlds`}
+    }
+    
+    /* Tooltip */
+    &::after {
+        content: attr(data-tooltip);
+        ${tw`absolute bottom-full mb-2 px-2 py-1 bg-gray-900 text-white text-xs rounded whitespace-nowrap opacity-0 pointer-events-none transition-opacity`}
+    }
+    
+    &:hover::after {
+        ${tw`opacity-100`}
+    }
 `;
 
 const TopServerDetails = () => {
@@ -49,6 +69,24 @@ const TopServerDetails = () => {
     const limits = ServerContext.useStoreState((state) => state.server.data!.limits);
     const serverId = ServerContext.useStoreState((state) => state.server.data?.internalId);
     const rootAdmin = useStoreState((state) => state.user.data!.rootAdmin);
+    
+    const socialBilling = useStoreState((state: ApplicationStore) => state.witchyworlds.data?.socialBilling);
+    const socialStatus = useStoreState((state: ApplicationStore) => state.witchyworlds.data?.socialStatus);
+    const socialDiscord = useStoreState((state: ApplicationStore) => state.witchyworlds.data?.socialDiscord);
+    const socialWebsite = useStoreState((state: ApplicationStore) => state.witchyworlds.data?.socialWebsite);
+    const socialKnowledgebase = useStoreState((state: ApplicationStore) => state.witchyworlds.data?.socialKnowledgebase);
+    const socialTrials = useStoreState((state: ApplicationStore) => state.witchyworlds.data?.socialTrials);
+
+    const trialsUrl = (socialTrials && socialTrials.trim() !== '') ? socialTrials.trim() : 'https://trials.witchyworlds.top';
+
+    const socials = [
+        { icon: GlobeIcon, label: 'Website', url: socialWebsite },
+        { icon: LightningBoltIcon, label: 'Trials', url: trialsUrl },
+        { icon: CreditCardIcon, label: 'Client Area', url: socialBilling },
+        { icon: BookOpenIcon, label: 'Knowledgebase', url: socialKnowledgebase },
+        { icon: StatusOnlineIcon, label: 'Status Page', url: socialStatus },
+        { icon: FaDiscord, label: 'Discord', url: socialDiscord },
+    ].filter(link => link.url && link.url.trim() !== '');
 
     const textLimits = useMemo(
         () => ({
@@ -90,8 +128,8 @@ const TopServerDetails = () => {
 
     return (
         <Container>
-            <Card className={`!p-4 !px-8 max-w-6xl mx-auto w-full !bg-gray-700`}>
-                <UtilContainer>
+            <Card className={`!p-4 !px-6 w-full !bg-gray-700`}>
+                <div className='flex items-center justify-between gap-4 mb-4'>
                     <div className={'flex items-center gap-x-3'}>
                         <Title className='text-3xl'>{name}</Title>
                         {rootAdmin && (
@@ -102,13 +140,28 @@ const TopServerDetails = () => {
                         )}
                     </div>
                     
-                    <Can action={['control.start', 'control.stop', 'control.restart']} matchAny>
-                        <PowerButtons className='grid grid-cols-3 gap-2' />
-                    </Can>
-                </UtilContainer>
+                    <div className='flex items-center gap-3'>
+                        {/* Social Icons */}
+                        {socials.map((social, index) => (
+                            <SocialIcon
+                                key={index}
+                                href={social.url}
+                                target='_blank'
+                                rel='noopener noreferrer'
+                                data-tooltip={social.label}
+                            >
+                                <social.icon />
+                            </SocialIcon>
+                        ))}
+                        
+                        <Can action={['control.start', 'control.stop', 'control.restart']} matchAny>
+                            <PowerButtons className='grid grid-cols-3 gap-2 ml-2' />
+                        </Can>
+                    </div>
+                </div>
                 
-                {/* Stats row below */}
-                <div className='flex items-center gap-2 mt-4 flex-wrap'>
+                {/* Stats row - centered */}
+                <div className='flex items-center justify-center gap-2 flex-wrap'>
                     <StatBlock className='bg-gray-800 border-gray-600'>
                         <span className='w-5 text-gray-300'>
                             <FaGlobe />
