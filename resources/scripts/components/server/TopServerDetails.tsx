@@ -31,7 +31,8 @@ const Container = styled.div`
 `;
 
 const UtilContainer = styled.div`
-    ${tw`mx-auto w-full md:flex items-center justify-between max-w-[75rem]`};
+    ${tw`mx-auto w-full md:flex items-center justify-between`};
+    max-width: 1200px;
 `;
 
 const TopServerDetails = () => {
