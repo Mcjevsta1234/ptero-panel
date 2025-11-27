@@ -30,14 +30,14 @@ const ServerConsoleContainer = () => {
                 </Alert>
             )}
 
-            <div className='grid grid-cols-1 lg:grid-cols-[1fr_320px] gap-4'>
+            <div className='grid grid-cols-1 lg:grid-cols-[1fr_340px] gap-4'>
                 <div className='space-y-4 order-2 lg:order-1'>
                     <Spinner.Suspense>
                         <ConsoleBlock />
                     </Spinner.Suspense>
                     <Features enabled={eggFeatures} />
                 </div>
-                <div className='order-1 lg:order-2'>
+                <div className='order-1 lg:order-2 lg:max-w-[340px]'>
                     <Spinner.Suspense>
                         <ConsoleSidebar />
                     </Spinner.Suspense>
