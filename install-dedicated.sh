@@ -57,33 +57,79 @@ print_step "Creating database backup"
 cd "$PANEL_DIR"
 
 if command -v mysqldump &> /dev/null; then
-    DB_HOST=$(grep DB_HOST .env | cut -d '=' -f2 | tr -d '\r')
-    DB_PORT=$(grep DB_PORT .env | cut -d '=' -f2 | tr -d '\r')
-    DB_DATABASE=$(grep DB_DATABASE .env | cut -d '=' -f2 | tr -d '\r')
-    DB_USERNAME=$(grep DB_USERNAME .env | cut -d '=' -f2 | tr -d '\r')
-    DB_PASSWORD=$(grep DB_PASSWORD .env | cut -d '=' -f2 | tr -d '\r')
+    attempt_backup() {
+        local host="$1" port="$2" db="$3" user="$4" pass="$5" mode="$6"
+        local timestamp=$(date +%Y%m%d_%H%M%S)
+        BACKUP_FILE="backup_before_dedicated_${timestamp}.sql"
+        BACKUP_LOG="/var/backups/backup_before_dedicated_${timestamp}.log"
+        mkdir -p /var/backups
+        echo "[${timestamp}] Attempting ${mode} backup: host=${host} port=${port} db=${db} user=${user}" | tee -a "$BACKUP_LOG"
+        if mysql -h"$host" -P"$port" -u"$user" -p"$pass" -e "SELECT 1" "$db" &>> "$BACKUP_LOG"; then
+            if mysqldump -h"$host" -P"$port" -u"$user" -p"$pass" "$db" > "/var/backups/$BACKUP_FILE" 2>> "$BACKUP_LOG"; then
+                print_success "Database backup created: /var/backups/$BACKUP_FILE"
+                echo "Log: $BACKUP_LOG"
+                return 0
+            else
+                print_warning "mysqldump failed during ${mode} attempt. See $BACKUP_LOG"
+                return 2
+            fi
+        else
+            print_warning "Database connection failed during ${mode} attempt. See $BACKUP_LOG"
+            return 1
+        fi
+    }
+
+    # Read database credentials from .env
+    if [ ! -f ".env" ]; then
+        print_error ".env file not found in $PANEL_DIR"
+    fi
     
-    BACKUP_FILE="backup_before_dedicated_$(date +%Y%m%d_%H%M%S).sql"
+    DB_HOST=$(grep "^DB_HOST=" .env | cut -d '=' -f2 | tr -d '\r' | tr -d '"' | tr -d "'")
+    DB_PORT=$(grep "^DB_PORT=" .env | cut -d '=' -f2 | tr -d '\r' | tr -d '"' | tr -d "'")
+    DB_DATABASE=$(grep "^DB_DATABASE=" .env | cut -d '=' -f2 | tr -d '\r' | tr -d '"' | tr -d "'")
+    DB_USERNAME=$(grep "^DB_USERNAME=" .env | cut -d '=' -f2 | tr -d '\r' | tr -d '"' | tr -d "'")
+    DB_PASSWORD=$(grep "^DB_PASSWORD=" .env | cut -d '=' -f2 | tr -d '\r' | tr -d '"' | tr -d "'")
     
-    # Create backups directory if it doesn't exist
-    mkdir -p /var/backups
+    # Set defaults if empty
+    DB_HOST=${DB_HOST:-127.0.0.1}
+    DB_PORT=${DB_PORT:-3306}
     
-    # Use environment variable for password to avoid command line exposure
-    export MYSQL_PWD="$DB_PASSWORD"
-    
-    if mysqldump -h"$DB_HOST" -P"${DB_PORT:-3306}" -u"$DB_USERNAME" "$DB_DATABASE" > "/var/backups/$BACKUP_FILE" 2>&1; then
-        unset MYSQL_PWD
-        print_success "Database backup created: /var/backups/$BACKUP_FILE"
-    else
-        unset MYSQL_PWD
-        print_warning "Could not create automatic backup. Continue anyway? (y/n)"
-        read -r response
-        if [[ ! "$response" =~ ^[Yy]$ ]]; then
-            print_error "Installation cancelled"
+    echo "Attempting automatic database backup with env credentials..."
+    attempt_backup "$DB_HOST" "$DB_PORT" "$DB_DATABASE" "$DB_USERNAME" "$DB_PASSWORD" "automatic"
+    AUTO_STATUS=$?
+    if [ $AUTO_STATUS -ne 0 ]; then
+        print_warning "Automatic backup failed. Would you like to enter credentials manually to retry? (y/n)"
+        read -r retry_manual
+        if [[ "$retry_manual" =~ ^[Yy]$ ]]; then
+            echo "Enter database connection details (leave blank to keep defaults)." 
+            read -p "Host [$DB_HOST]: " MAN_HOST; MAN_HOST=${MAN_HOST:-$DB_HOST}
+            read -p "Port [$DB_PORT]: " MAN_PORT; MAN_PORT=${MAN_PORT:-$DB_PORT}
+            read -p "Database [$DB_DATABASE]: " MAN_DB; MAN_DB=${MAN_DB:-$DB_DATABASE}
+            read -p "Username [$DB_USERNAME]: " MAN_USER; MAN_USER=${MAN_USER:-$DB_USERNAME}
+            read -s -p "Password [hidden]: " MAN_PASS; echo ""
+            attempt_backup "$MAN_HOST" "$MAN_PORT" "$MAN_DB" "$MAN_USER" "$MAN_PASS" "manual"
+            MAN_STATUS=$?
+            if [ $MAN_STATUS -ne 0 ]; then
+                print_warning "Manual backup attempt failed. Proceed WITHOUT a backup? (y/n)"
+                read -r proceed_no_backup
+                if [[ ! "$proceed_no_backup" =~ ^[Yy]$ ]]; then
+                    print_error "Installation cancelled due to backup failure"
+                fi
+            fi
+        else
+            print_warning "Skipping manual retry. Proceed WITHOUT a backup? (y/n)"
+            read -r proceed_no_backup
+            if [[ ! "$proceed_no_backup" =~ ^[Yy]$ ]]; then
+                print_error "Installation cancelled due to backup failure"
+            fi
         fi
     fi
 else
-    print_warning "mysqldump not found. Skipping automatic backup."
+    print_warning "mysqldump not found. Continue without backup? (y/n)"
+    read -r response
+    if [[ ! "$response" =~ ^[Yy]$ ]]; then
+        print_error "Installation cancelled"
+    fi
 fi
 
 # Put panel in maintenance mode
