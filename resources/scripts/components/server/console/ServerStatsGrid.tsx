@@ -53,7 +53,7 @@ export default function ServerStatsGrid() {
     const diskPercent = isOffline ? 0 : Math.min(100, Math.round((stats.disk / diskLimitBytes) * 100));
 
     return (
-        <div className="bg-gray-800 rounded-lg p-6 mb-4">
+        <div className="bg-gray-700 border border-gray-600 rounded-lg p-6 mb-4">
             <div className="grid grid-cols-2 md:grid-cols-6 gap-6">
                 {/* CPU */}
                 <div className="space-y-1">
