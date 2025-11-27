@@ -89,6 +89,21 @@ const TopServerDetails = () => {
         });
     });
 
+    const statusBadge = useMemo(() => {
+        switch (status) {
+            case 'running':
+                return { class: 'bg-green-700/60 text-green-200', text: 'Online' };
+            case 'offline':
+                return { class: 'bg-gray-600 text-gray-300', text: 'Offline' };
+            case 'starting':
+                return { class: 'bg-yellow-700/60 text-yellow-200', text: 'Starting' };
+            case 'stopping':
+                return { class: 'bg-yellow-700/60 text-yellow-200', text: 'Stopping' };
+            default:
+                return { class: 'bg-gray-600 text-gray-300', text: 'Unknown' };
+        }
+    }, [status]);
+
     return (
         <Container>
             <Card className={`!p-6 !px-8 mx-auto w-full max-w-[1200px] !bg-gray-700`}>
@@ -96,9 +111,9 @@ const TopServerDetails = () => {
                 <div className='flex items-center gap-3 flex-wrap mb-4'>
                     <Title className='text-3xl'>{name}</Title>
                     <span
-                        className={`px-3 py-1 text-xs font-semibold rounded-ui tracking-wide uppercase bg-gray-600 text-gray-100 ${status === 'online' ? 'bg-green-700/60 text-green-200' : status === 'offline' ? 'bg-gray-600 text-gray-300' : 'bg-yellow-700/60 text-yellow-200'}`}
+                        className={`px-3 py-1 text-xs font-semibold rounded-ui tracking-wide uppercase ${statusBadge.class}`}
                     >
-                        {status || 'Unknown'}
+                        {statusBadge.text}
                     </span>
                     {rootAdmin && (
                         // eslint-disable-next-line react/jsx-no-target-blank
