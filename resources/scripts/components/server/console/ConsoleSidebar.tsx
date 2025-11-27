@@ -142,7 +142,7 @@ const ConsoleSidebar = () => {
     };
 
     return (
-        <div className="space-y-4">
+        <div className="space-y-4 max-h-[600px] overflow-y-auto pr-2 scrollbar-thin scrollbar-thumb-gray-600 scrollbar-track-gray-800">
             {/* Server Info - Moved to top */}
             <div className="bg-gray-700 border border-gray-600 rounded-lg p-4 min-h-[120px] flex flex-col">
                 <div className="flex items-center gap-3 mb-3">

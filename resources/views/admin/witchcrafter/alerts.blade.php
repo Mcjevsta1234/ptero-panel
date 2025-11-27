@@ -5,7 +5,7 @@
 @endsection
 
 @section('content')
-    <form id="witchcrafterEditor" action="" method="POST" class="h-full flex flex-col">
+    <form id="witchcrafterEditor" action="{{ route('admin.witchcrafter.alerts') }}" method="POST" class="h-full flex flex-col">
         @csrf
         @method('PATCH')
         <div class="mb-8">
