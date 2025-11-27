@@ -19,7 +19,7 @@ const ServerConsoleContainer = () => {
     const isNodeUnderMaintenance = ServerContext.useStoreState((state) => state.server.data!.isNodeUnderMaintenance);
 
     return (
-        <ServerContentBlock title={t('title')}>
+        <ServerContentBlock title={t('title')} showStats={true}>
             {(isNodeUnderMaintenance || isInstalling || isTransferring) && (
                 <Alert type={'warning'} className={'mb-4'}>
                     {isNodeUnderMaintenance
@@ -30,14 +30,14 @@ const ServerConsoleContainer = () => {
                 </Alert>
             )}
 
-            <div className='grid grid-cols-1 lg:grid-cols-[1fr_340px] gap-4'>
+            <div className='grid grid-cols-1 lg:grid-cols-[1fr_300px] gap-4'>
                 <div className='space-y-4 order-2 lg:order-1'>
                     <Spinner.Suspense>
                         <ConsoleBlock />
                     </Spinner.Suspense>
                     <Features enabled={eggFeatures} />
                 </div>
-                <div className='order-1 lg:order-2 lg:max-w-[340px]'>
+                <div className='order-1 lg:order-2'>
                     <Spinner.Suspense>
                         <ConsoleSidebar />
                     </Spinner.Suspense>
