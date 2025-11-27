@@ -53,72 +53,37 @@ export default function ServerStatsGrid() {
     const diskPercent = isOffline ? 0 : Math.min(100, Math.round((stats.disk / diskLimitBytes) * 100));
 
     return (
-        <div className="bg-gray-700 border border-gray-600 rounded-lg p-6 mb-4">
-            <div className="grid grid-cols-2 md:grid-cols-6 gap-6">
-                {/* CPU */}
-                <div className="space-y-1">
-                    <div className="text-xs text-gray-400 uppercase tracking-wide">CPU</div>
-                    <div className="text-2xl font-bold text-white">
-                        {isOffline ? '0%' : `${cpuPercent}%`}
-                    </div>
-                    <div className="text-xs text-gray-500">
-                        {isOffline ? 'Offline' : `${stats.cpu.toFixed(1)}% / ${limits.cpu}%`}
-                    </div>
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mb-4">
+            {/* CPU */}
+            <div className="bg-gray-700 border border-gray-600 rounded-lg p-5 space-y-1">
+                <div className="text-xs text-gray-400 uppercase tracking-wide">CPU</div>
+                <div className="text-2xl font-bold text-white">
+                    {isOffline ? '0%' : `${cpuPercent}%`}
                 </div>
-
-                {/* Memory */}
-                <div className="space-y-1">
-                    <div className="text-xs text-gray-400 uppercase tracking-wide">Memory</div>
-                    <div className="text-2xl font-bold text-white">
-                        {isOffline ? '0%' : `${memoryPercent}%`}
-                    </div>
-                    <div className="text-xs text-gray-500">
-                        {isOffline ? 'Offline' : `${bytesToString(stats.memory)} / ${bytesToString(memoryLimitBytes)}`}
-                    </div>
+                <div className="text-xs text-gray-500">
+                    {isOffline ? 'Offline' : `${stats.cpu.toFixed(1)}% / ${limits.cpu}%`}
                 </div>
+            </div>
 
-                {/* Disk */}
-                <div className="space-y-1">
-                    <div className="text-xs text-gray-400 uppercase tracking-wide">Disk</div>
-                    <div className="text-2xl font-bold text-white">
-                        {isOffline ? '0%' : `${diskPercent}%`}
-                    </div>
-                    <div className="text-xs text-gray-500">
-                        {isOffline ? 'Offline' : `${bytesToString(stats.disk)} / ${bytesToString(diskLimitBytes)}`}
-                    </div>
+            {/* Memory */}
+            <div className="bg-gray-700 border border-gray-600 rounded-lg p-5 space-y-1">
+                <div className="text-xs text-gray-400 uppercase tracking-wide">Memory</div>
+                <div className="text-2xl font-bold text-white">
+                    {isOffline ? '0%' : `${memoryPercent}%`}
                 </div>
-
-                {/* Uptime */}
-                <div className="space-y-1">
-                    <div className="text-xs text-gray-400 uppercase tracking-wide">Uptime</div>
-                    <div className="text-2xl font-bold text-white">
-                        {isOffline ? (
-                            'Offline'
-                        ) : stats.uptime > 0 ? (
-                            <UptimeDuration uptime={stats.uptime / 1000} />
-                        ) : (
-                            'Starting'
-                        )}
-                    </div>
-                    <div className="text-xs text-gray-500">{status || 'offline'}</div>
+                <div className="text-xs text-gray-500">
+                    {isOffline ? 'Offline' : `${bytesToString(stats.memory)} / ${bytesToString(memoryLimitBytes)}`}
                 </div>
+            </div>
 
-                {/* Network RX */}
-                <div className="space-y-1">
-                    <div className="text-xs text-gray-400 uppercase tracking-wide">Network (In)</div>
-                    <div className="text-2xl font-bold text-white">
-                        {isOffline ? '0 B' : bytesToString(stats.rx)}
-                    </div>
-                    <div className="text-xs text-gray-500">Received</div>
+            {/* Disk */}
+            <div className="bg-gray-700 border border-gray-600 rounded-lg p-5 space-y-1">
+                <div className="text-xs text-gray-400 uppercase tracking-wide">Disk</div>
+                <div className="text-2xl font-bold text-white">
+                    {isOffline ? '0%' : `${diskPercent}%`}
                 </div>
-
-                {/* Network TX */}
-                <div className="space-y-1">
-                    <div className="text-xs text-gray-400 uppercase tracking-wide">Network (Out)</div>
-                    <div className="text-2xl font-bold text-white">
-                        {isOffline ? '0 B' : bytesToString(stats.tx)}
-                    </div>
-                    <div className="text-xs text-gray-500">Transmitted</div>
+                <div className="text-xs text-gray-500">
+                    {isOffline ? 'Offline' : `${bytesToString(stats.disk)} / ${bytesToString(diskLimitBytes)}`}
                 </div>
             </div>
         </div>
