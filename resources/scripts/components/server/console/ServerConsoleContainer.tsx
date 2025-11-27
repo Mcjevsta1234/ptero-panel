@@ -5,7 +5,6 @@ import isEqual from 'react-fast-compare';
 import Spinner from '@/components/elements/Spinner';
 import Features from '@feature/Features';
 import ConsoleBlock from '@/components/server/console/ConsoleBlock';
-import ServerDetailsBlock from '@/components/server/console/ServerDetailsBlock';
 import ServerStatsGrid from '@/components/server/console/ServerStatsGrid';
 import SocialsSection from '@/components/server/console/SocialsSection';
 import { Alert } from '@/components/elements/alert';
@@ -41,14 +40,11 @@ const ServerConsoleContainer = () => {
                     <Spinner.Suspense>
                         <ConsoleBlock />
                     </Spinner.Suspense>
-                    <Spinner.Suspense>
-                        <ServerDetailsBlock />
-                    </Spinner.Suspense>
                     <Features enabled={eggFeatures} />
                 </div>
                 <div className='lg:col-span-1'>
                     <Spinner.Suspense>
-                        <SocialsSection />
+                        <SocialsSection className='h-full' />
                     </Spinner.Suspense>
                 </div>
             </div>

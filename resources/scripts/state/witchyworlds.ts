@@ -13,6 +13,9 @@ export interface WitchyWorldsSettings {
     socialStatus?: string;
     socialDiscord?: string;
     socialWebsite?: string;
+    socialKnowledgebase?: string;
+    socialCustomTitle?: string;
+    socialCustomUrl?: string;
 }
 
 export interface WitchyWorldsSettingsStore {
