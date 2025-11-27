@@ -1,11 +1,11 @@
-@extends('layouts.designify', ['sideEditor' => true])
+@extends('layouts.witchcrafter', ['sideEditor' => true])
 
 @section('title')
     Color Settings
 @endsection
 
 @section('content')
-    <form id="designifyEditor" action="" method="POST" class="h-full flex flex-col">
+    <form id="witchcrafterEditor" action="" method="POST" class="h-full flex flex-col">
         @csrf
         @method('PATCH')
         <div class="mb-8">
@@ -21,36 +21,36 @@
                         <div class="flex items-center space-x-2">
                             <input type="color"
                                 class="h-10 w-16 rounded border border-zinc-600 bg-zinc-700 cursor-pointer"
-                                name="designify:colorPrimary"
-                                value="{{ old('designify:colorPrimary', config('designify.colorPrimary')) }}" />
+                                name="witchcrafter:colorPrimary"
+                                value="{{ old('witchcrafter:colorPrimary', config('witchcrafter.colorPrimary')) }}" />
                         </div>
                     </div>
                     <div class="space-y-2">
-                        <label for="designify:colorSuccess" class="block text-sm font-medium text-zinc-300">Success</label>
+                        <label for="witchcrafter:colorSuccess" class="block text-sm font-medium text-zinc-300">Success</label>
                         <div class="flex items-center space-x-2">
                             <input type="color"
                                 class="h-10 w-16 rounded border border-zinc-600 bg-zinc-700 cursor-pointer"
-                                name="designify:colorSuccess" id="designify:colorSuccess"
-                                value="{{ old('designify:colorSuccess', config('designify.colorSuccess')) }}" />
+                                name="witchcrafter:colorSuccess" id="witchcrafter:colorSuccess"
+                                value="{{ old('witchcrafter:colorSuccess', config('witchcrafter.colorSuccess')) }}" />
                         </div>
                     </div>
                     <div class="space-y-2">
-                        <label for="designify:colorDanger" class="block text-sm font-medium text-zinc-300">Danger</label>
+                        <label for="witchcrafter:colorDanger" class="block text-sm font-medium text-zinc-300">Danger</label>
                         <div class="flex items-center space-x-2">
                             <input type="color"
                                 class="h-10 w-16 rounded border border-zinc-600 bg-zinc-700 cursor-pointer"
-                                name="designify:colorDanger" id="designify:colorDanger"
-                                value="{{ old('designify:colorDanger', config('designify.colorDanger')) }}" />
+                                name="witchcrafter:colorDanger" id="witchcrafter:colorDanger"
+                                value="{{ old('witchcrafter:colorDanger', config('witchcrafter.colorDanger')) }}" />
                         </div>
                     </div>
                     <div class="space-y-2">
-                        <label for="designify:colorSecondary"
+                        <label for="witchcrafter:colorSecondary"
                             class="block text-sm font-medium text-zinc-300">Secondary</label>
                         <div class="flex items-center space-x-2">
                             <input type="color"
                                 class="h-10 w-16 rounded border border-zinc-600 bg-zinc-700 cursor-pointer"
-                                name="designify:colorSecondary" id="designify:colorSecondary"
-                                value="{{ old('designify:colorSecondary', config('designify.colorSecondary')) }}" />
+                                name="witchcrafter:colorSecondary" id="witchcrafter:colorSecondary"
+                                value="{{ old('witchcrafter:colorSecondary', config('witchcrafter.colorSecondary')) }}" />
                         </div>
                     </div>
                 </div>
@@ -60,13 +60,13 @@
                     <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
                         @foreach ([50, 100, 200, 300, 400, 500, 600, 700, 800, 900] as $shade)
                             <div class="space-y-2">
-                                <label for="designify:color{{ $shade }}"
+                                <label for="witchcrafter:color{{ $shade }}"
                                     class="block text-sm font-medium text-zinc-300">Color {{ $shade }}</label>
                                 <div class="flex items-center space-x-2">
                                     <input type="color"
                                         class="h-10 w-16 rounded border border-zinc-600 bg-zinc-700 cursor-pointer"
-                                        name="designify:color{{ $shade }}" id="designify:color{{ $shade }}"
-                                        value="{{ old('designify:color' . $shade, config('designify.color'. $shade)) }}" />
+                                        name="witchcrafter:color{{ $shade }}" id="witchcrafter:color{{ $shade }}"
+                                        value="{{ old('witchcrafter:color' . $shade, config('witchcrafter.color'. $shade)) }}" />
                                 </div>
                             </div>
                         @endforeach
@@ -82,41 +82,41 @@
                         <h3 class="text-lg font-bold text-zinc-200 mb-1">Theme{{ $theme }} Settings</h3>
                         <div class="space-y-3 mb-3">
                             <label class="block text-sm font-medium text-zinc-300"
-                                for="designify:theme{{ $theme }}:name">
+                                for="witchcrafter:theme{{ $theme }}:name">
                                 Name
                             </label>
-                            <input type="text" id="designify:theme{{ $theme }}:name"
-                                name="designify:theme{{ $theme }}:name"
-                                value="{{ old('designify:theme' . $theme . ':name', config('designify.theme' . $theme . '.name')) }}"
+                            <input type="text" id="witchcrafter:theme{{ $theme }}:name"
+                                name="witchcrafter:theme{{ $theme }}:name"
+                                value="{{ old('witchcrafter:theme' . $theme . ':name', config('witchcrafter.theme' . $theme . '.name')) }}"
                                 class="w-full px-4 py-3 bg-zinc-800/50 border border-zinc-700 rounded-xl text-white placeholder-zinc-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
                                 placeholder="Theme{{ $theme }} Display name" />
                         </div>
                         <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
                             <div class="space-y-2">
                                 <label class="block text-sm font-medium text-zinc-300"
-                                    for="designify:theme{{ $theme }}:colorPrimary">
+                                    for="witchcrafter:theme{{ $theme }}:colorPrimary">
                                     Primary
                                 </label>
                                 <div class="flex items-center space-x-2">
-                                    <input type="color" id="designify:theme{{ $theme }}:colorPrimary"
-                                        name="designify:theme{{ $theme }}:colorPrimary"
-                                        value="{{ old('designify:theme' . $theme . ':colorPrimary', config('designify.theme' . $theme . '.colorPrimary')) }}"
+                                    <input type="color" id="witchcrafter:theme{{ $theme }}:colorPrimary"
+                                        name="witchcrafter:theme{{ $theme }}:colorPrimary"
+                                        value="{{ old('witchcrafter:theme' . $theme . ':colorPrimary', config('witchcrafter.theme' . $theme . '.colorPrimary')) }}"
                                         class="h-10 w-16 rounded border border-zinc-600 bg-zinc-700 cursor-pointer" />
                                 </div>
                             </div>
 
                             @foreach ([50, 100, 200, 300, 400, 500, 600, 700, 800, 900] as $shade)
                                 <div class="space-y-2">
-                                    <label for="designify:theme{{ $theme }}:color{{ $shade }}"
+                                    <label for="witchcrafter:theme{{ $theme }}:color{{ $shade }}"
                                         class="block text-sm font-medium text-zinc-300">
                                         Color {{ $shade }}
                                     </label>
                                     <div class="flex items-center space-x-2">
                                         <input type="color"
                                             class="h-10 w-16 rounded border border-zinc-600 bg-zinc-700 cursor-pointer"
-                                            name="designify:theme{{ $theme }}:color{{ $shade }}"
-                                            id="designify:theme{{ $theme }}:color{{ $shade }}"
-                                            value="{{ old('designify:theme' . $theme . ':color' . $shade, config('designify.theme' . $theme . '.color' . $shade)) }}" />
+                                            name="witchcrafter:theme{{ $theme }}:color{{ $shade }}"
+                                            id="witchcrafter:theme{{ $theme }}:color{{ $shade }}"
+                                            value="{{ old('witchcrafter:theme' . $theme . ':color' . $shade, config('witchcrafter.theme' . $theme . '.color' . $shade)) }}" />
                                     </div>
                                 </div>
                             @endforeach

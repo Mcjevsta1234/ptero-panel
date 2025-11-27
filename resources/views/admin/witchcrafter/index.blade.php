@@ -1,4 +1,4 @@
-@extends('layouts.designify', ['sideEditor' => false])
+@extends('layouts.witchcrafter', ['sideEditor' => false])
 
 @section('title')
     Home

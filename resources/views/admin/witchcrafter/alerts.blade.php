@@ -1,11 +1,11 @@
-@extends('layouts.designify', ['sideEditor' => true])
+@extends('layouts.witchcrafter', ['sideEditor' => true])
 
 @section('title')
     Alert Settings
 @endsection
 
 @section('content')
-    <form id="designifyEditor" action="" method="POST" class="h-full flex flex-col">
+    <form id="witchcrafterEditor" action="" method="POST" class="h-full flex flex-col">
         @csrf
         @method('PATCH')
         <div class="mb-8">
@@ -14,33 +14,33 @@
         </div>
         <div class="flex-1 space-y-6">
             <div class="space-y-3">
-                <label class="block text-sm font-medium text-zinc-700 dark:text-zinc-300" for="designify:alertType">
+                <label class="block text-sm font-medium text-zinc-700 dark:text-zinc-300" for="witchcrafter:alertType">
                     Alert Type
                 </label>
-                <select name="designify:alertType" id="designify:alertType"
+                <select name="witchcrafter:alertType" id="witchcrafter:alertType"
                     class="w-full px-4 py-3 bg-zinc-800/50 border border-zinc-700 rounded-xl text-white placeholder-zinc-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200">
-                    <option value="info" {{ old('designify:alertType', config('designify.alertType')) === 'info' ? 'selected' : '' }}>
+                    <option value="info" {{ old('witchcrafter:alertType', config('witchcrafter.alertType')) === 'info' ? 'selected' : '' }}>
                         Info
                     </option>
                     <option value="announcement"
-                        {{ old('designify:alertType', config('designify.alertType')) === 'announcement' ? 'selected' : '' }}>
+                        {{ old('witchcrafter:alertType', config('witchcrafter.alertType')) === 'announcement' ? 'selected' : '' }}>
                         Announcement
                     </option>
-                    <option value="success" {{ old('designify:alertType', config('designify.alertType')) === 'success' ? 'selected' : '' }}>
+                    <option value="success" {{ old('witchcrafter:alertType', config('witchcrafter.alertType')) === 'success' ? 'selected' : '' }}>
                         Success
                     </option>
-                    <option value="warning" {{ old('designify:alertType', config('designify.alertType')) === 'warning' ? 'selected' : '' }}>
+                    <option value="warning" {{ old('witchcrafter:alertType', config('witchcrafter.alertType')) === 'warning' ? 'selected' : '' }}>
                         Warning
                     </option>
-                    <option value="danger" {{ old('designify:alertType', config('designify.alertType')) === 'danger' ? 'selected' : '' }}>
+                    <option value="danger" {{ old('witchcrafter:alertType', config('witchcrafter.alertType')) === 'danger' ? 'selected' : '' }}>
                         Danger
                     </option>
-                    <option value="disabled" {{ old('designify:alertType', config('designify.alertType')) === 'disabled' ? 'selected' : '' }}>
+                    <option value="disabled" {{ old('witchcrafter:alertType', config('witchcrafter.alertType')) === 'disabled' ? 'selected' : '' }}>
                         Disabled
                     </option>
                 </select>
-                <input type="text" id="designify:alertMessage" name="designify:alertMessage"
-                    value="{{ old('designify:alertMessage', config('designify.alertMessage')) }}"
+                <input type="text" id="witchcrafter:alertMessage" name="witchcrafter:alertMessage"
+                    value="{{ old('witchcrafter:alertMessage', config('witchcrafter.alertMessage')) }}"
                     class="w-full px-4 py-3 bg-zinc-800/50 border border-zinc-700 rounded-xl text-white placeholder-zinc-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
                     placeholder="**bold** [link](https://reviactyl.dev)" />
             </div>

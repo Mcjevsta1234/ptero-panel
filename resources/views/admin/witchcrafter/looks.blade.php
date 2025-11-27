@@ -1,11 +1,11 @@
-@extends('layouts.designify', ['sideEditor' => true])
+@extends('layouts.witchcrafter', ['sideEditor' => true])
 
 @section('title')
     Look & Feel
 @endsection
 
 @section('content')
-    <form id="designifyEditor" action="" method="POST" class="h-full flex flex-col">
+    <form id="witchcrafterEditor" action="" method="POST" class="h-full flex flex-col">
         @csrf
         @method('PATCH')
         <div class="mb-8">
@@ -14,7 +14,7 @@
         </div>
         <div class="flex-1 space-y-6 pb-[80px]">
             <div class="space-y-3">
-                <label class="block text-sm font-medium text-zinc-700 dark:text-zinc-300" for="designify:themeSelector">
+                <label class="block text-sm font-medium text-zinc-700 dark:text-zinc-300" for="witchcrafter:themeSelector">
                     Reviactyl Styles <span class="bg-blue-800 rounded-xl px-2">Soon</span>
                 </label>
                 <div class="inline-flex gap-2">
@@ -34,37 +34,37 @@
                 </div>
             </div>
             <div class="space-y-3">
-                <label class="block text-sm font-medium text-zinc-700 dark:text-zinc-300" for="designify:themeSelector">
+                <label class="block text-sm font-medium text-zinc-700 dark:text-zinc-300" for="witchcrafter:themeSelector">
                     Theme Selector
                 </label>
-                <select name="designify:themeSelector" id="designify:themeSelector"
+                <select name="witchcrafter:themeSelector" id="witchcrafter:themeSelector"
                     class="w-full px-4 py-3 bg-zinc-800/50 border border-zinc-700 rounded-xl text-white placeholder-zinc-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200">
                     <option value="true"
-                        {{ old('designify:themeSelector', config('designify.themeSelector')) === true ? 'selected' : '' }}>
+                        {{ old('witchcrafter:themeSelector', config('witchcrafter.themeSelector')) === true ? 'selected' : '' }}>
                         Enabled
                     </option>
                     <option value="false"
-                        {{ old('designify:themeSelector', config('designify.themeSelector')) === false ? 'selected' : '' }}>
+                        {{ old('witchcrafter:themeSelector', config('witchcrafter.themeSelector')) === false ? 'selected' : '' }}>
                         Disabled
                     </option>
                 </select>
             </div>
             <div class="space-y-3">
-                <label class="block text-sm font-medium text-zinc-700 dark:text-zinc-300" for="designify:fontFamily">
+                <label class="block text-sm font-medium text-zinc-700 dark:text-zinc-300" for="witchcrafter:fontFamily">
                     Font Family
                 </label>
-                <select name="designify:fontFamily" id="designify:fontFamily"
+                <select name="witchcrafter:fontFamily" id="witchcrafter:fontFamily"
                     class="w-full px-4 py-3 bg-zinc-800/50 border border-zinc-700 rounded-xl text-white placeholder-zinc-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200">
                     <option value="Poppins"
-                        {{ old('designify:fontFamily', config('designify.fontFamily')) === 'Poppins' ? 'selected' : '' }}>
+                        {{ old('witchcrafter:fontFamily', config('witchcrafter.fontFamily')) === 'Poppins' ? 'selected' : '' }}>
                         Poppins
                     </option>
                     <option value="Inter"
-                        {{ old('designify:fontFamily', config('designify.fontFamily')) === 'Inter' ? 'selected' : '' }}>
+                        {{ old('witchcrafter:fontFamily', config('witchcrafter.fontFamily')) === 'Inter' ? 'selected' : '' }}>
                         Inter
                     </option>
                     <option value="Roboto"
-                        {{ old('designify:fontFamily', config('designify.fontFamily')) === 'Roboto' ? 'selected' : '' }}>
+                        {{ old('witchcrafter:fontFamily', config('witchcrafter.fontFamily')) === 'Roboto' ? 'selected' : '' }}>
                         Roboto
                     </option>
                 </select>
@@ -73,39 +73,39 @@
             <div class="grid grid-cols-2 gap-4">
                 <p class="block text-xl font-medium text-zinc-700 dark:text-zinc-300">Border Settings</p><br>
                 <div class="flex flex-col">
-                    <label class="mb-1 block text-sm font-medium text-zinc-700 dark:text-zinc-300" for="designify:radius">
+                    <label class="mb-1 block text-sm font-medium text-zinc-700 dark:text-zinc-300" for="witchcrafter:radius">
                         Border Radius
                     </label>
-                    <input type="text" name="designify:radius" id="designify:radius"
-                        value="{{ old('designify:radius', config('designify.radius')) }}"
+                    <input type="text" name="witchcrafter:radius" id="witchcrafter:radius"
+                        value="{{ old('witchcrafter:radius', config('witchcrafter.radius')) }}"
                         class="px-3 py-2 bg-zinc-800/50 border border-zinc-700 rounded-xl text-white placeholder-zinc-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200" />
                 </div>
             </div>
             <div class="border-t border-zinc-700"></div>
             <div class="space-y-3">
-                <label class="block text-sm font-medium text-zinc-700 dark:text-zinc-300" for="designify:allocationBlur">
+                <label class="block text-sm font-medium text-zinc-700 dark:text-zinc-300" for="witchcrafter:allocationBlur">
                     Allocation Blur
                 </label>
-                <select name="designify:allocationBlur" id="designify:allocationBlur"
+                <select name="witchcrafter:allocationBlur" id="witchcrafter:allocationBlur"
                     class="w-full px-4 py-3 bg-zinc-800/50 border border-zinc-700 rounded-xl text-white placeholder-zinc-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200">
                     <option value="true"
-                        {{ old('designify:allocationBlur', config('designify.allocationBlur')) === true ? 'selected' : '' }}>
+                        {{ old('witchcrafter:allocationBlur', config('witchcrafter.allocationBlur')) === true ? 'selected' : '' }}>
                         Enabled
                     </option>
                     <option value="false"
-                        {{ old('designify:allocationBlur', config('designify.allocationBlur')) === false ? 'selected' : '' }}>
+                        {{ old('witchcrafter:allocationBlur', config('witchcrafter.allocationBlur')) === false ? 'selected' : '' }}>
                         Disabled
                     </option>
                 </select>
             </div>
             <div class="border-t border-zinc-700"></div>
             <div class="space-y-3">
-                <label for="designify:background" class="block text-sm font-medium text-zinc-300">
+                <label for="witchcrafter:background" class="block text-sm font-medium text-zinc-300">
                     Panel Background
                 </label>
                 <div class="relative">
-                    <input type="text" id="designify:background" name="designify:background"
-                        value="{{ old('designify:background', config('designify.background')) }}"
+                    <input type="text" id="witchcrafter:background" name="witchcrafter:background"
+                        value="{{ old('witchcrafter:background', config('witchcrafter.background')) }}"
                         class="w-full px-4 py-3 bg-zinc-800/50 border border-zinc-700 rounded-xl text-white placeholder-zinc-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
                         placeholder="Enter background url or 'none' to disable" />
                     <div class="absolute inset-y-0 right-0 flex items-center pr-3">

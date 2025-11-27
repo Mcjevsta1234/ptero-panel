@@ -95,7 +95,7 @@ yarn build:production
 print_success "Installation completed successfully!"
 echo ""
 print_info "Next steps:"
-echo "1. Configure social links in: config/designify.php"
+echo "1. Configure social links in: config/witchcrafter.php"
 echo "2. Restart PHP-FPM and Nginx:"
 echo "   systemctl restart php8.2-fpm"
 echo "   systemctl restart nginx"

@@ -4,10 +4,10 @@
 <head>
     <meta charset="utf-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
-    <title>Designify Editor - @yield('title')</title>
+    <title>Witchcrafter Editor - @yield('title')</title>
     <meta content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" name="viewport">
     <meta name="_token" content="{{ csrf_token() }}">
-    <link rel="shortcut icon" href="/witchyworlds/designify.png">
+    <link rel="shortcut icon" href="/witchyworlds/Witchcrafter.png">
     <meta name="msapplication-config" content="/favicons/browserconfig.xml">
 
 
@@ -33,7 +33,7 @@
         <a href="{{ route('index') }}/admin" class="flex items-center space-x-2 md:space-x-3 group">
             <div class="flex flex-col">
                 <span
-                    class="font-bold text-lg md:text-xl bg-gradient-to-r from-sky-400 to-blue-400 bg-clip-text text-transparent">Designify</span>
+                    class="font-bold text-lg md:text-xl bg-gradient-to-r from-sky-400 to-blue-400 bg-clip-text text-transparent">Witchcrafter</span>
                 <span class="text-xs text-zinc-400 -mt-1 hidden md:block">Release v{{ config('app.version') }}</span>
             </div>
         </a>
@@ -57,40 +57,40 @@
             class="w-16 bg-zinc-900/30 backdrop-blur-md border-r border-zinc-800 flex flex-col justify-between py-4 md:py-6 flex-shrink-0 z-40">
             <div class="flex flex-col space-y-3 md:space-y-4">
                 <nav class="flex flex-col space-y-2 px-2">
-                    <a href="{{ route('admin.designify.general') }}"
-                        class="{{ Route::currentRouteName() !== 'admin.designify.general' ?: 'bg-sky-600/20 border border-sky-500/30 ring-2 ring-sky-500 bg-sky-600/30' }} group relative flex items-center justify-center h-10 w-10 md:h-12 md:w-12 rounded-lg md:rounded-xl text-sky-500 hover:bg-sky-600/30 hover:text-sky-300 transition-all duration-200">
+                    <a href="{{ route('admin.witchcrafter.general') }}"
+                        class="{{ Route::currentRouteName() !== 'admin.witchcrafter.general' ?: 'bg-sky-600/20 border border-sky-500/30 ring-2 ring-sky-500 bg-sky-600/30' }} group relative flex items-center justify-center h-10 w-10 md:h-12 md:w-12 rounded-lg md:rounded-xl text-sky-500 hover:bg-sky-600/30 hover:text-sky-300 transition-all duration-200">
                         <i class="fa-solid fa-bolt"></i>
                         <span
                             class="absolute left-full ml-2 px-2 py-1 bg-zinc-800 text-white text-sm rounded opacity-0 group-hover:opacity-100 transition-opacity duration-200 whitespace-nowrap z-100 pointer-events-none hidden md:block">
                             General Options
                         </span>
                     </a>
-                    <a href="{{ route('admin.designify.colors') }}"
-                        class="{{ !starts_with(Route::currentRouteName(), 'admin.designify.colors') ?: 'bg-sky-600/20 border border-sky-500/30 ring-2 ring-sky-500 bg-sky-600/30' }} group relative flex items-center justify-center h-10 w-10 md:h-12 md:w-12 rounded-lg md:rounded-xl text-sky-500 hover:bg-sky-600/30 hover:text-sky-300 transition-all duration-200">
+                    <a href="{{ route('admin.witchcrafter.colors') }}"
+                        class="{{ !starts_with(Route::currentRouteName(), 'admin.witchcrafter.colors') ?: 'bg-sky-600/20 border border-sky-500/30 ring-2 ring-sky-500 bg-sky-600/30' }} group relative flex items-center justify-center h-10 w-10 md:h-12 md:w-12 rounded-lg md:rounded-xl text-sky-500 hover:bg-sky-600/30 hover:text-sky-300 transition-all duration-200">
                         <i class="fa-solid fa-palette"></i>
                         <span
                             class="absolute left-full ml-2 px-2 py-1 bg-zinc-800 text-white text-sm rounded opacity-0 group-hover:opacity-100 transition-opacity duration-200 whitespace-nowrap z-100 pointer-events-none hidden md:block">
                             Color Options
                         </span>
                     </a>
-                    <a href="{{ route('admin.designify.looks') }}"
-                        class="{{ !starts_with(Route::currentRouteName(), 'admin.designify.looks') ?: 'bg-sky-600/20 border border-sky-500/30 ring-2 ring-sky-500 bg-sky-600/30' }} group relative flex items-center justify-center h-10 w-10 md:h-12 md:w-12 rounded-lg md:rounded-xl text-sky-500 hover:bg-sky-600/30 hover:text-sky-300 transition-all duration-200">
+                    <a href="{{ route('admin.witchcrafter.looks') }}"
+                        class="{{ !starts_with(Route::currentRouteName(), 'admin.witchcrafter.looks') ?: 'bg-sky-600/20 border border-sky-500/30 ring-2 ring-sky-500 bg-sky-600/30' }} group relative flex items-center justify-center h-10 w-10 md:h-12 md:w-12 rounded-lg md:rounded-xl text-sky-500 hover:bg-sky-600/30 hover:text-sky-300 transition-all duration-200">
                         <i class="fa-solid fa-swatchbook"></i>
                         <span
                             class="absolute left-full ml-2 px-2 py-1 bg-zinc-800 text-white text-sm rounded opacity-0 group-hover:opacity-100 transition-opacity duration-200 whitespace-nowrap z-100 pointer-events-none hidden md:block">
                             Look 'N Feel
                         </span>
                     </a>
-                    <a href="{{ route('admin.designify.alerts') }}"
-                        class="{{ !starts_with(Route::currentRouteName(), 'admin.designify.alerts') ?: 'bg-sky-600/20 border border-sky-500/30 ring-2 ring-sky-500 bg-sky-600/30' }} group relative flex items-center justify-center h-10 w-10 md:h-12 md:w-12 rounded-lg md:rounded-xl text-sky-500 hover:bg-sky-600/30 hover:text-sky-300 transition-all duration-200">
+                    <a href="{{ route('admin.witchcrafter.alerts') }}"
+                        class="{{ !starts_with(Route::currentRouteName(), 'admin.witchcrafter.alerts') ?: 'bg-sky-600/20 border border-sky-500/30 ring-2 ring-sky-500 bg-sky-600/30' }} group relative flex items-center justify-center h-10 w-10 md:h-12 md:w-12 rounded-lg md:rounded-xl text-sky-500 hover:bg-sky-600/30 hover:text-sky-300 transition-all duration-200">
                         <i class="fa-solid fa-bullhorn"></i>
                         <span
                             class="absolute left-full ml-2 px-2 py-1 bg-zinc-800 text-white text-sm rounded opacity-0 group-hover:opacity-100 transition-opacity duration-200 whitespace-nowrap z-100 pointer-events-none hidden md:block">
                             Alerts
                         </span>
                     </a>
-                    <a href="{{ route('admin.designify.site') }}"
-                        class="{{ !starts_with(Route::currentRouteName(), 'admin.designify.site') ?: 'bg-sky-600/20 border border-sky-500/30 ring-2 ring-sky-500 bg-sky-600/30' }} group relative flex items-center justify-center h-10 w-10 md:h-12 md:w-12 rounded-lg md:rounded-xl text-sky-500 hover:bg-sky-600/30 hover:text-sky-300 transition-all duration-200">
+                    <a href="{{ route('admin.witchcrafter.site') }}"
+                        class="{{ !starts_with(Route::currentRouteName(), 'admin.witchcrafter.site') ?: 'bg-sky-600/20 border border-sky-500/30 ring-2 ring-sky-500 bg-sky-600/30' }} group relative flex items-center justify-center h-10 w-10 md:h-12 md:w-12 rounded-lg md:rounded-xl text-sky-500 hover:bg-sky-600/30 hover:text-sky-300 transition-all duration-200">
                         <i class="fa-solid fa-gear"></i>
                         <span
                             class="absolute left-full ml-2 px-2 py-1 bg-zinc-800 text-white text-sm rounded opacity-0 group-hover:opacity-100 transition-opacity duration-200 whitespace-nowrap z-100 pointer-events-none hidden md:block">
@@ -101,8 +101,8 @@
             </div>
 
             <div class="flex flex-col space-y-2 px-2">
-                @include('partials/admin.designify.save')
-                <form action="{{ route('admin.designify.reset') }}" method="POST"
+                @include('partials/admin.witchcrafter.save')
+                <form action="{{ route('admin.witchcrafter.reset') }}" method="POST"
                     onsubmit="return confirm('Are you sure you want to reset Reviactyl settings to default?');">
                     @csrf
                     <button type="submit"
@@ -164,8 +164,8 @@
                         <div
                             class="w-full h-full bg-zinc-800/80 border border-zinc-600 rounded-xl text-center p-10 flex flex-col items-center justify-center">
                             <div class="flex items-center justify-center space-x-2 mb-2">
-                                <img src="/witchyworlds/designify.png" class="h-10" alt="logo" />
-                                <h1 class="text-white text-3xl font-semibold">Designify</h1>
+                                <img src="/witchyworlds/Witchcrafter.png" class="h-10" alt="logo" />
+                                <h1 class="text-white text-3xl font-semibold">Witchcrafter</h1>
                             </div>
                             <p class="text-gray-400 text-sm mb-8">v{{ config('app.version') }}</p>
                         </div>
