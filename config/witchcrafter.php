@@ -43,6 +43,7 @@ return [
     'socialDiscord' => 'https://discord.gg/Af7k4fX8de',
     'socialWebsite' => 'https://witchyworlds.top',
     'socialKnowledgebase' => '',
+    'socialTrials' => '',
 
     'theme1' => [
         'name' => 'Petrascia',

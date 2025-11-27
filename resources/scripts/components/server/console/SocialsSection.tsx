@@ -4,6 +4,7 @@ import tw from 'twin.macro';
 import { useStoreState } from 'easy-peasy';
 import { ApplicationStore } from '@/state';
 import { CreditCardIcon, StatusOnlineIcon, ChatAlt2Icon, GlobeIcon, BookOpenIcon, StarIcon } from '@heroicons/react/solid';
+import { RocketIcon } from '@heroicons/react/outline';
 
 const Container = styled.div`
     ${tw`grid grid-cols-2 gap-2`}
@@ -31,6 +32,7 @@ const SocialsSection = ({ className }: { className?: string }) => {
     const socialDiscord = useStoreState((state) => state.witchyworlds.data?.socialDiscord);
     const socialWebsite = useStoreState((state) => state.witchyworlds.data?.socialWebsite);
     const socialKnowledgebase = useStoreState((state) => state.witchyworlds.data?.socialKnowledgebase);
+    const socialTrials = useStoreState((state) => state.witchyworlds.data?.socialTrials);
     const socialCustomTitle = useStoreState((state) => state.witchyworlds.data?.socialCustomTitle);
     const socialCustomUrl = useStoreState((state) => state.witchyworlds.data?.socialCustomUrl);
     const socialCustom2Title = useStoreState((state) => state.witchyworlds.data?.socialCustom2Title);
@@ -46,6 +48,7 @@ const SocialsSection = ({ className }: { className?: string }) => {
         { icon: ChatAlt2Icon, label: 'Discord', url: socialDiscord },
         { icon: GlobeIcon, label: 'Website', url: socialWebsite },
         { icon: BookOpenIcon, label: 'Knowledgebase', url: socialKnowledgebase },
+        { icon: RocketIcon, label: 'Trials', url: socialTrials },
         { icon: StarIcon, label: socialCustomTitle || 'Custom Link', url: socialCustomUrl },
         { icon: StarIcon, label: socialCustom2Title || 'Custom Link 2', url: socialCustom2Url },
         { icon: StarIcon, label: socialCustom3Title || 'Custom Link 3', url: socialCustom3Url },

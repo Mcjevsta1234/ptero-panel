@@ -13,10 +13,16 @@ interface DataPoint {
     value: number;
 }
 
+interface NetworkDataPoint {
+    time: number;
+    rx: number;
+    tx: number;
+}
+
 const MAX_DATA_POINTS = 20;
 
-// Custom animated graph component
-const CustomGraph = ({ data, color, max = 100 }: { data: DataPoint[]; color: string; max?: number }) => {
+// Design 1: Smooth gradient area chart with glow
+const AreaGraph = ({ data, color, max = 100 }: { data: DataPoint[]; color: string; max?: number }) => {
     if (data.length === 0) return null;
 
     const width = 100;
@@ -27,24 +33,24 @@ const CustomGraph = ({ data, color, max = 100 }: { data: DataPoint[]; color: str
         const x = (index / (MAX_DATA_POINTS - 1)) * width;
         const normalizedValue = Math.min(100, (point.value / max) * 100);
         const y = height - (normalizedValue / 100) * (height - padding * 2) - padding;
-        return `${x},${y}`;
+        return { x, y };
     });
 
     const pathD = points.length > 1
-        ? `M ${points[0]} ${points.slice(1).map(p => `L ${p}`).join(' ')}`
+        ? `M ${points[0].x},${points[0].y} ` + points.slice(1).map(p => `L ${p.x},${p.y}`).join(' ')
         : '';
 
-    const gradientId = `gradient-${color.replace('#', '')}`;
+    const gradientId = `gradient-area-${color.replace('#', '')}`;
 
     return (
         <svg viewBox={`0 0 ${width} ${height}`} className="w-full h-full" preserveAspectRatio="none">
             <defs>
                 <linearGradient id={gradientId} x1="0%" y1="0%" x2="0%" y2="100%">
-                    <stop offset="0%" style={{ stopColor: color, stopOpacity: 0.4 }} />
+                    <stop offset="0%" style={{ stopColor: color, stopOpacity: 0.5 }} />
                     <stop offset="100%" style={{ stopColor: color, stopOpacity: 0.05 }} />
                 </linearGradient>
-                <filter id="glow">
-                    <feGaussianBlur stdDeviation="1" result="coloredBlur" />
+                <filter id="glow-area">
+                    <feGaussianBlur stdDeviation="1.5" result="coloredBlur" />
                     <feMerge>
                         <feMergeNode in="coloredBlur" />
                         <feMergeNode in="SourceGraphic" />
@@ -52,64 +58,240 @@ const CustomGraph = ({ data, color, max = 100 }: { data: DataPoint[]; color: str
                 </filter>
             </defs>
             
-            {/* Fill area */}
             {pathD && (
-                <path
-                    d={`${pathD} L ${width},${height} L 0,${height} Z`}
-                    fill={`url(#${gradientId})`}
-                    opacity="0.6"
-                />
-            )}
-            
-            {/* Glow line */}
-            {pathD && (
-                <path
-                    d={pathD}
-                    stroke={color}
-                    strokeWidth="2"
-                    fill="none"
-                    filter="url(#glow)"
-                    opacity="0.8"
-                />
-            )}
-            
-            {/* Main line */}
-            {pathD && (
-                <path
-                    d={pathD}
-                    stroke={color}
-                    strokeWidth="1.5"
-                    fill="none"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                />
-            )}
-            
-            {/* Animated dots on line */}
-            {data.slice(-3).map((point, idx) => {
-                const x = ((data.length - 3 + idx) / (MAX_DATA_POINTS - 1)) * width;
-                const normalizedValue = Math.min(100, (point.value / max) * 100);
-                const y = height - (normalizedValue / 100) * (height - padding * 2) - padding;
-                return (
+                <>
+                    <path
+                        d={`${pathD} L ${width},${height} L 0,${height} Z`}
+                        fill={`url(#${gradientId})`}
+                        style={{ transition: 'd 0.3s ease-out' }}
+                    />
+                    <path
+                        d={pathD}
+                        stroke={color}
+                        strokeWidth="2"
+                        fill="none"
+                        filter="url(#glow-area)"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        style={{ transition: 'd 0.3s ease-out' }}
+                    />
                     <circle
-                        key={idx}
-                        cx={x}
-                        cy={y}
-                        r={idx === 2 ? 2 : 1.5}
+                        cx={points[points.length - 1].x}
+                        cy={points[points.length - 1].y}
+                        r="2.5"
                         fill={color}
-                        opacity={idx === 2 ? 1 : 0.6}
-                    >
-                        {idx === 2 && (
-                            <animate
-                                attributeName="r"
-                                values="2;3;2"
-                                dur="2s"
-                                repeatCount="indefinite"
-                            />
-                        )}
-                    </circle>
+                        filter="url(#glow-area)"
+                        style={{ transition: 'cx 0.3s ease-out, cy 0.3s ease-out' }}
+                    />
+                </>
+            )}
+        </svg>
+    );
+};
+
+// Design 2: Smooth bar wave pattern
+const BarWaveGraph = ({ data, color, max = 100 }: { data: DataPoint[]; color: string; max?: number }) => {
+    if (data.length === 0) return null;
+
+    const width = 100;
+    const height = 32;
+    const barCount = Math.min(data.length, 15);
+    const barWidth = width / barCount - 1;
+
+    const gradientId = `gradient-bar-${color.replace('#', '')}`;
+
+    return (
+        <svg viewBox={`0 0 ${width} ${height}`} className="w-full h-full" preserveAspectRatio="none">
+            <defs>
+                <linearGradient id={gradientId} x1="0%" y1="0%" x2="0%" y2="100%">
+                    <stop offset="0%" style={{ stopColor: color, stopOpacity: 0.9 }} />
+                    <stop offset="100%" style={{ stopColor: color, stopOpacity: 0.3 }} />
+                </linearGradient>
+            </defs>
+            {data.slice(-barCount).map((point, index) => {
+                const normalizedValue = Math.min(100, (point.value / max) * 100);
+                const barHeight = (normalizedValue / 100) * height;
+                const x = (index / barCount) * width;
+                return (
+                    <rect
+                        key={index}
+                        x={x}
+                        y={height - barHeight}
+                        width={barWidth}
+                        height={barHeight}
+                        fill={`url(#${gradientId})`}
+                        rx="1"
+                        style={{ 
+                            transition: 'height 0.3s ease-out, y 0.3s ease-out',
+                            opacity: 0.7 + (index / barCount) * 0.3
+                        }}
+                    />
                 );
             })}
+        </svg>
+    );
+};
+
+// Design 3: Smooth curved line with particles
+const CurvedLineGraph = ({ data, color, max = 100 }: { data: DataPoint[]; color: string; max?: number }) => {
+    if (data.length === 0) return null;
+
+    const width = 100;
+    const height = 32;
+    const padding = 2;
+    
+    const points = data.map((point, index) => {
+        const x = (index / (MAX_DATA_POINTS - 1)) * width;
+        const normalizedValue = Math.min(100, (point.value / max) * 100);
+        const y = height - (normalizedValue / 100) * (height - padding * 2) - padding;
+        return { x, y };
+    });
+
+    const smoothPath = points.length > 2 ? (() => {
+        let path = `M ${points[0].x},${points[0].y}`;
+        for (let i = 1; i < points.length; i++) {
+            const prev = points[i - 1];
+            const curr = points[i];
+            const cpX = (prev.x + curr.x) / 2;
+            path += ` Q ${prev.x},${prev.y} ${cpX},${(prev.y + curr.y) / 2}`;
+            if (i === points.length - 1) {
+                path += ` T ${curr.x},${curr.y}`;
+            }
+        }
+        return path;
+    })() : '';
+
+    const gradientId = `gradient-curved-${color.replace('#', '')}`;
+
+    return (
+        <svg viewBox={`0 0 ${width} ${height}`} className="w-full h-full" preserveAspectRatio="none">
+            <defs>
+                <linearGradient id={gradientId} x1="0%" y1="0%" x2="0%" y2="100%">
+                    <stop offset="0%" style={{ stopColor: color, stopOpacity: 0.4 }} />
+                    <stop offset="100%" style={{ stopColor: color, stopOpacity: 0.1 }} />
+                </linearGradient>
+            </defs>
+            {smoothPath && (
+                <>
+                    <path
+                        d={`${smoothPath} L ${width},${height} L 0,${height} Z`}
+                        fill={`url(#${gradientId})`}
+                        style={{ transition: 'd 0.3s ease-out' }}
+                    />
+                    <path
+                        d={smoothPath}
+                        stroke={color}
+                        strokeWidth="2"
+                        fill="none"
+                        strokeLinecap="round"
+                        style={{ transition: 'd 0.3s ease-out' }}
+                    />
+                    {points.slice(-5).map((point, idx) => (
+                        <circle
+                            key={idx}
+                            cx={point.x}
+                            cy={point.y}
+                            r={idx === 4 ? 2 : 1}
+                            fill={color}
+                            opacity={0.5 + (idx / 5) * 0.5}
+                            style={{ transition: 'cx 0.3s ease-out, cy 0.3s ease-out' }}
+                        />
+                    ))}
+                </>
+            )}
+        </svg>
+    );
+};
+
+// Design 4: Dual-line network graph (RX/TX)
+const DualLineGraph = ({ data, color1, color2 }: { data: NetworkDataPoint[]; color1: string; color2: string }) => {
+    if (data.length === 0) return null;
+
+    const width = 100;
+    const height = 32;
+    const padding = 2;
+    
+    const maxValue = Math.max(
+        ...data.map(d => Math.max(d.rx, d.tx)),
+        1
+    );
+
+    const rxPoints = data.map((point, index) => {
+        const x = (index / (MAX_DATA_POINTS - 1)) * width;
+        const normalizedValue = Math.min(100, (point.rx / maxValue) * 100);
+        const y = height - (normalizedValue / 100) * (height - padding * 2) - padding;
+        return { x, y };
+    });
+
+    const txPoints = data.map((point, index) => {
+        const x = (index / (MAX_DATA_POINTS - 1)) * width;
+        const normalizedValue = Math.min(100, (point.tx / maxValue) * 100);
+        const y = height - (normalizedValue / 100) * (height - padding * 2) - padding;
+        return { x, y };
+    });
+
+    const rxPath = rxPoints.length > 1
+        ? `M ${rxPoints[0].x},${rxPoints[0].y} ` + rxPoints.slice(1).map(p => `L ${p.x},${p.y}`).join(' ')
+        : '';
+    
+    const txPath = txPoints.length > 1
+        ? `M ${txPoints[0].x},${txPoints[0].y} ` + txPoints.slice(1).map(p => `L ${p.x},${p.y}`).join(' ')
+        : '';
+
+    const gradientId1 = `gradient-dual-${color1.replace('#', '')}`;
+    const gradientId2 = `gradient-dual-${color2.replace('#', '')}`;
+
+    return (
+        <svg viewBox={`0 0 ${width} ${height}`} className="w-full h-full" preserveAspectRatio="none">
+            <defs>
+                <linearGradient id={gradientId1} x1="0%" y1="0%" x2="0%" y2="100%">
+                    <stop offset="0%" style={{ stopColor: color1, stopOpacity: 0.3 }} />
+                    <stop offset="100%" style={{ stopColor: color1, stopOpacity: 0.05 }} />
+                </linearGradient>
+                <linearGradient id={gradientId2} x1="0%" y1="0%" x2="0%" y2="100%">
+                    <stop offset="0%" style={{ stopColor: color2, stopOpacity: 0.3 }} />
+                    <stop offset="100%" style={{ stopColor: color2, stopOpacity: 0.05 }} />
+                </linearGradient>
+            </defs>
+            
+            {/* RX (Download) */}
+            {rxPath && (
+                <>
+                    <path
+                        d={`${rxPath} L ${width},${height} L 0,${height} Z`}
+                        fill={`url(#${gradientId1})`}
+                        style={{ transition: 'd 0.3s ease-out' }}
+                    />
+                    <path
+                        d={rxPath}
+                        stroke={color1}
+                        strokeWidth="2"
+                        fill="none"
+                        strokeLinecap="round"
+                        style={{ transition: 'd 0.3s ease-out' }}
+                    />
+                </>
+            )}
+            
+            {/* TX (Upload) */}
+            {txPath && (
+                <>
+                    <path
+                        d={`${txPath} L ${width},${height} L 0,${height} Z`}
+                        fill={`url(#${gradientId2})`}
+                        style={{ transition: 'd 0.3s ease-out' }}
+                    />
+                    <path
+                        d={txPath}
+                        stroke={color2}
+                        strokeWidth="2"
+                        fill="none"
+                        strokeLinecap="round"
+                        strokeDasharray="3,2"
+                        style={{ transition: 'd 0.3s ease-out' }}
+                    />
+                </>
+            )}
         </svg>
     );
 };
@@ -119,7 +301,7 @@ const ConsoleSidebar = () => {
     const [cpuHistory, setCpuHistory] = useState<DataPoint[]>([]);
     const [memoryHistory, setMemoryHistory] = useState<DataPoint[]>([]);
     const [diskHistory, setDiskHistory] = useState<DataPoint[]>([]);
-    const [networkHistory, setNetworkHistory] = useState<DataPoint[]>([]);
+    const [networkHistory, setNetworkHistory] = useState<NetworkDataPoint[]>([]);
 
     const status = ServerContext.useStoreState((state) => state.status.value);
     const limits = ServerContext.useStoreState((state) => state.server.data!.limits);
@@ -160,9 +342,10 @@ const ConsoleSidebar = () => {
         const now = Date.now();
         const memoryLimitBytes = limits.memory * 1024 * 1024;
         const diskLimitBytes = limits.disk * 1024 * 1024;
+        const cpuLimit = limits.cpu; // CPU limit in percentage (100% per core)
 
         setCpuHistory((prev) => {
-            const updated = [...prev, { time: now, value: Math.min(100, newStats.cpu) }];
+            const updated = [...prev, { time: now, value: newStats.cpu }];
             return updated.slice(-MAX_DATA_POINTS);
         });
 
@@ -177,16 +360,17 @@ const ConsoleSidebar = () => {
         });
 
         setNetworkHistory((prev) => {
-            const totalBytes = newStats.rx + newStats.tx;
-            const updated = [...prev, { time: now, value: totalBytes }];
+            const updated = [...prev, { time: now, rx: newStats.rx, tx: newStats.tx }];
             return updated.slice(-MAX_DATA_POINTS);
         });
     });
 
     const isOffline = status === 'offline' || status === null;
     const memoryLimitBytes = limits.memory * 1024 * 1024;
+    const cpuLimit = limits.cpu; // CPU limit (100% per core)
 
-    const cpuPercent = isOffline ? 0 : Math.min(100, Math.round(stats.cpu));
+    // Calculate CPU percentage relative to the limit (accounts for multi-core)
+    const cpuPercent = isOffline ? 0 : Math.min(100, Math.round((stats.cpu / cpuLimit) * 100));
 
     // Extract plan name from node (e.g., "Premium Utah" -> "premium")
     const planName = serverNode ? serverNode.split(' ')[0].toLowerCase() : 'standard';
@@ -247,7 +431,7 @@ const ConsoleSidebar = () => {
                 </div>
                 {cpuHistory.length > 0 && (
                     <div className="h-8">
-                        <CustomGraph data={cpuHistory} color="#3b82f6" max={100} />
+                        <AreaGraph data={cpuHistory} color="#3b82f6" max={cpuLimit} />
                     </div>
                 )}
             </div>
@@ -269,7 +453,7 @@ const ConsoleSidebar = () => {
                 </div>
                 {memoryHistory.length > 0 && (
                     <div className="h-8">
-                        <CustomGraph data={memoryHistory} color="#10b981" max={100} />
+                        <BarWaveGraph data={memoryHistory} color="#10b981" max={100} />
                     </div>
                 )}
             </div>
@@ -291,7 +475,7 @@ const ConsoleSidebar = () => {
                 </div>
                 {diskHistory.length > 0 && (
                     <div className="h-8">
-                        <CustomGraph data={diskHistory} color="#a855f7" max={100} />
+                        <CurvedLineGraph data={diskHistory} color="#a855f7" max={100} />
                     </div>
                 )}
             </div>
@@ -311,8 +495,8 @@ const ConsoleSidebar = () => {
                                 '0 B / 0 B'
                             ) : (
                                 <>
-                                    <div>↓ {bytesToString(stats.rx)}</div>
-                                    <div className="text-gray-400">↑ {bytesToString(stats.tx)}</div>
+                                    <div className="text-cyan-400">↓ {bytesToString(stats.rx)}</div>
+                                    <div className="text-purple-400">↑ {bytesToString(stats.tx)}</div>
                                 </>
                             )}
                         </div>
@@ -320,11 +504,7 @@ const ConsoleSidebar = () => {
                 </div>
                 {networkHistory.length > 0 && (
                     <div className="h-8">
-                        <CustomGraph 
-                            data={networkHistory} 
-                            color="#06b6d4" 
-                            max={Math.max(...networkHistory.map(d => d.value)) || 1}
-                        />
+                        <DualLineGraph data={networkHistory} color1="#06b6d4" color2="#a855f7" />
                     </div>
                 )}
             </div>

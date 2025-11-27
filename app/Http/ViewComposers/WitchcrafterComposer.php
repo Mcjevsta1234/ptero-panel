@@ -162,6 +162,7 @@ class WitchcrafterComposer
             'socialDiscord' => config('witchcrafter.socialDiscord') ?? 'https://discord.gg/Af7k4fX8de',
             'socialWebsite' => config('witchcrafter.socialWebsite') ?? 'https://witchyworlds.top',
             'socialKnowledgebase' => config('witchcrafter.socialKnowledgebase') ?? '',
+            'socialTrials' => config('witchcrafter.socialTrials') ?? '',
             'site_color' => config('witchcrafter.site_color') ?? '#3b82f6',
             'site_title' => config('witchcrafter.site_title') ?? 'Reviactyl',
             'site_description' => config('witchcrafter.site_description') ?? 'Our official control panel made better with Reviactyl.',
