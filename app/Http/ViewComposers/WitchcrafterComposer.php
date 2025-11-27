@@ -171,6 +171,6 @@ class WitchcrafterComposer
 
     public function compose(View $view): void
     {
-        $view->with('reviactylConfiguration', $this->reviactylDefaults);
+        $view->with('witchyworldsConfiguration', $this->reviactylDefaults);
     }
 }
