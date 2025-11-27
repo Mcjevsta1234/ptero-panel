@@ -94,10 +94,10 @@
                             <i class="RiCube"></i> <span>@lang('admin/navigation.administration.api')</span>
                         </a>
                     </li>
-                    <li class="header">Reviactyl</li>
-                    <li class="{{ Route::currentRouteName() !== 'admin.designify' ?: 'active' }}">
-                        <a href="{{ route('admin.designify') }}">
-                            <i class="RiPaintBrush"></i> <span>Designify</span>
+                    <li class="header">WitchyWorlds</li>
+                    <li class="{{ Route::currentRouteName() !== 'admin.witchcrafter' ?: 'active' }}">
+                        <a href="{{ route('admin.witchcrafter') }}">
+                            <i class="RiPaintBrush"></i> <span>Witchcrafter</span>
                         </a>
                     </li>
                     <li class="header">@lang('admin/navigation.management.title')</li>
