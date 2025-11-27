@@ -4,38 +4,12 @@ import { SocketEvent, SocketRequest } from '@/components/server/events';
 import useWebsocketEvent from '@/plugins/useWebsocketEvent';
 import { bytesToString } from '@/lib/formatters';
 import UptimeDuration from '@/components/server/UptimeDuration';
-import { Line } from 'react-chartjs-2';
-import {
-    Chart as ChartJS,
-    CategoryScale,
-    LinearScale,
-    PointElement,
-    LineElement,
-    Title,
-    Tooltip,
-    Filler,
-    ChartOptions,
-} from 'chart.js';
-import SocialsSection from '@/components/server/console/SocialsSection';
 import CopyOnClick from '@/components/elements/CopyOnClick';
-
-ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, Title, Tooltip, Filler);
 
 type Stats = Record<'memory' | 'cpu' | 'disk' | 'uptime' | 'rx' | 'tx', number>;
 
-interface DataPoint {
-    time: number;
-    value: number;
-}
-
-const MAX_DATA_POINTS = 20;
-
 const ConsoleSidebar = () => {
     const [stats, setStats] = useState<Stats>({ memory: 0, cpu: 0, disk: 0, uptime: 0, tx: 0, rx: 0 });
-    const [cpuHistory, setCpuHistory] = useState<DataPoint[]>([]);
-    const [memoryHistory, setMemoryHistory] = useState<DataPoint[]>([]);
-    const [diskHistory, setDiskHistory] = useState<DataPoint[]>([]);
-    const [networkHistory, setNetworkHistory] = useState<DataPoint[]>([]);
 
     const status = ServerContext.useStoreState((state) => state.status.value);
     const limits = ServerContext.useStoreState((state) => state.server.data!.limits);
@@ -62,100 +36,23 @@ const ConsoleSidebar = () => {
             return;
         }
 
-        const newStats = {
+        setStats({
             memory: parsedStats.memory_bytes,
             cpu: parsedStats.cpu_absolute,
             disk: parsedStats.disk_bytes,
             tx: parsedStats.network.tx_bytes,
             rx: parsedStats.network.rx_bytes,
             uptime: parsedStats.uptime || 0,
-        };
-
-        setStats(newStats);
-
-        const now = Date.now();
-        const memoryLimitBytes = limits.memory * 1024 * 1024;
-        const diskLimitBytes = limits.disk * 1024 * 1024;
-
-        setCpuHistory((prev) => {
-            const updated = [...prev, { time: now, value: Math.min(100, newStats.cpu) }];
-            return updated.slice(-MAX_DATA_POINTS);
-        });
-
-        setMemoryHistory((prev) => {
-            const updated = [...prev, { time: now, value: Math.min(100, (newStats.memory / memoryLimitBytes) * 100) }];
-            return updated.slice(-MAX_DATA_POINTS);
-        });
-
-        setDiskHistory((prev) => {
-            const updated = [...prev, { time: now, value: Math.min(100, (newStats.disk / diskLimitBytes) * 100) }];
-            return updated.slice(-MAX_DATA_POINTS);
-        });
-
-        setNetworkHistory((prev) => {
-            const totalBytes = newStats.rx + newStats.tx;
-            const updated = [...prev, { time: now, value: totalBytes }];
-            return updated.slice(-MAX_DATA_POINTS);
         });
     });
 
     const isOffline = status === 'offline' || status === null;
     const memoryLimitBytes = limits.memory * 1024 * 1024;
-    const diskLimitBytes = limits.disk * 1024 * 1024;
 
     const cpuPercent = isOffline ? 0 : Math.min(100, Math.round(stats.cpu));
-    const memoryPercent = isOffline ? 0 : Math.min(100, Math.round((stats.memory / memoryLimitBytes) * 100));
-    const diskPercent = isOffline ? 0 : Math.min(100, Math.round((stats.disk / diskLimitBytes) * 100));
 
     // Extract plan name from node (e.g., "Premium Utah" -> "premium")
     const planName = serverNode ? serverNode.split(' ')[0].toLowerCase() : 'standard';
-
-    const createChartData = (history: DataPoint[], color: string, isBytes = false) => ({
-        labels: history.map(() => ''),
-        datasets: [
-            {
-                data: isBytes ? history.map((d) => d.value / 1024 / 1024) : history.map((d) => d.value),
-                borderColor: color,
-                backgroundColor: `${color}20`,
-                fill: true,
-                tension: 0.4,
-                pointRadius: 0,
-                pointHoverRadius: 0,
-                borderWidth: 2,
-            },
-        ],
-    });
-
-    const chartOptions: ChartOptions<'line'> = {
-        responsive: true,
-        maintainAspectRatio: false,
-        plugins: {
-            legend: { display: false },
-            tooltip: { enabled: false },
-        },
-        scales: {
-            x: { display: false },
-            y: {
-                display: false,
-                min: 0,
-            },
-        },
-        animation: {
-            duration: 0,
-        },
-    };
-
-    const percentChartOptions: ChartOptions<'line'> = {
-        ...chartOptions,
-        scales: {
-            x: { display: false },
-            y: {
-                display: false,
-                min: 0,
-                max: 100,
-            },
-        },
-    };
 
     return (
         <div className="flex flex-col gap-3">
@@ -200,95 +97,75 @@ const ConsoleSidebar = () => {
 
             {/* CPU */}
             <div className="bg-gray-700 border border-gray-600 rounded-lg p-3">
-                <div className="flex items-start justify-between mb-2">
-                    <div className="flex-1">
-                        <div className="text-xs text-gray-400 uppercase tracking-wide mb-1">CPU</div>
-                        <div className="text-base font-semibold text-white">{cpuPercent}%</div>
-                    </div>
+                <div className="flex items-center gap-3">
                     <div className="w-8 h-8 bg-blue-500/20 rounded flex items-center justify-center flex-shrink-0">
                         <svg className="w-4 h-4 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 3v2m6-2v2M9 19v2m6-2v2M5 9H3m2 6H3m18-6h-2m2 6h-2M7 19h10a2 2 0 002-2V7a2 2 0 00-2-2H7a2 2 0 00-2 2v10a2 2 0 002 2zM9 9h6v6H9V9z" />
                         </svg>
                     </div>
-                </div>
-                {cpuHistory.length > 0 && (
-                    <div className="h-6">
-                        <Line data={createChartData(cpuHistory, '#3b82f6')} options={percentChartOptions} />
+                    <div className="flex-1">
+                        <div className="text-xs text-gray-400 uppercase tracking-wide">CPU</div>
+                        <div className="text-base font-semibold text-white">{cpuPercent}%</div>
                     </div>
-                )}
+                </div>
             </div>
 
             {/* RAM */}
             <div className="bg-gray-700 border border-gray-600 rounded-lg p-3">
-                <div className="flex items-start justify-between mb-2">
-                    <div className="flex-1">
-                        <div className="text-xs text-gray-400 uppercase tracking-wide mb-1">RAM</div>
-                        <div className="text-base font-semibold text-white">
-                            {isOffline ? '0 MB' : bytesToString(stats.memory)}
-                        </div>
-                    </div>
+                <div className="flex items-center gap-3">
                     <div className="w-8 h-8 bg-emerald-500/20 rounded flex items-center justify-center flex-shrink-0">
                         <svg className="w-4 h-4 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 7v10c0 2.21 3.582 4 8 4s8-1.79 8-4V7M4 7c0 2.21 3.582 4 8 4s8-1.79 8-4M4 7c0-2.21 3.582-4 8-4s8 1.79 8 4" />
                         </svg>
                     </div>
-                </div>
-                {memoryHistory.length > 0 && (
-                    <div className="h-6">
-                        <Line data={createChartData(memoryHistory, '#10b981')} options={percentChartOptions} />
+                    <div className="flex-1">
+                        <div className="text-xs text-gray-400 uppercase tracking-wide">RAM</div>
+                        <div className="text-base font-semibold text-white">
+                            {isOffline ? '0 MB' : bytesToString(stats.memory)}
+                        </div>
                     </div>
-                )}
+                </div>
             </div>
 
             {/* Disk */}
             <div className="bg-gray-700 border border-gray-600 rounded-lg p-3">
-                <div className="flex items-start justify-between mb-2">
-                    <div className="flex-1">
-                        <div className="text-xs text-gray-400 uppercase tracking-wide mb-1">Disk</div>
-                        <div className="text-base font-semibold text-white">
-                            {isOffline ? '0 MB' : bytesToString(stats.disk)}
-                        </div>
-                    </div>
+                <div className="flex items-center gap-3">
                     <div className="w-8 h-8 bg-purple-500/20 rounded flex items-center justify-center flex-shrink-0">
                         <svg className="w-4 h-4 text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 19a2 2 0 01-2-2V7a2 2 0 012-2h4l2 2h4a2 2 0 012 2v1M5 19h14a2 2 0 002-2v-5a2 2 0 00-2-2H9a2 2 0 00-2 2v5a2 2 0 01-2 2z" />
                         </svg>
                     </div>
-                </div>
-                {diskHistory.length > 0 && (
-                    <div className="h-6">
-                        <Line data={createChartData(diskHistory, '#a855f7')} options={percentChartOptions} />
+                    <div className="flex-1">
+                        <div className="text-xs text-gray-400 uppercase tracking-wide">Disk</div>
+                        <div className="text-base font-semibold text-white">
+                            {isOffline ? '0 MB' : bytesToString(stats.disk)}
+                        </div>
                     </div>
-                )}
+                </div>
             </div>
 
             {/* Network I/O */}
             <div className="bg-gray-700 border border-gray-600 rounded-lg p-3">
-                <div className="flex items-start justify-between mb-2">
-                    <div className="flex-1">
-                        <div className="text-xs text-gray-400 uppercase tracking-wide mb-1">Net I/O</div>
-                        <div className="text-sm font-semibold text-white leading-tight">
-                            {isOffline ? (
-                                '0 B / 0 B'
-                            ) : (
-                                <>
-                                    <div>{bytesToString(stats.rx)}</div>
-                                    <div className="text-gray-400">{bytesToString(stats.tx)}</div>
-                                </>
-                            )}
-                        </div>
-                    </div>
+                <div className="flex items-center gap-3">
                     <div className="w-8 h-8 bg-cyan-500/20 rounded flex items-center justify-center flex-shrink-0">
                         <svg className="w-4 h-4 text-cyan-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
                         </svg>
                     </div>
-                </div>
-                {networkHistory.length > 0 && (
-                    <div className="h-6">
-                        <Line data={createChartData(networkHistory, '#06b6d4', true)} options={chartOptions} />
+                    <div className="flex-1">
+                        <div className="text-xs text-gray-400 uppercase tracking-wide">Net I/O</div>
+                        <div className="text-sm font-semibold text-white leading-tight">
+                            {isOffline ? (
+                                '0 B / 0 B'
+                            ) : (
+                                <>
+                                    <div>↓ {bytesToString(stats.rx)}</div>
+                                    <div className="text-gray-400">↑ {bytesToString(stats.tx)}</div>
+                                </>
+                            )}
+                        </div>
                     </div>
-                )}
+                </div>
             </div>
 
             {/* Quick Links */}
