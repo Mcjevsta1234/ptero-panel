@@ -48,19 +48,32 @@ const SocialsSection = ({ className }: { className?: string }) => {
         { icon: GlobeIcon, label: 'Website', url: socialWebsite },
         { icon: BookOpenIcon, label: 'Knowledgebase', url: socialKnowledgebase },
         { icon: LightningBoltIcon, label: 'Trials', url: socialTrials },
-        { icon: StarIcon, label: socialCustomTitle || 'Custom Link', url: socialCustomUrl },
-        { icon: StarIcon, label: socialCustom2Title || 'Custom Link 2', url: socialCustom2Url },
-        { icon: StarIcon, label: socialCustom3Title || 'Custom Link 3', url: socialCustom3Url },
-        { icon: StarIcon, label: socialCustom4Title || 'Custom Link 4', url: socialCustom4Url },
-    ].filter((social) => social.url && social.url.trim() !== '');
+    ];
 
-    if (socials.length === 0) return null;
+    // Add custom links if they have URLs (show with custom title or default label)
+    if (socialCustomUrl && socialCustomUrl.trim() !== '') {
+        socials.push({ icon: StarIcon, label: socialCustomTitle || 'Custom Link', url: socialCustomUrl });
+    }
+    if (socialCustom2Url && socialCustom2Url.trim() !== '') {
+        socials.push({ icon: StarIcon, label: socialCustom2Title || 'Custom Link 2', url: socialCustom2Url });
+    }
+    if (socialCustom3Url && socialCustom3Url.trim() !== '') {
+        socials.push({ icon: StarIcon, label: socialCustom3Title || 'Custom Link 3', url: socialCustom3Url });
+    }
+    if (socialCustom4Url && socialCustom4Url.trim() !== '') {
+        socials.push({ icon: StarIcon, label: socialCustom4Title || 'Custom Link 4', url: socialCustom4Url });
+    }
+
+    // Filter out empty URLs from the main links
+    const filteredSocials = socials.filter((social) => social.url && social.url.trim() !== '');
+
+    if (filteredSocials.length === 0) return null;
 
     return (
         <div className={`bg-gray-700 border border-gray-600 rounded-lg p-4 ${className || ''}`}>
             <Title>Quick Links</Title>
             <Container>
-                {socials.map((social, index) => (
+                {filteredSocials.map((social, index) => (
                     <SocialLink
                         key={index}
                         href={social.url}
