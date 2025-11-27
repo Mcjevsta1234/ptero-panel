@@ -167,9 +167,6 @@ const ConsoleSidebar = () => {
                     </div>
                 </div>
             </div>
-
-            {/* Quick Links */}
-            <SocialsSection />
         </div>
     );
 };
