@@ -22,7 +22,7 @@ class AssetComposer
         $view->with('asset', $this->assetHashService);
         $view->with('siteConfiguration', [
             'name' => config('app.name') ?? 'Reviactyl',
-            'logo' => config('app.logo') ?? '/reviactyl/logo.png',
+            'logo' => config('app.logo') ?? '/witchyworlds/logo.png',
             'icon' => config('app.icon') ?? '/favicons/favicon.ico',
             'locale' => config('app.locale') ?? 'en',
             'pwa' => config('app.pwa', false),

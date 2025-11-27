@@ -3,8 +3,8 @@
 return [
     'site_title' => 'Reviactyl',
     'site_description' => 'Our official control panel made better with Reviactyl.',
-    'site_image' => '/reviactyl/logo.png',
-    'site_favicon' => '/reviactyl/icon.png',
+    'site_image' => '/witchyworlds/logo.png',
+    'site_favicon' => '/witchyworlds/icon.png',
     'site_color' => '#3b82f6',
 
     'colorPrimary' => '#3b82f6',

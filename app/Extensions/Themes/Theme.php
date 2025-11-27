@@ -16,6 +16,6 @@ class Theme
 
     protected function getUrl($path): string
     {
-        return '/themes/reviactyl/' . ltrim($path, '/');
+        return '/themes/witchyworlds/' . ltrim($path, '/');
     }
 }

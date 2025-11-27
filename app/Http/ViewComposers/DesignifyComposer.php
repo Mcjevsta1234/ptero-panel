@@ -164,8 +164,8 @@ class DesignifyComposer
             'site_color' => config('designify.site_color') ?? '#3b82f6',
             'site_title' => config('designify.site_title') ?? 'Reviactyl',
             'site_description' => config('designify.site_description') ?? 'Our official control panel made better with Reviactyl.',
-            'site_image' => config('designify.site_image') ?? '/reviactyl/logo.png',
-            'site_favicon' => config('designify.site_favicon') ?? '/reviactyl/icon.png',
+            'site_image' => config('designify.site_image') ?? '/witchyworlds/logo.png',
+            'site_favicon' => config('designify.site_favicon') ?? '/witchyworlds/icon.png',
         ];
     }
 

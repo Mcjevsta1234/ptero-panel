@@ -175,7 +175,7 @@
                 {{ $appVersion }}<br />
                 <strong><i class="fa fa-fw fa-clock-o"></i></strong> {{ round(microtime(true) - LARAVEL_START, 3) }}s
             </div>
-            Copyright &copy; {{ date('Y') }} <a href="https://reviactyl.dev/">Reviactyl</a>.
+            Copyright &copy; {{ date('Y') }} <a href="https://witchyworlds.gg/">WitchyWorlds</a>.
         </footer>
     </div>
     @section('footer-scripts')

@@ -40,7 +40,8 @@ class TelemetryCollectionService
             return;
         }
 
-        Http::post('https://telemetry.reviactyl.dev', $data);
+        // Telemetry disabled after rebrand to WitchyWorlds
+        return;
     }
 
     /**

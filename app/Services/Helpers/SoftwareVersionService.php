@@ -45,7 +45,7 @@ class SoftwareVersionService
      */
     public function getDiscord(): string
     {
-        return Arr::get(self::$result, 'discord') ?? 'https://reviactyl.dev/discord';
+        return Arr::get(self::$result, 'discord') ?? 'https://witchyworlds.gg/discord';
     }
 
     /**
@@ -87,7 +87,7 @@ class SoftwareVersionService
     {
         return $this->cache->remember(self::VERSION_CACHE_KEY, CarbonImmutable::now()->addMinutes(config('reviactyl.cdn.cache_time', 60)), function () {
             try {
-                $response = $this->client->request('GET', config('reviactyl.cdn.url'));
+                $response = $this->client->request('GET', config('witchyworlds.cdn.url'));
 
                 if ($response->getStatusCode() === 200) {
                     return json_decode($response->getBody(), true);

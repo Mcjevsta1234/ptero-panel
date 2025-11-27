@@ -36,7 +36,7 @@ return [
     | any other location as required by the application or its packages.
     */
 
-    'logo' => env('APP_LOGO', '/reviactyl/logo.png'),
+    'logo' => env('APP_LOGO', '/witchyworlds/logo.png'),
 
     /*
     |--------------------------------------------------------------------------
