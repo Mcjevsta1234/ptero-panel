@@ -15,7 +15,7 @@ const StatCard = ({
     unit 
 }: { 
     label: string; 
-    value: number | string; 
+    value: number | string | React.ReactNode; 
     max?: number; 
     unit?: string;
 }) => {
