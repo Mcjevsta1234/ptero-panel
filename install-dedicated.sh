@@ -65,17 +65,31 @@ if command -v mysqldump &> /dev/null; then
         mkdir -p /var/backups
         echo "[${timestamp}] Attempting ${mode} backup: host=${host} port=${port} db=${db} user=${user}" | tee -a "$BACKUP_LOG"
         
-        # Use mysql_config_editor credentials or pass via stdin to handle special chars
-        if mysql --host="$host" --port="$port" --user="$user" --password="$pass" -e "SELECT 1" "$db" &>> "$BACKUP_LOG"; then
-            if mysqldump --host="$host" --port="$port" --user="$user" --password="$pass" "$db" > "/var/backups/$BACKUP_FILE" 2>> "$BACKUP_LOG"; then
+        # Create temporary MySQL config file to handle special characters in password
+        local TMP_CNF=$(mktemp)
+        cat > "$TMP_CNF" <<EOF
+[client]
+host=${host}
+port=${port}
+user=${user}
+password=${pass}
+EOF
+        chmod 600 "$TMP_CNF"
+        
+        # Use config file to avoid shell escaping issues
+        if mysql --defaults-extra-file="$TMP_CNF" -e "SELECT 1" "$db" &>> "$BACKUP_LOG"; then
+            if mysqldump --defaults-extra-file="$TMP_CNF" "$db" > "/var/backups/$BACKUP_FILE" 2>> "$BACKUP_LOG"; then
+                rm -f "$TMP_CNF"
                 print_success "Database backup created: /var/backups/$BACKUP_FILE"
                 echo "Log: $BACKUP_LOG"
                 return 0
             else
+                rm -f "$TMP_CNF"
                 print_warning "mysqldump failed during ${mode} attempt. See $BACKUP_LOG"
                 return 2
             fi
         else
+            rm -f "$TMP_CNF"
             print_warning "Database connection failed during ${mode} attempt. See $BACKUP_LOG"
             return 1
         fi
