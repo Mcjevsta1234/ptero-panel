@@ -5,19 +5,6 @@ import useWebsocketEvent from '@/plugins/useWebsocketEvent';
 import { bytesToString } from '@/lib/formatters';
 import UptimeDuration from '@/components/server/UptimeDuration';
 import CopyOnClick from '@/components/elements/CopyOnClick';
-import { Line } from 'react-chartjs-2';
-import {
-    Chart as ChartJS,
-    CategoryScale,
-    LinearScale,
-    PointElement,
-    LineElement,
-    Tooltip,
-    Filler,
-    ChartOptions,
-} from 'chart.js';
-
-ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, Tooltip, Filler);
 
 type Stats = Record<'memory' | 'cpu' | 'disk' | 'uptime' | 'rx' | 'tx', number>;
 
@@ -27,6 +14,105 @@ interface DataPoint {
 }
 
 const MAX_DATA_POINTS = 20;
+
+// Custom animated graph component
+const CustomGraph = ({ data, color, max = 100 }: { data: DataPoint[]; color: string; max?: number }) => {
+    if (data.length === 0) return null;
+
+    const width = 100;
+    const height = 32;
+    const padding = 2;
+    
+    const points = data.map((point, index) => {
+        const x = (index / (MAX_DATA_POINTS - 1)) * width;
+        const normalizedValue = Math.min(100, (point.value / max) * 100);
+        const y = height - (normalizedValue / 100) * (height - padding * 2) - padding;
+        return `${x},${y}`;
+    });
+
+    const pathD = points.length > 1
+        ? `M ${points[0]} ${points.slice(1).map(p => `L ${p}`).join(' ')}`
+        : '';
+
+    const gradientId = `gradient-${color.replace('#', '')}`;
+
+    return (
+        <svg viewBox={`0 0 ${width} ${height}`} className="w-full h-full" preserveAspectRatio="none">
+            <defs>
+                <linearGradient id={gradientId} x1="0%" y1="0%" x2="0%" y2="100%">
+                    <stop offset="0%" style={{ stopColor: color, stopOpacity: 0.4 }} />
+                    <stop offset="100%" style={{ stopColor: color, stopOpacity: 0.05 }} />
+                </linearGradient>
+                <filter id="glow">
+                    <feGaussianBlur stdDeviation="1" result="coloredBlur" />
+                    <feMerge>
+                        <feMergeNode in="coloredBlur" />
+                        <feMergeNode in="SourceGraphic" />
+                    </feMerge>
+                </filter>
+            </defs>
+            
+            {/* Fill area */}
+            {pathD && (
+                <path
+                    d={`${pathD} L ${width},${height} L 0,${height} Z`}
+                    fill={`url(#${gradientId})`}
+                    opacity="0.6"
+                />
+            )}
+            
+            {/* Glow line */}
+            {pathD && (
+                <path
+                    d={pathD}
+                    stroke={color}
+                    strokeWidth="2"
+                    fill="none"
+                    filter="url(#glow)"
+                    opacity="0.8"
+                />
+            )}
+            
+            {/* Main line */}
+            {pathD && (
+                <path
+                    d={pathD}
+                    stroke={color}
+                    strokeWidth="1.5"
+                    fill="none"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                />
+            )}
+            
+            {/* Animated dots on line */}
+            {data.slice(-3).map((point, idx) => {
+                const x = ((data.length - 3 + idx) / (MAX_DATA_POINTS - 1)) * width;
+                const normalizedValue = Math.min(100, (point.value / max) * 100);
+                const y = height - (normalizedValue / 100) * (height - padding * 2) - padding;
+                return (
+                    <circle
+                        key={idx}
+                        cx={x}
+                        cy={y}
+                        r={idx === 2 ? 2 : 1.5}
+                        fill={color}
+                        opacity={idx === 2 ? 1 : 0.6}
+                    >
+                        {idx === 2 && (
+                            <animate
+                                attributeName="r"
+                                values="2;3;2"
+                                dur="2s"
+                                repeatCount="indefinite"
+                            />
+                        )}
+                    </circle>
+                );
+            })}
+        </svg>
+    );
+};
 
 const ConsoleSidebar = () => {
     const [stats, setStats] = useState<Stats>({ memory: 0, cpu: 0, disk: 0, uptime: 0, tx: 0, rx: 0 });
@@ -105,44 +191,6 @@ const ConsoleSidebar = () => {
     // Extract plan name from node (e.g., "Premium Utah" -> "premium")
     const planName = serverNode ? serverNode.split(' ')[0].toLowerCase() : 'standard';
 
-    const createChartData = (history: DataPoint[], color: string, isBytes = false) => ({
-        labels: history.map(() => ''),
-        datasets: [
-            {
-                data: isBytes ? history.map((d) => d.value / 1024 / 1024) : history.map((d) => d.value),
-                borderColor: color,
-                backgroundColor: `${color}30`,
-                fill: true,
-                tension: 0.4,
-                pointRadius: 0,
-                pointHoverRadius: 0,
-                borderWidth: 1.5,
-            },
-        ],
-    });
-
-    const chartOptions: ChartOptions<'line'> = {
-        responsive: true,
-        maintainAspectRatio: false,
-        plugins: {
-            legend: { display: false },
-            tooltip: { enabled: false },
-        },
-        scales: {
-            x: { display: false },
-            y: { display: false, min: 0 },
-        },
-        animation: { duration: 0 },
-    };
-
-    const percentChartOptions: ChartOptions<'line'> = {
-        ...chartOptions,
-        scales: {
-            x: { display: false },
-            y: { display: false, min: 0, max: 100 },
-        },
-    };
-
     return (
         <div className="flex flex-col gap-3">
             {/* Uptime - moved to top */}
@@ -199,7 +247,7 @@ const ConsoleSidebar = () => {
                 </div>
                 {cpuHistory.length > 0 && (
                     <div className="h-8">
-                        <Line data={createChartData(cpuHistory, '#3b82f6')} options={percentChartOptions} />
+                        <CustomGraph data={cpuHistory} color="#3b82f6" max={100} />
                     </div>
                 )}
             </div>
@@ -221,7 +269,7 @@ const ConsoleSidebar = () => {
                 </div>
                 {memoryHistory.length > 0 && (
                     <div className="h-8">
-                        <Line data={createChartData(memoryHistory, '#10b981')} options={percentChartOptions} />
+                        <CustomGraph data={memoryHistory} color="#10b981" max={100} />
                     </div>
                 )}
             </div>
@@ -243,7 +291,7 @@ const ConsoleSidebar = () => {
                 </div>
                 {diskHistory.length > 0 && (
                     <div className="h-8">
-                        <Line data={createChartData(diskHistory, '#a855f7')} options={percentChartOptions} />
+                        <CustomGraph data={diskHistory} color="#a855f7" max={100} />
                     </div>
                 )}
             </div>
@@ -272,7 +320,11 @@ const ConsoleSidebar = () => {
                 </div>
                 {networkHistory.length > 0 && (
                     <div className="h-8">
-                        <Line data={createChartData(networkHistory, '#06b6d4', true)} options={chartOptions} />
+                        <CustomGraph 
+                            data={networkHistory} 
+                            color="#06b6d4" 
+                            max={Math.max(...networkHistory.map(d => d.value)) || 1}
+                        />
                     </div>
                 )}
             </div>
