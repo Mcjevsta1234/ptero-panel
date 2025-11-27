@@ -40,45 +40,42 @@ const buildSmoothPath = (points: { x: number; y: number }[]) => {
     return d.join(' ');
 };
 
-// Single metric mountain graph with timed transition smoothing & gradient fill (no endpoint pulse).
+// Single metric mountain graph with continuous exponential smoothing & gradient fill (no endpoint pulse).
 const SingleMountainGraph = ({ data, color, max = 100 }: { data: DataPoint[]; color: string; max?: number }) => {
     const width = 100;
     const height = 32;
     const padding = 2;
-    const animDuration = 900; // ms for dataset morph
+    const smoothingFactor = 0.12; // Lower = smoother but slower response
     const [animated, setAnimated] = useState<number[]>(data.map(d => d.value));
-    const prevRef = useRef<number[]>(animated.slice());
-    const targetRef = useRef<number[]>(animated.slice());
-    const startRef = useRef<number | null>(null);
+    const targetRef = useRef<number[]>(data.map(d => d.value));
     const frameRef = useRef<number | null>(null);
 
-    // Kick off a morph when data changes
+    // Update target when data changes
     useEffect(() => {
-        const next = data.map(d => d.value);
-        // Align lengths
-        if (animated.length !== next.length) {
-            prevRef.current = next.slice();
-            targetRef.current = next.slice();
-            setAnimated(next.slice());
-            return; // no animation on initial fill/length change
+        targetRef.current = data.map(d => d.value);
+        // Ensure animated array matches length
+        if (animated.length !== data.length) {
+            setAnimated(data.map(d => d.value));
         }
-        prevRef.current = animated.slice();
-        targetRef.current = next;
-        startRef.current = performance.now();
-        const animate = (now: number) => {
-            if (!startRef.current) return;
-            const t = Math.min(1, (now - startRef.current) / animDuration);
-            // easeInOutCubic for smoother entry/exit
-            const eased = t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2;
-            setAnimated(prevRef.current.map((v, i) => v + (targetRef.current[i] - v) * eased));
-            if (t < 1) frameRef.current = requestAnimationFrame(animate); else frameRef.current = null;
-        };
-        if (frameRef.current) cancelAnimationFrame(frameRef.current);
-        frameRef.current = requestAnimationFrame(animate);
-        return () => { if (frameRef.current) cancelAnimationFrame(frameRef.current); };
     }, [data]);
 
-    useEffect(() => () => { if (frameRef.current) cancelAnimationFrame(frameRef.current); }, []);
+    // Continuous interpolation loop
+    useEffect(() => {
+        const animate = () => {
+            setAnimated(prev => {
+                return prev.map((val, i) => {
+                    const target = targetRef.current[i] ?? val;
+                    const delta = target - val;
+                    // Only update if difference is significant
+                    if (Math.abs(delta) < 0.01) return target;
+                    return val + delta * smoothingFactor;
+                });
+            });
+            frameRef.current = requestAnimationFrame(animate);
+        };
+        frameRef.current = requestAnimationFrame(animate);
+        return () => { if (frameRef.current) cancelAnimationFrame(frameRef.current); };
+    }, []);
 
     if (!animated.length) return null;
     const points = animated.map((val, index) => {
@@ -106,53 +103,49 @@ const SingleMountainGraph = ({ data, color, max = 100 }: { data: DataPoint[]; co
     );
 };
 
-// Dual metric (rx/tx) mirrored mountain graph with smoothing.
+// Dual metric (rx/tx) mirrored mountain graph with continuous exponential smoothing.
 const MirrorMountainGraph = ({ data, color1, color2 }: { data: NetworkDataPoint[]; color1: string; color2: string }) => {
     const width = 100;
     const height = 32;
     const centerY = height / 2;
     const maxHeight = (height / 2) - 2;
-    const animDuration = 900;
+    const smoothingFactor = 0.12;
     const [animatedRx, setAnimatedRx] = useState<number[]>(data.map(d => d.rx));
     const [animatedTx, setAnimatedTx] = useState<number[]>(data.map(d => d.tx));
-    const prevRxRef = useRef<number[]>(animatedRx.slice());
-    const prevTxRef = useRef<number[]>(animatedTx.slice());
-    const targetRxRef = useRef<number[]>(animatedRx.slice());
-    const targetTxRef = useRef<number[]>(animatedTx.slice());
-    const startRef = useRef<number | null>(null);
+    const targetRxRef = useRef<number[]>(data.map(d => d.rx));
+    const targetTxRef = useRef<number[]>(data.map(d => d.tx));
     const frameRef = useRef<number | null>(null);
 
+    // Update targets when data changes
     useEffect(() => {
-        const nextRx = data.map(d => d.rx);
-        const nextTx = data.map(d => d.tx);
-        if (animatedRx.length !== nextRx.length || animatedTx.length !== nextTx.length) {
-            prevRxRef.current = nextRx.slice();
-            prevTxRef.current = nextTx.slice();
-            targetRxRef.current = nextRx.slice();
-            targetTxRef.current = nextTx.slice();
-            setAnimatedRx(nextRx.slice());
-            setAnimatedTx(nextTx.slice());
-            return;
+        targetRxRef.current = data.map(d => d.rx);
+        targetTxRef.current = data.map(d => d.tx);
+        if (animatedRx.length !== data.length) {
+            setAnimatedRx(data.map(d => d.rx));
+            setAnimatedTx(data.map(d => d.tx));
         }
-        prevRxRef.current = animatedRx.slice();
-        prevTxRef.current = animatedTx.slice();
-        targetRxRef.current = nextRx;
-        targetTxRef.current = nextTx;
-        startRef.current = performance.now();
-        const animate = (now: number) => {
-            if (!startRef.current) return;
-            const t = Math.min(1, (now - startRef.current) / animDuration);
-            const eased = t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2;
-            setAnimatedRx(prevRxRef.current.map((v, i) => v + (targetRxRef.current[i] - v) * eased));
-            setAnimatedTx(prevTxRef.current.map((v, i) => v + (targetTxRef.current[i] - v) * eased));
-            if (t < 1) frameRef.current = requestAnimationFrame(animate); else frameRef.current = null;
-        };
-        if (frameRef.current) cancelAnimationFrame(frameRef.current);
-        frameRef.current = requestAnimationFrame(animate);
-        return () => { if (frameRef.current) cancelAnimationFrame(frameRef.current); };
     }, [data]);
 
-    useEffect(() => () => { if (frameRef.current) cancelAnimationFrame(frameRef.current); }, []);
+    // Continuous interpolation loop
+    useEffect(() => {
+        const animate = () => {
+            setAnimatedRx(prev => prev.map((val, i) => {
+                const target = targetRxRef.current[i] ?? val;
+                const delta = target - val;
+                if (Math.abs(delta) < 0.01) return target;
+                return val + delta * smoothingFactor;
+            }));
+            setAnimatedTx(prev => prev.map((val, i) => {
+                const target = targetTxRef.current[i] ?? val;
+                const delta = target - val;
+                if (Math.abs(delta) < 0.01) return target;
+                return val + delta * smoothingFactor;
+            }));
+            frameRef.current = requestAnimationFrame(animate);
+        };
+        frameRef.current = requestAnimationFrame(animate);
+        return () => { if (frameRef.current) cancelAnimationFrame(frameRef.current); };
+    }, []);
 
     if (animatedRx.length < 2 || animatedTx.length < 2) return null;
     const maxValue = Math.max(...animatedRx, ...animatedTx, 1);
