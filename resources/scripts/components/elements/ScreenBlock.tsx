@@ -7,7 +7,7 @@ import tw from 'twin.macro';
 import Button from '@/components/elements/Button';
 import NotFoundSvg from '@/assets/images/not_found.svg';
 import ServerErrorSvg from '@/assets/images/server_error.svg';
-import Card from '@/reviactyl/ui/Card';
+import Card from '@/witchyworlds/ui/Card';
 
 interface BaseProps {
     title: string;

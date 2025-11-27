@@ -8,7 +8,7 @@ import { useHistory, useLocation, useParams } from 'react-router';
 import FileNameModal from '@/components/server/files/FileNameModal';
 import Can from '@/components/elements/Can';
 import FlashMessageRender from '@/components/FlashMessageRender';
-import ContentBlock from '@/reviactyl/ui/ContentBlock';
+import ContentBlock from '@/witchyworlds/ui/ContentBlock';
 import { ServerError } from '@/components/elements/ScreenBlock';
 import tw from 'twin.macro';
 import Button from '@/components/elements/Button';
@@ -20,7 +20,7 @@ import ErrorBoundary from '@/components/elements/ErrorBoundary';
 import { encodePathSegments, hashToPath } from '@/helpers';
 import { dirname } from 'path';
 import CodemirrorEditor from '@/components/elements/CodemirrorEditor';
-import Card from '@/reviactyl/ui/Card';
+import Card from '@/witchyworlds/ui/Card';
 
 export default () => {
     const [error, setError] = useState('');

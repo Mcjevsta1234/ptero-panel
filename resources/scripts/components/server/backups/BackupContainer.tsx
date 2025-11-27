@@ -10,7 +10,7 @@ import getServerBackups, { Context as ServerBackupContext } from '@/api/swr/getS
 import { ServerContext } from '@/state/server';
 import ServerContentBlock from '@/components/elements/ServerContentBlock';
 import Pagination from '@/components/elements/Pagination';
-import Card from '@/reviactyl/ui/Card';
+import Card from '@/witchyworlds/ui/Card';
 import { ArchiveIcon } from '@heroicons/react/solid';
 import { useTranslation } from 'react-i18next';
 

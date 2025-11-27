@@ -7,7 +7,7 @@
     <title>Designify Editor - @yield('title')</title>
     <meta content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" name="viewport">
     <meta name="_token" content="{{ csrf_token() }}">
-    <link rel="shortcut icon" href="/reviactyl/designify.png">
+    <link rel="shortcut icon" href="/witchyworlds/designify.png">
     <meta name="msapplication-config" content="/favicons/browserconfig.xml">
 
 
@@ -164,7 +164,7 @@
                         <div
                             class="w-full h-full bg-zinc-800/80 border border-zinc-600 rounded-xl text-center p-10 flex flex-col items-center justify-center">
                             <div class="flex items-center justify-center space-x-2 mb-2">
-                                <img src="/reviactyl/designify.png" class="h-10" alt="logo" />
+                                <img src="/witchyworlds/designify.png" class="h-10" alt="logo" />
                                 <h1 class="text-white text-3xl font-semibold">Designify</h1>
                             </div>
                             <p class="text-gray-400 text-sm mb-8">v{{ config('app.version') }}</p>

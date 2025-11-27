@@ -32,20 +32,20 @@ SOFTWARE.
         <meta content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" name="viewport">
         <meta name="csrf-token" content="{{ csrf_token() }}">
         <meta name="robots" content="noindex">
-        <meta name="title" content="{{ $reviactylConfiguration['site_title'] }}" />
-        <meta name="description" content="{{ $reviactylConfiguration['site_description'] }}" />
+        <meta name="title" content="{{ $witchyworldsConfiguration['site_title'] }}" />
+        <meta name="description" content="{{ $witchyworldsConfiguration['site_description'] }}" />
         <link rel="icon" type="image/x-icon" href="{{ $siteConfiguration['icon'] }}">
         @if ($siteConfiguration['pwa'])
         <link rel="manifest" href="{{ url('manifest.json') }}">
         <link rel="apple-touch-icon" href="{{ asset('favicons/android-icon-192x192.png') }}">
         <meta name="apple-mobile-web-app-capable" content="yes">
         @endif
-        <meta name="theme-color" content="{{ $reviactylConfiguration['site_color'] }}" />
+        <meta name="theme-color" content="{{ $witchyworldsConfiguration['site_color'] }}" />
         <meta property="og:type" content="website" />
         <meta property="og:url" content="{{ config('app.url', 'https://localhost') }}" />
-        <meta property="og:title" content="{{ $reviactylConfiguration['site_title'] }}" />
-        <meta property="og:description" content="{{ $reviactylConfiguration['site_description'] }}" />
-        <meta property="og:image" content="{{ $reviactylConfiguration['site_image'] }}" />
+        <meta property="og:title" content="{{ $witchyworldsConfiguration['site_title'] }}" />
+        <meta property="og:description" content="{{ $witchyworldsConfiguration['site_description'] }}" />
+        <meta property="og:image" content="{{ $witchyworldsConfiguration['site_image'] }}" />
     @show
 
     @section('user-data')
@@ -59,14 +59,14 @@ SOFTWARE.
                 window.SiteConfiguration = {!! json_encode($siteConfiguration) !!};
             </script>
         @endif
-        @if (!empty($reviactylConfiguration))
+        @if (!empty($witchyworldsConfiguration))
             <script>
-                window.ReviactylConfiguration = {!! json_encode($reviactylConfiguration) !!};
+                window.WitchyWorldsConfiguration = {!! json_encode($witchyworldsConfiguration) !!};
             </script>
         @endif
     @show
     @php
-        function reviactyl($hex)
+        function witchyworlds($hex)
         {
             $hex = str_replace('#', '', $hex);
             if (strlen($hex) === 3) {
@@ -84,26 +84,26 @@ SOFTWARE.
     <style>
         @import url('//fonts.googleapis.com/css?family=Rubik:300,400,500&display=swap');
         @import url('//fonts.googleapis.com/css?family=IBM+Plex+Mono|IBM+Plex+Sans:500&display=swap');
-        @import url('//fonts.googleapis.com/css2?family={{ $reviactylConfiguration['fontFamily'] }}:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&display=swap');
+        @import url('//fonts.googleapis.com/css2?family={{ $witchyworldsConfiguration['fontFamily'] }}:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&display=swap');
 
         :root {
-            --background: url({{ $reviactylConfiguration['background'] }});
-            --radius: {{ $reviactylConfiguration['radius'] }};
-            --font-family: "{{ $reviactylConfiguration['fontFamily'] }}", sans-serif;
-            --color-primary: {{ reviactyl($reviactylConfiguration['colorPrimary']) }};
-            --color-success: {{ reviactyl($reviactylConfiguration['colorSuccess']) }};
-            --color-danger: {{ reviactyl($reviactylConfiguration['colorDanger']) }};
-            --color-secondary: {{ reviactyl($reviactylConfiguration['colorSecondary']) }};
-            --color-50: {{ reviactyl($reviactylConfiguration['color50']) }};
-            --color-100: {{ reviactyl($reviactylConfiguration['color100']) }};
-            --color-200: {{ reviactyl($reviactylConfiguration['color200']) }};
-            --color-300: {{ reviactyl($reviactylConfiguration['color300']) }};
-            --color-400: {{ reviactyl($reviactylConfiguration['color400']) }};
-            --color-500: {{ reviactyl($reviactylConfiguration['color500']) }};
-            --color-600: {{ reviactyl($reviactylConfiguration['color600']) }};
-            --color-700: {{ reviactyl($reviactylConfiguration['color700']) }};
-            --color-800: {{ reviactyl($reviactylConfiguration['color800']) }};
-            --color-900: {{ reviactyl($reviactylConfiguration['color900']) }};
+            --background: url({{ $witchyworldsConfiguration['background'] }});
+            --radius: {{ $witchyworldsConfiguration['radius'] }};
+            --font-family: "{{ $witchyworldsConfiguration['fontFamily'] }}", sans-serif;
+            --color-primary: {{ witchyworlds($witchyworldsConfiguration['colorPrimary']) }};
+            --color-success: {{ witchyworlds($witchyworldsConfiguration['colorSuccess']) }};
+            --color-danger: {{ witchyworlds($witchyworldsConfiguration['colorDanger']) }};
+            --color-secondary: {{ witchyworlds($witchyworldsConfiguration['colorSecondary']) }};
+            --color-50: {{ witchyworlds($witchyworldsConfiguration['color50']) }};
+            --color-100: {{ witchyworlds($witchyworldsConfiguration['color100']) }};
+            --color-200: {{ witchyworlds($witchyworldsConfiguration['color200']) }};
+            --color-300: {{ witchyworlds($witchyworldsConfiguration['color300']) }};
+            --color-400: {{ witchyworlds($witchyworldsConfiguration['color400']) }};
+            --color-500: {{ witchyworlds($witchyworldsConfiguration['color500']) }};
+            --color-600: {{ witchyworlds($witchyworldsConfiguration['color600']) }};
+            --color-700: {{ witchyworlds($witchyworldsConfiguration['color700']) }};
+            --color-800: {{ witchyworlds($witchyworldsConfiguration['color800']) }};
+            --color-900: {{ witchyworlds($witchyworldsConfiguration['color900']) }};
         }
     </style>
 

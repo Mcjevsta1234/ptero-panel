@@ -11,7 +11,7 @@ import classNames from 'classnames';
 import ActivityLogEntry from '@/components/elements/activity/ActivityLogEntry';
 import Tooltip from '@/components/elements/tooltip/Tooltip';
 import useLocationHash from '@/plugins/useLocationHash';
-import ContentBlock from '@/reviactyl/ui/ContentBlock';
+import ContentBlock from '@/witchyworlds/ui/ContentBlock';
 import { useTranslation } from 'react-i18next';
 
 export default () => {

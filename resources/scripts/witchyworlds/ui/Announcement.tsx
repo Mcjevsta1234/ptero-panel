@@ -1,7 +1,7 @@
 import React from 'react';
 import { useStoreState } from 'easy-peasy';
 import { ApplicationStore } from '@/state';
-import Md2React from '@/reviactyl/ui/Md2React';
+import Md2React from '@/witchyworlds/ui/Md2React';
 import { BellIcon, CheckIcon, ExclamationIcon, InboxInIcon, InformationCircleIcon } from '@heroicons/react/solid';
 import styled from 'styled-components/macro';
 import tw from 'twin.macro';
@@ -15,8 +15,8 @@ const AlertContainer = styled.div`
 `;
 
 const Announcement = () => {
-    const alertType = useStoreState((state: ApplicationStore) => state.reviactyl.data!.alertType);
-    const alertMessage = useStoreState((state: ApplicationStore) => state.reviactyl.data!.alertMessage);
+    const alertType = useStoreState((state: ApplicationStore) => state.witchyworlds.data!.alertType);
+    const alertMessage = useStoreState((state: ApplicationStore) => state.witchyworlds.data!.alertMessage);
     return (
         <Container>
             {alertType !== 'disabled' ? (
@@ -26,7 +26,7 @@ const Announcement = () => {
                    alertType === 'info'
                        ? 'bg-blue-500/10 border-blue-500'
                        : alertType === 'announcement'
-                       ? 'bg-reviactyl/10 border-reviactyl'
+                       ? 'bg-witchyworlds/10 border-witchyworlds'
                        : alertType === 'danger'
                        ? 'bg-danger/10 border-danger'
                        : alertType === 'success'
@@ -41,7 +41,7 @@ const Announcement = () => {
                         {alertType === 'info' ? (
                             <InformationCircleIcon className='h-5 w-5 font-bold !text-blue-500' />
                         ) : alertType === 'announcement' ? (
-                            <BellIcon className='h-5 w-5 font-bold !text-reviactyl' />
+                            <BellIcon className='h-5 w-5 font-bold !text-witchyworlds' />
                         ) : alertType === 'danger' ? (
                             <InboxInIcon className='h-5 w-5 font-bold !text-danger/50' />
                         ) : alertType === 'success' ? (

@@ -3,8 +3,8 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { IconProp } from '@fortawesome/fontawesome-svg-core';
 import tw from 'twin.macro';
 import isEqual from 'react-fast-compare';
-import Card from '@/reviactyl/ui/Card';
-import Title from '@/reviactyl/ui/Title';
+import Card from '@/witchyworlds/ui/Card';
+import Title from '@/witchyworlds/ui/Title';
 import FlashMessageRender from '@/components/FlashMessageRender';
 
 interface Props {

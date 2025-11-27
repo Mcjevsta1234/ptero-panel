@@ -3,7 +3,7 @@ import React from 'react';
 import { ServerContext } from '@/state/server';
 import { ApplicationStore } from '@/state';
 import { useStoreState } from 'easy-peasy';
-import Title from '@/reviactyl/ui/Title';
+import Title from '@/witchyworlds/ui/Title';
 
 interface Props extends PageContentBlockProps {
     title: string;

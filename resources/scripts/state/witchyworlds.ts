@@ -1,6 +1,6 @@
 import { action, Action } from 'easy-peasy';
 
-export interface ReviactylSettings {
+export interface WitchyWorldsSettings {
     customCopyright: boolean;
     copyright: string;
     isUnderMaintenance: boolean;
@@ -15,17 +15,17 @@ export interface ReviactylSettings {
     socialWebsite?: string;
 }
 
-export interface ReviactylSettingsStore {
-    data?: ReviactylSettings;
-    setReviactyl: Action<ReviactylSettingsStore, ReviactylSettings>;
+export interface WitchyWorldsSettingsStore {
+    data?: WitchyWorldsSettings;
+    setWitchyWorlds: Action<WitchyWorldsSettingsStore, WitchyWorldsSettings>;
 }
 
-const reviactyl: ReviactylSettingsStore = {
+const witchyworlds: WitchyWorldsSettingsStore = {
     data: undefined,
 
-    setReviactyl: action((state, payload) => {
+    setWitchyWorlds: action((state, payload) => {
         state.data = payload;
     }),
 };
 
-export default reviactyl;
+export default witchyworlds;

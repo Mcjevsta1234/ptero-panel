@@ -7,13 +7,13 @@ import CopyOnClick from '@/components/elements/CopyOnClick';
 import { ExternalLinkIcon } from '@heroicons/react/solid';
 import Can from '@/components/elements/Can';
 import { bytesToString, ip, mbToBytes } from '@/lib/formatters';
-import Card from '@/reviactyl/ui/Card';
+import Card from '@/witchyworlds/ui/Card';
 import styled from 'styled-components/macro';
 import tw from 'twin.macro';
-import Title from '@/reviactyl/ui/Title';
-import { StatBlock } from '@/reviactyl/ui/StatBlock';
+import Title from '@/witchyworlds/ui/Title';
+import { StatBlock } from '@/witchyworlds/ui/StatBlock';
 import { useStoreState } from 'easy-peasy';
-import Blur from '@/reviactyl/ui/Blur';
+import Blur from '@/witchyworlds/ui/Blur';
 import { useTranslation } from 'react-i18next';
 import { FaFloppyDisk, FaGlobe, FaHashtag, FaMemory, FaMicrochip } from 'react-icons/fa6';
 

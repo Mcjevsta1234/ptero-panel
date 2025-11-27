@@ -1,6 +1,6 @@
 const colors = require('tailwindcss/colors');
 
-function reviactyl(variable) {
+function witchyworlds(variable) {
   return ({ opacityValue }) =>
     opacityValue !== undefined
       ? `rgb(var(${variable}) / ${opacityValue})`
@@ -8,16 +8,16 @@ function reviactyl(variable) {
 }
 
 const gray = {
-    50: reviactyl('--color-50'),
-    100: reviactyl('--color-100'),
-    200: reviactyl('--color-200'),
-    300: reviactyl('--color-300'),
-    400: reviactyl('--color-400'),
-    500: reviactyl('--color-500'),
-    600: reviactyl('--color-600'),
-    700: reviactyl('--color-700'),
-    800: reviactyl('--color-800'),
-    900: reviactyl('--color-900'),
+    50: witchyworlds('--color-50'),
+    100: witchyworlds('--color-100'),
+    200: witchyworlds('--color-200'),
+    300: witchyworlds('--color-300'),
+    400: witchyworlds('--color-400'),
+    500: witchyworlds('--color-500'),
+    600: witchyworlds('--color-600'),
+    700: witchyworlds('--color-700'),
+    800: witchyworlds('--color-800'),
+    900: witchyworlds('--color-900'),
 };
 
 module.exports = {
@@ -38,10 +38,10 @@ module.exports = {
                 gray: gray,
                 neutral: gray,
                 cyan: colors.cyan,
-                reviactyl: reviactyl('--color-primary'),
-                success: reviactyl('--color-success'),
-                danger: reviactyl('--color-danger'),
-                secondary: reviactyl('--color-secondary'),
+                witchyworlds: witchyworlds('--color-primary'),
+                success: witchyworlds('--color-success'),
+                danger: witchyworlds('--color-danger'),
+                secondary: witchyworlds('--color-secondary'),
             },
             fontSize: {
                 '2xs': '0.625rem',

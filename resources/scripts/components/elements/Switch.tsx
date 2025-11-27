@@ -12,7 +12,7 @@ const ToggleContainer = styled.div`
         ${tw`hidden`};
 
         &:checked + label {
-            ${tw`bg-reviactyl border-reviactyl/80 shadow-none`};
+            ${tw`bg-witchyworlds border-witchyworlds/80 shadow-none`};
         }
 
         &:checked + label:before {

@@ -1,7 +1,7 @@
 import TransferListener from '@/components/server/TransferListener';
 import React, { useEffect, useState } from 'react';
 import { NavLink, Route, Switch, useRouteMatch } from 'react-router-dom';
-import Navbar from '@/reviactyl/ui//Navbar';
+import Navbar from '@/witchyworlds/ui//Navbar';
 import TransitionRouter from '@/TransitionRouter';
 import WebsocketHandler from '@/components/server/WebsocketHandler';
 import { ServerContext } from '@/state/server';
@@ -17,17 +17,17 @@ import { useLocation } from 'react-router';
 import ConflictStateRenderer from '@/components/server/ConflictStateRenderer';
 import PermissionRoute from '@/components/elements/PermissionRoute';
 import routes from '@/routers/routes';
-import Sidebar from '@/reviactyl/ui/Sidebar';
+import Sidebar from '@/witchyworlds/ui/Sidebar';
 import { XIcon, MenuIcon } from '@heroicons/react/solid';
-import { LogoContainer } from '@/reviactyl/ui/LogoContainer';
+import { LogoContainer } from '@/witchyworlds/ui/LogoContainer';
 import tw from 'twin.macro';
-import { RouterContainer } from '@/reviactyl/ui/RouterContainer';
-import { ContentContainer } from '@/reviactyl/ui/ContentContainer';
+import { RouterContainer } from '@/witchyworlds/ui/RouterContainer';
+import { ContentContainer } from '@/witchyworlds/ui/ContentContainer';
 import TopServerDetails from '@/components/server/TopServerDetails';
 import { ApplicationStore } from '@/state';
-import Announcement from '@/reviactyl/ui/Announcement';
-import MaintenanceAlert from '@/reviactyl/ui/MaintenanceAlert';
-import Maintenance from '@/reviactyl/ui/Maintenance';
+import Announcement from '@/witchyworlds/ui/Announcement';
+import MaintenanceAlert from '@/witchyworlds/ui/MaintenanceAlert';
+import Maintenance from '@/witchyworlds/ui/Maintenance';
 import { useTranslation } from 'react-i18next';
 
 interface Props {
@@ -94,7 +94,7 @@ export default () => {
     const match = useRouteMatch<{ id: string }>();
     const location = useLocation();
 
-    const isUnderMaintenance = useStoreState((state) => state.reviactyl.data?.isUnderMaintenance);
+    const isUnderMaintenance = useStoreState((state) => state.witchyworlds.data?.isUnderMaintenance);
     const rootAdmin = useStoreState((state) => state.user.data?.rootAdmin);
     const [error, setError] = useState('');
     const [isSidebarOpen, setSidebarOpen] = useState(false);

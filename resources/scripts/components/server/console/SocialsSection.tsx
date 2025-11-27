@@ -2,7 +2,7 @@ import React from 'react';
 import styled from 'styled-components/macro';
 import tw from 'twin.macro';
 import { useStoreState } from 'easy-peasy';
-import Card from '@/reviactyl/ui/Card';
+import Card from '@/witchyworlds/ui/Card';
 import { CreditCardIcon, StatusOnlineIcon, ChatAlt2Icon, GlobeIcon } from '@heroicons/react/solid';
 
 const Container = styled.div`
@@ -13,7 +13,7 @@ const SocialLink = styled.a`
     ${tw`flex items-center gap-3 p-3 bg-gray-700 border border-gray-600 rounded-ui text-gray-200 hover:text-white hover:bg-gray-600 transition-all duration-150 no-underline`}
 
     & > svg {
-        ${tw`w-5 h-5 text-reviactyl flex-shrink-0`}
+        ${tw`w-5 h-5 text-witchyworlds flex-shrink-0`}
     }
 
     & > span {
@@ -26,10 +26,10 @@ const Title = styled.h3`
 `;
 
 const SocialsSection = () => {
-    const socialBilling = useStoreState((state) => state.reviactyl.data?.socialBilling);
-    const socialStatus = useStoreState((state) => state.reviactyl.data?.socialStatus);
-    const socialDiscord = useStoreState((state) => state.reviactyl.data?.socialDiscord);
-    const socialWebsite = useStoreState((state) => state.reviactyl.data?.socialWebsite);
+    const socialBilling = useStoreState((state) => state.witchyworlds.data?.socialBilling);
+    const socialStatus = useStoreState((state) => state.witchyworlds.data?.socialStatus);
+    const socialDiscord = useStoreState((state) => state.witchyworlds.data?.socialDiscord);
+    const socialWebsite = useStoreState((state) => state.witchyworlds.data?.socialWebsite);
 
     const socials = [
         { icon: CreditCardIcon, label: 'Billing Area', url: socialBilling },

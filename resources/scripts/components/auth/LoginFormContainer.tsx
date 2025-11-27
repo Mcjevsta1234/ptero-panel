@@ -2,13 +2,13 @@ import React, { forwardRef } from 'react';
 import { Form } from 'formik';
 import styled from 'styled-components/macro';
 import FlashMessageRender from '@/components/FlashMessageRender';
-import Card from '@/reviactyl/ui/Card';
-import Title from '@/reviactyl/ui/Title';
-import { LogoContainer } from '@/reviactyl/ui/LogoContainer';
+import Card from '@/witchyworlds/ui/Card';
+import Title from '@/witchyworlds/ui/Title';
+import { LogoContainer } from '@/witchyworlds/ui/LogoContainer';
 import tw from 'twin.macro';
 import { ApplicationStore } from '@/state';
 import { useStoreState } from 'easy-peasy';
-import Footer from '@/reviactyl/ui/Footer';
+import Footer from '@/witchyworlds/ui/Footer';
 
 type Props = React.DetailedHTMLProps<React.FormHTMLAttributes<HTMLFormElement>, HTMLFormElement> & {
     title?: string;

@@ -8,20 +8,20 @@ import { breakpoint } from '@/theme';
 import styled from 'styled-components/macro';
 import MessageBox from '@/components/MessageBox';
 import { useLocation } from 'react-router-dom';
-import ContentBlock from '@/reviactyl/ui/ContentBlock';
-import Card from '@/reviactyl/ui/Card';
-import Gravatar from '@/reviactyl/ui/Avatar';
+import ContentBlock from '@/witchyworlds/ui/ContentBlock';
+import Card from '@/witchyworlds/ui/Card';
+import Gravatar from '@/witchyworlds/ui/Avatar';
 import { useStoreState } from 'easy-peasy';
 import { ApplicationStore } from '@/state';
 import TitledGreyBox from '../elements/TitledGreyBox';
-import Title from '@/reviactyl/ui/Title';
+import Title from '@/witchyworlds/ui/Title';
 import { ExternalLinkIcon, LogoutIcon } from '@heroicons/react/solid';
 import http from '@/api/http';
-import ThemeSelector from '@/reviactyl/ui/ThemeEngine';
+import ThemeSelector from '@/witchyworlds/ui/ThemeEngine';
 import SpinnerOverlay from '@/components/elements/SpinnerOverlay';
 import { useTranslation } from 'react-i18next';
-import LanguageSwitcher from '@/reviactyl/ui/LanguageSwitcher';
-import { InvertToggle } from '@/reviactyl/ui/SmartInvert';
+import LanguageSwitcher from '@/witchyworlds/ui/LanguageSwitcher';
+import { InvertToggle } from '@/witchyworlds/ui/SmartInvert';
 
 const Container = styled.div`
     ${tw`flex flex-wrap`};
@@ -47,7 +47,7 @@ export default () => {
     const rootAdmin = useStoreState((state) => state.user.data!.rootAdmin);
     const name = useStoreState((state: ApplicationStore) => state.settings.data!.name);
     const [isLoggingOut, setIsLoggingOut] = useState(false);
-    const themeSelector = useStoreState((state) => state.reviactyl.data!.themeSelector);
+    const themeSelector = useStoreState((state) => state.witchyworlds.data!.themeSelector);
     const onTriggerLogout = () => {
         setIsLoggingOut(true);
         http.post('/auth/logout').finally(() => {

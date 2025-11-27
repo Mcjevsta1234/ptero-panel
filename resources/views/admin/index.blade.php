@@ -45,7 +45,7 @@
         </div>
         <div class="clearfix visible-xs-block">&nbsp;</div>
         <div class="col-xs-6 col-sm-3 text-center">
-            <a href="https://github.com/reviactyl/panel"><button class="btn btn-primary" style="width:100%;"><i
+            <a href="https://github.com/witchyworlds/panel"><button class="btn btn-primary" style="width:100%;"><i
                         class="fa fa-fw fa-github"></i> Github</button></a>
         </div>
         <div class="col-xs-6 col-sm-3 text-center">
@@ -64,7 +64,7 @@
                     <p class="box-text">
                         @lang('admin/index.feedback-body')
                     </p>
-                    <a href="https://github.com/reviactyl/panel/issues" class="btn btn-primary"><i class="fa fa-fw fa-github"></i> @lang('admin/index.feedback-btn')</a>
+                    <a href="https://github.com/witchyworlds/panel/issues" class="btn btn-primary"><i class="fa fa-fw fa-github"></i> @lang('admin/index.feedback-btn')</a>
                 </div>
             </div>
         </div>

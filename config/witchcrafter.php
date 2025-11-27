@@ -1,10 +1,10 @@
 <?php
 
 return [
-    'site_title' => 'Reviactyl',
-    'site_description' => 'Our official control panel made better with Reviactyl.',
-    'site_image' => '/reviactyl/logo.png',
-    'site_favicon' => '/reviactyl/icon.png',
+    'site_title' => 'WitchyWorlds',
+    'site_description' => 'Our official control panel made better with WitchyWorlds.',
+    'site_image' => '/witchyworlds/logo.png',
+    'site_favicon' => '/witchyworlds/icon.png',
     'site_color' => '#3b82f6',
 
     'colorPrimary' => '#3b82f6',
@@ -36,7 +36,7 @@ return [
     'maintenance' => 'We are currently under maintenance. Kindly check back later!',
 
     'alertType' => 'info',
-    'alertMessage' => '**Welcome to Reviactyl!** You can modify Theme Look & Feel using [Designify](/admin/designify) at the administration area.',
+    'alertMessage' => '**Welcome to WitchyWorlds!** You can modify Theme Look & Feel using [Witchcrafter](/admin/witchcrafter) at the administration area.',
 
     'socialBilling' => 'https://client.witchyworlds.top',
     'socialStatus' => 'https://status.witchyworlds.top',

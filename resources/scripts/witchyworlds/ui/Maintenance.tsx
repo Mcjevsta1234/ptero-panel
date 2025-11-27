@@ -2,11 +2,11 @@ import React, { useState } from 'react';
 import PageContentBlock from '@/components/elements/PageContentBlock';
 import { ApplicationStore } from '@/state';
 import { useStoreState } from 'easy-peasy';
-import Card from '@/reviactyl/ui/Card';
-import Title from '@/reviactyl/ui/Title';
+import Card from '@/witchyworlds/ui/Card';
+import Title from '@/witchyworlds/ui/Title';
 import tw from 'twin.macro';
 import styled from 'styled-components/macro';
-import { LogoContainer } from '@/reviactyl/ui/LogoContainer';
+import { LogoContainer } from '@/witchyworlds/ui/LogoContainer';
 import http from '@/api/http';
 import SpinnerOverlay from '@/components/elements/SpinnerOverlay';
 import { LogoutIcon } from '@heroicons/react/solid';
@@ -22,7 +22,7 @@ const CardContainer = styled.div`
 export default () => {
     const logo = useStoreState((state: ApplicationStore) => state.settings.data!.logo);
     const name = useStoreState((state: ApplicationStore) => state.settings.data!.name);
-    const maintenance = useStoreState((state) => state.reviactyl.data!.maintenance);
+    const maintenance = useStoreState((state) => state.witchyworlds.data!.maintenance);
     const [isLoggingOut, setIsLoggingOut] = useState(false);
     const onTriggerLogout = () => {
         setIsLoggingOut(true);

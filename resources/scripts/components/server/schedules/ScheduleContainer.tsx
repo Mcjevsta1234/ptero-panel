@@ -13,7 +13,7 @@ import tw from 'twin.macro';
 import GreyRowBox from '@/components/elements/GreyRowBox';
 import { Button } from '@/components/elements/button/index';
 import ServerContentBlock from '@/components/elements/ServerContentBlock';
-import Card from '@/reviactyl/ui/Card';
+import Card from '@/witchyworlds/ui/Card';
 import { ClockIcon } from '@heroicons/react/solid';
 import { useTranslation } from 'react-i18next';
 

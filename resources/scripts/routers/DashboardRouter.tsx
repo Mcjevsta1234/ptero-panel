@@ -6,19 +6,19 @@ import TransitionRouter from '@/TransitionRouter';
 import { useLocation } from 'react-router';
 import Spinner from '@/components/elements/Spinner';
 import routes from '@/routers/routes';
-import { RouterContainer } from '@/reviactyl/ui/RouterContainer';
-import Navbar from '@/reviactyl/ui/Navbar';
-import { LogoContainer } from '@/reviactyl/ui/LogoContainer';
+import { RouterContainer } from '@/witchyworlds/ui/RouterContainer';
+import Navbar from '@/witchyworlds/ui/Navbar';
+import { LogoContainer } from '@/witchyworlds/ui/LogoContainer';
 import { XIcon, MenuIcon } from '@heroicons/react/solid';
 import tw from 'twin.macro';
-import { ContentContainer } from '@/reviactyl/ui/ContentContainer';
+import { ContentContainer } from '@/witchyworlds/ui/ContentContainer';
 import { CSSTransition } from 'react-transition-group';
-import Sidebar from '@/reviactyl/ui/Sidebar';
+import Sidebar from '@/witchyworlds/ui/Sidebar';
 import { ApplicationStore } from '@/state';
 import { useStoreState } from 'easy-peasy';
-import Announcement from '@/reviactyl/ui/Announcement';
-import MaintenanceAlert from '@/reviactyl/ui/MaintenanceAlert';
-import Maintenance from '@/reviactyl/ui/Maintenance';
+import Announcement from '@/witchyworlds/ui/Announcement';
+import MaintenanceAlert from '@/witchyworlds/ui/MaintenanceAlert';
+import Maintenance from '@/witchyworlds/ui/Maintenance';
 import { useTranslation } from 'react-i18next';
 
 interface Props {
@@ -57,7 +57,7 @@ export default () => {
     const [isSidebarOpen, setSidebarOpen] = useState(false);
     const logo = useStoreState((state: ApplicationStore) => state.settings.data!.logo);
     const name = useStoreState((state: ApplicationStore) => state.settings.data!.name);
-    const isUnderMaintenance = useStoreState((state) => state.reviactyl.data?.isUnderMaintenance);
+    const isUnderMaintenance = useStoreState((state) => state.witchyworlds.data?.isUnderMaintenance);
     const rootAdmin = useStoreState((state) => state.user.data?.rootAdmin);
     return (
         <>

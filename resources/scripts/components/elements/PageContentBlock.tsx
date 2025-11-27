@@ -3,7 +3,7 @@ import ContentContainer from '@/components/elements/ContentContainer';
 import { CSSTransition } from 'react-transition-group';
 import tw from 'twin.macro';
 import FlashMessageRender from '@/components/FlashMessageRender';
-import Footer from '@/reviactyl/ui/Footer';
+import Footer from '@/witchyworlds/ui/Footer';
 
 export interface PageContentBlockProps {
     title?: string;

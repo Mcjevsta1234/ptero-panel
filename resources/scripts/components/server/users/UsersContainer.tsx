@@ -11,7 +11,7 @@ import { httpErrorToHuman } from '@/api/http';
 import Can from '@/components/elements/Can';
 import ServerContentBlock from '@/components/elements/ServerContentBlock';
 import tw from 'twin.macro';
-import Card from '@/reviactyl/ui/Card';
+import Card from '@/witchyworlds/ui/Card';
 import { UsersIcon } from '@heroicons/react/solid';
 import { useTranslation } from 'react-i18next';
 

@@ -13,8 +13,8 @@ import useSWR from 'swr';
 import { PaginatedResult } from '@/api/http';
 import Pagination from '@/components/elements/Pagination';
 import { useLocation } from 'react-router-dom';
-import Card from '@/reviactyl/ui/Card';
-import Title from '@/reviactyl/ui/Title';
+import Card from '@/witchyworlds/ui/Card';
+import Title from '@/witchyworlds/ui/Title';
 import { EmojiSadIcon } from '@heroicons/react/solid';
 import { useTranslation } from 'react-i18next';
 

@@ -12,7 +12,7 @@ import tw from 'twin.macro';
 import Fade from '@/components/elements/Fade';
 import ServerContentBlock from '@/components/elements/ServerContentBlock';
 import { useDeepMemoize } from '@/plugins/useDeepMemoize';
-import Card from '@/reviactyl/ui/Card';
+import Card from '@/witchyworlds/ui/Card';
 import { DatabaseIcon } from '@heroicons/react/solid';
 import { useTranslation } from 'react-i18next';
 

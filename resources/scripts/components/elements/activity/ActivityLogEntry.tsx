@@ -8,11 +8,11 @@ import ActivityLogMetaButton from '@/components/elements/activity/ActivityLogMet
 import { FolderOpenIcon, TerminalIcon } from '@heroicons/react/solid';
 import classNames from 'classnames';
 import style from './style.module.css';
-import Avatar from '@/reviactyl/ui/Avatar';
+import Avatar from '@/witchyworlds/ui/Avatar';
 import useLocationHash from '@/plugins/useLocationHash';
 import { getObjectKeys, isObject } from '@/lib/objects';
 import { useTranslation } from 'react-i18next';
-import Blur from '@/reviactyl/ui/Blur';
+import Blur from '@/witchyworlds/ui/Blur';
 
 interface Props {
     activity: ActivityLog;

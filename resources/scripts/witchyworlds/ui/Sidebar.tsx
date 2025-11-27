@@ -2,7 +2,7 @@ import React from 'react';
 import styled from 'styled-components/macro';
 import tw from 'twin.macro';
 import { Link, NavLink } from 'react-router-dom';
-import Avatar from '@/reviactyl/ui/Avatar';
+import Avatar from '@/witchyworlds/ui/Avatar';
 import { useStoreState } from 'easy-peasy';
 import { ApplicationStore } from '@/state';
 import { ExternalLinkIcon } from '@heroicons/react/solid';
@@ -55,7 +55,7 @@ export const SideNavigation = styled.div`
         &:hover,
         &:focus,
         &.active {
-            ${tw`text-reviactyl`};
+            ${tw`text-witchyworlds`};
             background-color: rgb(var(--color-primary) / 0.2);
         }
     }

@@ -4,7 +4,7 @@ import { Route, Router, Switch } from 'react-router-dom';
 import { StoreProvider } from 'easy-peasy';
 import { store } from '@/state';
 import { SiteSettings } from '@/state/settings';
-import { ReviactylSettings } from '@/state/reviactyl';
+import { WitchyWorldsSettings } from '@/state/witchyworlds';
 import ProgressBar from '@/components/elements/ProgressBar';
 import { NotFound } from '@/components/elements/ScreenBlock';
 import tw from 'twin.macro';
@@ -15,9 +15,9 @@ import AuthenticatedRoute from '@/components/elements/AuthenticatedRoute';
 import { ServerContext } from '@/state/server';
 import '@/assets/tailwind.css';
 import Spinner from '@/components/elements/Spinner';
-import { ThemeLoader } from '@/reviactyl/ui/ThemeEngine';
-import { Invert } from '@/reviactyl/ui/SmartInvert';
-import { LocaleLoader } from '@/reviactyl/ui/LanguageSwitcher';
+import { ThemeLoader } from '@/witchyworlds/ui/ThemeEngine';
+import { Invert } from '@/witchyworlds/ui/SmartInvert';
+import { LocaleLoader } from '@/witchyworlds/ui/LanguageSwitcher';
 
 const DashboardRouter = lazy(() => import(/* webpackChunkName: "dashboard" */ '@/routers/DashboardRouter'));
 const ServerRouter = lazy(() => import(/* webpackChunkName: "server" */ '@/routers/ServerRouter'));
@@ -25,7 +25,7 @@ const AuthenticationRouter = lazy(() => import(/* webpackChunkName: "auth" */ '@
 
 interface ExtendedWindow extends Window {
     SiteConfiguration?: SiteSettings;
-    ReviactylConfiguration?: ReviactylSettings;
+    WitchyWorldsConfiguration?: WitchyWorldsSettings;
     PterodactylUser?: {
         uuid: string;
         username: string;
@@ -45,7 +45,7 @@ interface ExtendedWindow extends Window {
 setupInterceptors(history);
 
 const App = () => {
-    const { PterodactylUser, SiteConfiguration, ReviactylConfiguration } = window as ExtendedWindow;
+    const { PterodactylUser, SiteConfiguration, WitchyWorldsConfiguration } = window as ExtendedWindow;
     if (PterodactylUser && !store.getState().user.data) {
         store.getActions().user.setUserData({
             uuid: PterodactylUser.uuid,
@@ -65,8 +65,8 @@ const App = () => {
         store.getActions().settings.setSettings(SiteConfiguration!);
     }
 
-    if (!store.getState().reviactyl.data) {
-        store.getActions().reviactyl.setReviactyl(ReviactylConfiguration!);
+    if (!store.getState().witchyworlds.data) {
+        store.getActions().witchyworlds.setWitchyWorlds(WitchyWorldsConfiguration!);
     }
 
     return (

@@ -2,8 +2,8 @@ import React from 'react';
 import FlashMessageRender from '@/components/FlashMessageRender';
 import SpinnerOverlay from '@/components/elements/SpinnerOverlay';
 import tw from 'twin.macro';
-import Card from '@/reviactyl/ui/Card';
-import Title from '@/reviactyl/ui/Title';
+import Card from '@/witchyworlds/ui/Card';
+import Title from '@/witchyworlds/ui/Title';
 
 type Props = Readonly<
     React.DetailedHTMLProps<React.HTMLAttributes<HTMLDivElement>, HTMLDivElement> & {

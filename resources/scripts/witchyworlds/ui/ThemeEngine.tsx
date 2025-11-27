@@ -142,7 +142,7 @@ const ThemeSelector = () => {
                 <button
                     onClick={() => handleThemeChange('default')}
                     className={`w-10 h-10 flex items-center justify-center rounded-full border text-sm hover:bg-gray-300 dark:hover:bg-gray-700 ${
-                        selected === 'default' ? 'ring-2 ring-reviactyl' : ''
+                        selected === 'default' ? 'ring-2 ring-witchyworlds' : ''
                     }`}
                     title={t('theme-selector.default')}
                 >
@@ -158,7 +158,7 @@ const ThemeSelector = () => {
                             key={name}
                             onClick={() => handleThemeChange(name)}
                             className={`w-10 h-10 rounded-full border shadow-sm transition ${
-                                selected === name ? 'ring-2 ring-reviactyl' : ''
+                                selected === name ? 'ring-2 ring-witchyworlds' : ''
                             }`}
                             style={{ background: gradient }}
                             title={theme.displayName}
