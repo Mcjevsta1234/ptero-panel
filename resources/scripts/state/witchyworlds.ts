@@ -16,6 +16,12 @@ export interface WitchyWorldsSettings {
     socialKnowledgebase?: string;
     socialCustomTitle?: string;
     socialCustomUrl?: string;
+    socialCustom2Title?: string;
+    socialCustom2Url?: string;
+    socialCustom3Title?: string;
+    socialCustom3Url?: string;
+    socialCustom4Title?: string;
+    socialCustom4Url?: string;
 }
 
 export interface WitchyWorldsSettingsStore {

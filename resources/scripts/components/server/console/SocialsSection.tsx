@@ -2,6 +2,7 @@ import React from 'react';
 import styled from 'styled-components/macro';
 import tw from 'twin.macro';
 import { useStoreState } from 'easy-peasy';
+import { ApplicationStore } from '@/state';
 import Card from '@/witchyworlds/ui/Card';
 import { CreditCardIcon, StatusOnlineIcon, ChatAlt2Icon, GlobeIcon, BookOpenIcon, StarIcon } from '@heroicons/react/solid';
 
@@ -33,6 +34,12 @@ const SocialsSection = ({ className }: { className?: string }) => {
     const socialKnowledgebase = useStoreState((state) => state.witchyworlds.data?.socialKnowledgebase);
     const socialCustomTitle = useStoreState((state) => state.witchyworlds.data?.socialCustomTitle);
     const socialCustomUrl = useStoreState((state) => state.witchyworlds.data?.socialCustomUrl);
+    const socialCustom2Title = useStoreState((state) => state.witchyworlds.data?.socialCustom2Title);
+    const socialCustom2Url = useStoreState((state) => state.witchyworlds.data?.socialCustom2Url);
+    const socialCustom3Title = useStoreState((state) => state.witchyworlds.data?.socialCustom3Title);
+    const socialCustom3Url = useStoreState((state) => state.witchyworlds.data?.socialCustom3Url);
+    const socialCustom4Title = useStoreState((state) => state.witchyworlds.data?.socialCustom4Title);
+    const socialCustom4Url = useStoreState((state) => state.witchyworlds.data?.socialCustom4Url);
 
     const socials = [
         { icon: CreditCardIcon, label: 'Billing Area', url: socialBilling },
@@ -41,7 +48,10 @@ const SocialsSection = ({ className }: { className?: string }) => {
         { icon: GlobeIcon, label: 'Website', url: socialWebsite },
         { icon: BookOpenIcon, label: 'Knowledgebase', url: socialKnowledgebase },
         { icon: StarIcon, label: socialCustomTitle || 'Custom Link', url: socialCustomUrl },
-    ].filter((social) => social.url);
+        { icon: StarIcon, label: socialCustom2Title || 'Custom Link 2', url: socialCustom2Url },
+        { icon: StarIcon, label: socialCustom3Title || 'Custom Link 3', url: socialCustom3Url },
+        { icon: StarIcon, label: socialCustom4Title || 'Custom Link 4', url: socialCustom4Url },
+    ].filter((social) => social.url && social.url.trim() !== '');
 
     if (socials.length === 0) return null;
 

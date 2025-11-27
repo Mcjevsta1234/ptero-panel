@@ -45,6 +45,12 @@ return [
     'socialKnowledgebase' => '',
     'socialCustomTitle' => '',
     'socialCustomUrl' => '',
+    'socialCustom2Title' => '',
+    'socialCustom2Url' => '',
+    'socialCustom3Title' => '',
+    'socialCustom3Url' => '',
+    'socialCustom4Title' => '',
+    'socialCustom4Url' => '',
 
     'theme1' => [
         'name' => 'Petrascia',
