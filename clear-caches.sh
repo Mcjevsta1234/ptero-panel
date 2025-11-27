@@ -1,17 +1,33 @@
 #!/bin/bash
 
-# Clear all Laravel caches
+echo "🧹 Clearing all Laravel caches..."
 php artisan view:clear
 php artisan config:clear
 php artisan route:clear
 php artisan cache:clear
 
-# Remove compiled view files
+echo "🗑️  Removing old compiled view files..."
 rm -rf storage/framework/views/*
 
-# Recompile config and routes
+echo "🗑️  Removing old theme files..."
+rm -rf public/assets/*.js
+rm -rf public/assets/*.map
+rm -rf public/assets/*.css
+
+echo "📦 Installing dependencies..."
+composer install --no-interaction --prefer-dist --optimize-autoloader
+
+echo "🔨 Building production assets..."
+export NODE_OPTIONS=--openssl-legacy-provider
+yarn install
+yarn build:production
+
+echo "♻️  Recompiling caches..."
 php artisan config:cache
 php artisan route:cache
 php artisan view:cache
 
-echo "All caches cleared and recompiled!"
+echo "🔄 Restarting queue workers..."
+php artisan queue:restart
+
+echo "✅ All done! Panel is ready for testing."
