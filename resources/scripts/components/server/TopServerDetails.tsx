@@ -34,9 +34,6 @@ const UtilContainer = styled.div`
     ${tw`mx-auto w-full md:flex items-center justify-between max-w-[75rem]`};
 `;
 
-const StatContainer = styled.div`
-    ${tw`lg:flex flex-wrap justify-center gap-3 sm:gap-4 mt-2 `};
-`;
 const TopServerDetails = () => {
     const [stats, setStats] = useState<Stats>({
         memory: 0,
@@ -44,9 +41,6 @@ const TopServerDetails = () => {
         disk: 0,
     });
 
-    const { t } = useTranslation('server/index');
-
-    const [showStats, setShowStats] = useState(false);
     const name = ServerContext.useStoreState((state) => state.server.data?.name);
     const id = ServerContext.useStoreState((state) => state.server.data!.id);
     const status = ServerContext.useStoreState((state) => state.status.value);
@@ -170,68 +164,6 @@ const TopServerDetails = () => {
                     </Can>
                 </UtilContainer>
             </Card>
-            <div className='w-full sm:hidden flex justify-center mb-2 mt-2'>
-                <button
-                    className='w-full py-2 bg-gray-700 border border-gray-600 text-gray-100 rounded-ui'
-                    onClick={() => setShowStats((prev) => !prev)}
-                >
-                    {showStats ? t('hide-stats') : t('show-stats')}
-                </button>
-            </div>
-            <StatContainer className={`${showStats ? '' : 'hidden'} flex`}>
-                <StatBlock className='bg-gray-700 border-gray-600'>
-                    <span className='w-5 text-gray-300'>
-                        <FaGlobe />
-                    </span>
-                    <CopyOnClick text={allocation}>
-                        <Blur className={`text-sm text-gray-100`}>{allocation}</Blur>
-                    </CopyOnClick>
-                </StatBlock>
-
-                <StatBlock className='bg-gray-700 border-gray-600'>
-                    <span className='w-5 text-gray-300'>
-                        <FaMicrochip />
-                    </span>
-                    <span className='text-sm text-gray-100'>
-                        {status === 'offline' ? (
-                            <Limit limit={textLimits.cpu}>0%</Limit>
-                        ) : (
-                            <Limit limit={textLimits.cpu}>{stats.cpu.toFixed(2)}%</Limit>
-                        )}
-                    </span>
-                </StatBlock>
-
-                <StatBlock className='bg-gray-700 border-gray-600'>
-                    <span className='w-5 text-gray-300'>
-                        <FaMemory />
-                    </span>
-                    <span className='text-sm text-gray-100'>
-                        {status === 'offline' ? (
-                            <Limit limit={textLimits.memory}>0 MiB</Limit>
-                        ) : (
-                            <Limit limit={textLimits.memory}>{bytesToString(stats.memory)}</Limit>
-                        )}
-                    </span>
-                </StatBlock>
-
-                <StatBlock className='bg-gray-700 border-gray-600'>
-                    <span className='w-5 text-gray-300'>
-                        <FaFloppyDisk />
-                    </span>
-                    <span className='text-sm text-gray-100'>
-                        <Limit limit={textLimits.disk}>{bytesToString(stats.disk)}</Limit>
-                    </span>
-                </StatBlock>
-
-                <StatBlock className='bg-gray-700 border-gray-600'>
-                    <span className='w-5 text-gray-300'>
-                        <FaHashtag />
-                    </span>
-                    <CopyOnClick text={id}>
-                        <span className='text-sm text-gray-100'>{id}</span>
-                    </CopyOnClick>
-                </StatBlock>
-            </StatContainer>
         </Container>
     );
 };

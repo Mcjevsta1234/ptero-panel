@@ -12,7 +12,7 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('nodes', function (Blueprint $table) {
-            $table->string('containerText')->default('container@reviactyl~')->after('name');
+            $table->string('containerText')->default('container@witchyworlds~')->after('name');
             $table->string('daemonText')->default('[Reviactyl Daemon]:')->after('containerText');
         });
     }

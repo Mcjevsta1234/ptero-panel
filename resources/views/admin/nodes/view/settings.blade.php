@@ -56,7 +56,7 @@
                             <div>
                                 <input type="text" autocomplete="off" id="pcontainerText" name="containerText"
                                     class="form-control" value="{{ old('containerText') }}" />
-                                <p class="text-muted"><small>Change the "<code>container@reviactyl~</code>" text.</small>
+                                <p class="text-muted"><small>Change the "<code>container@witchyworlds~</code>" text.</small>
                                 </p>
                             </div>
                         </div>
@@ -65,7 +65,7 @@
                             <div>
                                 <input type="text" autocomplete="off" id="pdaemonText" name="daemonText"
                                     class="form-control" value="{{ old('daemonText') }}" />
-                                <p class="text-muted"><small>Change the "<code>[Reviactyl Daemon]:</code>" text.</small></p>
+                                <p class="text-muted"><small>Change the "<code>[WitchyWorlds Daemon]:</code>" text.</small></p>
                             </div>
                         </div>
                         <div class="form-group col-xs-12">

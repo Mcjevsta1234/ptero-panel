@@ -23,7 +23,7 @@ type ThemeData = {
 
 declare global {
     interface Window {
-        ReviactylConfiguration?: any;
+        WitchyworldsConfiguration?: any;
     }
 }
 
@@ -61,7 +61,7 @@ const hexToRgbString = (hex: string) => {
 };
 
 const getThemeFromConfig = (key: PaletteKey): ThemeData => {
-    const conf = typeof window !== 'undefined' ? window.ReviactylConfiguration || {} : {};
+    const conf = typeof window !== 'undefined' ? window.WitchyworldsConfiguration || {} : {};
     const t = conf[key.toLowerCase()] || {};
     return {
         displayName: t.name || key,

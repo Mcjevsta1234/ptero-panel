@@ -107,8 +107,8 @@ const ConsoleSidebar = () => {
     const memoryPercent = isOffline ? 0 : Math.min(100, Math.round((stats.memory / memoryLimitBytes) * 100));
     const diskPercent = isOffline ? 0 : Math.min(100, Math.round((stats.disk / diskLimitBytes) * 100));
 
-    // Extract plan name from node (e.g., "Premium Utah" -> "Premium")
-    const planName = serverNode ? serverNode.split(' ')[0] : 'Standard';
+    // Extract plan name from node (e.g., "Premium Utah" -> "premium")
+    const planName = serverNode ? serverNode.split(' ')[0].toLowerCase() : 'standard';
 
     const createChartData = (history: DataPoint[], color: string, isBytes = false) => ({
         labels: history.map(() => ''),
