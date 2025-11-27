@@ -171,12 +171,6 @@ const MirrorMountainGraph = ({ data, color1, color2 }: { data: NetworkDataPoint[
 
     const top = buildMountain(animatedRx, true);
     const bottom = buildMountain(animatedTx, false);
-    // Removed duplicate legacy gradient-mirror IDs.
-
-    const gradientId1 = `mmg-top-${color1.replace('#', '')}`;
-    const gradientId2 = `mmg-bottom-${color2.replace('#', '')}`;
-    const topArea = top.path ? `${top.path} L ${top.pts[top.pts.length - 1].x},${centerY} L ${top.pts[0].x},${centerY} Z` : '';
-    const bottomArea = bottom.path ? `${bottom.path} L ${bottom.pts[bottom.pts.length - 1].x},${centerY} L ${bottom.pts[0].x},${centerY} Z` : '';
 
     const gradientId1 = `mmg-top-${color1.replace('#', '')}`;
     const gradientId2 = `mmg-bottom-${color2.replace('#', '')}`;
