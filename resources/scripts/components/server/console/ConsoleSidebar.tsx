@@ -40,35 +40,46 @@ const buildSmoothPath = (points: { x: number; y: number }[]) => {
     return d.join(' ');
 };
 
-// Single metric mountain graph with continuous exponential smoothing & gradient fill (no endpoint pulse).
+// Single metric mountain graph with spring-damped smoothing & gradient fill (no endpoint pulse).
 const SingleMountainGraph = ({ data, color, max = 100 }: { data: DataPoint[]; color: string; max?: number }) => {
     const width = 100;
     const height = 32;
     const padding = 2;
-    const smoothingFactor = 0.12; // Lower = smoother but slower response
+    const stiffness = 0.08; // Spring stiffness (lower = softer)
+    const damping = 0.75; // Damping factor (higher = less oscillation)
     const [animated, setAnimated] = useState<number[]>(data.map(d => d.value));
+    const velocityRef = useRef<number[]>(data.map(() => 0));
     const targetRef = useRef<number[]>(data.map(d => d.value));
     const frameRef = useRef<number | null>(null);
+    const lastTimeRef = useRef<number>(performance.now());
 
     // Update target when data changes
     useEffect(() => {
         targetRef.current = data.map(d => d.value);
-        // Ensure animated array matches length
         if (animated.length !== data.length) {
             setAnimated(data.map(d => d.value));
+            velocityRef.current = data.map(() => 0);
         }
     }, [data]);
 
-    // Continuous interpolation loop
+    // Spring physics interpolation loop
     useEffect(() => {
-        const animate = () => {
+        const animate = (now: number) => {
+            const deltaTime = Math.min((now - lastTimeRef.current) / 16.67, 2); // Cap at 2 frames
+            lastTimeRef.current = now;
+            
             setAnimated(prev => {
                 return prev.map((val, i) => {
                     const target = targetRef.current[i] ?? val;
                     const delta = target - val;
-                    // Only update if difference is significant
-                    if (Math.abs(delta) < 0.01) return target;
-                    return val + delta * smoothingFactor;
+                    if (Math.abs(delta) < 0.005 && Math.abs(velocityRef.current[i]) < 0.005) {
+                        velocityRef.current[i] = 0;
+                        return target;
+                    }
+                    // Spring physics: F = -kx - cv
+                    const force = delta * stiffness;
+                    velocityRef.current[i] = (velocityRef.current[i] + force) * damping;
+                    return val + velocityRef.current[i] * deltaTime;
                 });
             });
             frameRef.current = requestAnimationFrame(animate);
@@ -103,18 +114,22 @@ const SingleMountainGraph = ({ data, color, max = 100 }: { data: DataPoint[]; co
     );
 };
 
-// Dual metric (rx/tx) mirrored mountain graph with continuous exponential smoothing.
+// Dual metric (rx/tx) mirrored mountain graph with spring-damped smoothing.
 const MirrorMountainGraph = ({ data, color1, color2 }: { data: NetworkDataPoint[]; color1: string; color2: string }) => {
     const width = 100;
     const height = 32;
     const centerY = height / 2;
     const maxHeight = (height / 2) - 2;
-    const smoothingFactor = 0.12;
+    const stiffness = 0.08;
+    const damping = 0.75;
     const [animatedRx, setAnimatedRx] = useState<number[]>(data.map(d => d.rx));
     const [animatedTx, setAnimatedTx] = useState<number[]>(data.map(d => d.tx));
+    const velocityRxRef = useRef<number[]>(data.map(() => 0));
+    const velocityTxRef = useRef<number[]>(data.map(() => 0));
     const targetRxRef = useRef<number[]>(data.map(d => d.rx));
     const targetTxRef = useRef<number[]>(data.map(d => d.tx));
     const frameRef = useRef<number | null>(null);
+    const lastTimeRef = useRef<number>(performance.now());
 
     // Update targets when data changes
     useEffect(() => {
@@ -123,24 +138,41 @@ const MirrorMountainGraph = ({ data, color1, color2 }: { data: NetworkDataPoint[
         if (animatedRx.length !== data.length) {
             setAnimatedRx(data.map(d => d.rx));
             setAnimatedTx(data.map(d => d.tx));
+            velocityRxRef.current = data.map(() => 0);
+            velocityTxRef.current = data.map(() => 0);
         }
     }, [data]);
 
-    // Continuous interpolation loop
+    // Spring physics interpolation loop
     useEffect(() => {
-        const animate = () => {
+        const animate = (now: number) => {
+            const deltaTime = Math.min((now - lastTimeRef.current) / 16.67, 2);
+            lastTimeRef.current = now;
+            
             setAnimatedRx(prev => prev.map((val, i) => {
                 const target = targetRxRef.current[i] ?? val;
                 const delta = target - val;
-                if (Math.abs(delta) < 0.01) return target;
-                return val + delta * smoothingFactor;
+                if (Math.abs(delta) < 0.005 && Math.abs(velocityRxRef.current[i]) < 0.005) {
+                    velocityRxRef.current[i] = 0;
+                    return target;
+                }
+                const force = delta * stiffness;
+                velocityRxRef.current[i] = (velocityRxRef.current[i] + force) * damping;
+                return val + velocityRxRef.current[i] * deltaTime;
             }));
+            
             setAnimatedTx(prev => prev.map((val, i) => {
                 const target = targetTxRef.current[i] ?? val;
                 const delta = target - val;
-                if (Math.abs(delta) < 0.01) return target;
-                return val + delta * smoothingFactor;
+                if (Math.abs(delta) < 0.005 && Math.abs(velocityTxRef.current[i]) < 0.005) {
+                    velocityTxRef.current[i] = 0;
+                    return target;
+                }
+                const force = delta * stiffness;
+                velocityTxRef.current[i] = (velocityTxRef.current[i] + force) * damping;
+                return val + velocityTxRef.current[i] * deltaTime;
             }));
+            
             frameRef.current = requestAnimationFrame(animate);
         };
         frameRef.current = requestAnimationFrame(animate);

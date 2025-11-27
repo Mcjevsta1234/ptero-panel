@@ -1,8 +1,8 @@
 <?php
 
 return [
-    'site_title' => 'Reviactyl',
-    'site_description' => 'Our official control panel made better with Reviactyl.',
+    'site_title' => 'WitchyWorlds',
+    'site_description' => 'Our official control panel made better with WitchyWorlds.',
     'site_image' => '/witchyworlds/logo.png',
     'site_favicon' => '/witchyworlds/icon.png',
     'site_color' => '#3b82f6',

@@ -1,6 +1,6 @@
 <!-- 
-Reviactyl Panel (https://reviactyl.dev/)
-Copyright (c) 2025 Reviactyl™ and contributors
+WitchyWorlds Panel (https://witchyworlds.top/)
+Copyright (c) 2025 WitchyWorlds™ and contributors
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -24,7 +24,7 @@ SOFTWARE.
 <html>
 
 <head>
-    <title>{{ config('app.name', 'Reviactyl') }}</title>
+    <title>{{ config('app.name', 'WitchyWorlds') }}</title>
 
     @section('meta')
         <meta charset="utf-8">

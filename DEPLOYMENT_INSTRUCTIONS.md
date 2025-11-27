@@ -74,7 +74,7 @@ The admin customization panel has been moved from:
 
 ### Social Links Configuration
 Social links can now be edited in the admin panel at:
-- **URL:** `https://demo.witchyworlds.top/admin/witchcrafter/socials`
+- **URL:** `https://your-panel-domain.com/admin/witchcrafter/socials`
 
 Available social link fields:
 1. Billing URL
@@ -116,7 +116,7 @@ Visit your panel URL and verify:
 - All social links work (Billing, Status, Discord, Website, Knowledgebase, Custom)
 
 ### 3. Check Admin Panel
-Visit `https://demo.witchyworlds.top/admin/witchcrafter` and verify:
+Visit `https://your-panel-domain.com/admin/witchcrafter` and verify:
 - All navigation works
 - Social links configuration page accessible
 - Changes save successfully
