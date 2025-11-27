@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import { ServerContext } from '@/state/server';
 import { SocketEvent, SocketRequest } from '@/components/server/events';
 import useWebsocketEvent from '@/plugins/useWebsocketEvent';
@@ -21,300 +21,145 @@ interface NetworkDataPoint {
 
 const MAX_DATA_POINTS = 20;
 
-// Design 1: Wave-filled Progress Bar (CPU)
-const WaveProgressGraph = ({ data, color, max = 100 }: { data: DataPoint[]; color: string; max?: number }) => {
-    if (data.length === 0) return null;
-
-    const width = 100;
-    const height = 32;
-    
-    const latestValue = data[data.length - 1].value;
-    const normalizedValue = Math.min(100, (latestValue / max) * 100);
-    const fillWidth = (normalizedValue / 100) * width;
-
-    // Create wave pattern
-    const waveCount = 4;
-    const waveHeight = 4;
-    const waveWidth = width / waveCount;
-    
-    let wavePath = `M 0,${height / 2}`;
-    for (let i = 0; i <= waveCount; i++) {
-        const x = i * waveWidth;
-        const y1 = (height / 2) - waveHeight;
-        const y2 = (height / 2) + waveHeight;
-        wavePath += ` Q ${x + waveWidth / 4},${y1} ${x + waveWidth / 2},${height / 2}`;
-        wavePath += ` Q ${x + (waveWidth * 3) / 4},${y2} ${x + waveWidth},${height / 2}`;
+// Utility to build a smooth (Catmull-Rom) path from points.
+const buildSmoothPath = (points: { x: number; y: number }[]) => {
+    if (points.length < 2) return '';
+    const d: string[] = [];
+    d.push(`M ${points[0].x},${points[0].y}`);
+    for (let i = 0; i < points.length - 1; i++) {
+        const p0 = points[i === 0 ? i : i - 1];
+        const p1 = points[i];
+        const p2 = points[i + 1];
+        const p3 = points[i + 2 < points.length ? i + 2 : i + 1];
+        const control1x = p1.x + (p2.x - p0.x) / 6;
+        const control1y = p1.y + (p2.y - p0.y) / 6;
+        const control2x = p2.x - (p3.x - p1.x) / 6;
+        const control2y = p2.y - (p3.y - p1.y) / 6;
+        d.push(`C ${control1x},${control1y} ${control2x},${control2y} ${p2.x},${p2.y}`);
     }
-
-    const gradientId = `gradient-wave-${color.replace('#', '')}`;
-    const glowId = `glow-wave-${color.replace('#', '')}`;
-
-    return (
-        <svg viewBox={`0 0 ${width} ${height}`} className="w-full h-full" style={{ overflow: 'visible' }}>
-            <defs>
-                <linearGradient id={gradientId} x1="0%" y1="0%" x2="100%" y2="0%">
-                    <stop offset="0%" style={{ stopColor: color, stopOpacity: 0.8 }} />
-                    <stop offset="100%" style={{ stopColor: color, stopOpacity: 1 }} />
-                </linearGradient>
-                <filter id={glowId}>
-                    <feGaussianBlur stdDeviation="2" result="coloredBlur"/>
-                    <feMerge>
-                        <feMergeNode in="coloredBlur"/>
-                        <feMergeNode in="SourceGraphic"/>
-                    </feMerge>
-                </filter>
-                <clipPath id={`clip-${color.replace('#', '')}`}>
-                    <rect x="0" y="0" width={fillWidth} height={height} style={{ transition: 'width 0.5s ease-out' }} />
-                </clipPath>
-            </defs>
-            
-            {/* Background bar */}
-            <rect x="0" y={height / 2 - 3} width={width} height="6" fill="#374151" rx="3" opacity="0.3" />
-            
-            {/* Filled wave */}
-            <g clipPath={`url(#clip-${color.replace('#', '')})`}>
-                <path
-                    d={wavePath}
-                    stroke={`url(#${gradientId})`}
-                    strokeWidth="6"
-                    fill="none"
-                    strokeLinecap="round"
-                    filter={`url(#${glowId})`}
-                >
-                    <animateTransform
-                        attributeName="transform"
-                        type="translate"
-                        from={`${-waveWidth} 0`}
-                        to="0 0"
-                        dur="2s"
-                        repeatCount="indefinite"
-                    />
-                </path>
-            </g>
-            
-            {/* Progress indicator dot */}
-            <circle
-                cx={fillWidth}
-                cy={height / 2}
-                r="4"
-                fill={color}
-                filter={`url(#${glowId})`}
-                style={{ transition: 'cx 0.5s ease-out' }}
-            >
-                <animate attributeName="r" values="3;5;3" dur="1.5s" repeatCount="indefinite" />
-            </circle>
-        </svg>
-    );
+    return d.join(' ');
 };
 
-// Design 2: Vertical Column Fill (RAM)
-const ColumnFillGraph = ({ data, color, max = 100 }: { data: DataPoint[]; color: string; max?: number }) => {
-    if (data.length === 0) return null;
-
+// Single metric mountain graph with internal smoothing animation.
+const SingleMountainGraph = ({ data, color, max = 100 }: { data: DataPoint[]; color: string; max?: number }) => {
     const width = 100;
     const height = 32;
-    const columnCount = 16;
-    const columnWidth = (width / columnCount) - 1.5;
-    const gap = 1.5;
+    const padding = 2;
+    const animDuration = 600; // ms
+    const [animated, setAnimated] = useState<number[]>(data.map(d => d.value));
+    const prevTarget = useRef<number[]>(animated);
+    const startTime = useRef<number | null>(null);
+    const frameRef = useRef<number | null>(null);
 
-    const gradientId = `gradient-column-${color.replace('#', '')}`;
+    // Trigger animation whenever data changes.
+    useEffect(() => {
+        const target = data.map(d => d.value);
+        const prev = prevTarget.current.length === target.length ? prevTarget.current : target.map((v, i) => prevTarget.current[i] ?? v);
+        prevTarget.current = target;
+        startTime.current = performance.now();
 
-    return (
-        <svg viewBox={`0 0 ${width} ${height}`} className="w-full h-full">
-            <defs>
-                <linearGradient id={gradientId} x1="0%" y1="100%" x2="0%" y2="0%">
-                    <stop offset="0%" style={{ stopColor: color, stopOpacity: 0.6 }} />
-                    <stop offset="50%" style={{ stopColor: color, stopOpacity: 0.85 }} />
-                    <stop offset="100%" style={{ stopColor: color, stopOpacity: 1 }} />
-                </linearGradient>
-            </defs>
-            
-            {data.slice(-columnCount).map((point, index) => {
-                const normalizedValue = Math.min(100, (point.value / max) * 100);
-                const columnHeight = (normalizedValue / 100) * height;
-                const x = index * (columnWidth + gap);
-                const opacity = 0.4 + (index / columnCount) * 0.6;
-                
-                return (
-                    <g key={index}>
-                        {/* Background column */}
-                        <rect
-                            x={x}
-                            y={0}
-                            width={columnWidth}
-                            height={height}
-                            fill="#374151"
-                            opacity="0.2"
-                            rx="1"
-                        />
-                        {/* Filled column */}
-                        <rect
-                            x={x}
-                            y={height - columnHeight}
-                            width={columnWidth}
-                            height={columnHeight}
-                            fill={`url(#${gradientId})`}
-                            opacity={opacity}
-                            rx="1"
-                            style={{ 
-                                transition: 'height 0.5s ease-out, y 0.5s ease-out'
-                            }}
-                        />
-                    </g>
-                );
-            })}
-        </svg>
-    );
-};
+        const animate = (now: number) => {
+            if (!startTime.current) return;
+            const elapsed = now - startTime.current;
+            const t = Math.min(1, elapsed / animDuration);
+            const eased = 1 - Math.pow(1 - t, 3); // easeOutCubic
+            const current = target.map((v, i) => prev[i] + (v - prev[i]) * eased);
+            setAnimated(current);
+            if (t < 1) frameRef.current = requestAnimationFrame(animate);
+        };
+        if (frameRef.current) cancelAnimationFrame(frameRef.current);
+        frameRef.current = requestAnimationFrame(animate);
+        return () => { if (frameRef.current) cancelAnimationFrame(frameRef.current); };
+    }, [data]);
 
-// Design 3: Flowing Ribbon (Disk)
-const RibbonGraph = ({ data, color, max = 100 }: { data: DataPoint[]; color: string; max?: number }) => {
-    if (data.length === 0) return null;
-
-    const width = 100;
-    const height = 32;
-    const padding = 4;
-    
-    const points = data.map((point, index) => {
+    if (animated.length === 0) return null;
+    const points = animated.map((val, index) => {
         const x = (index / (MAX_DATA_POINTS - 1)) * width;
-        const normalizedValue = Math.min(100, (point.value / max) * 100);
+        const normalizedValue = Math.min(100, (val / max) * 100);
         const y = height - (normalizedValue / 100) * (height - padding * 2) - padding;
         return { x, y };
     });
-
-    // Create smooth bezier curve
-    const smoothPath = points.length > 2 ? (() => {
-        let path = `M ${points[0].x},${points[0].y}`;
-        for (let i = 0; i < points.length - 1; i++) {
-            const current = points[i];
-            const next = points[i + 1];
-            const controlX = (current.x + next.x) / 2;
-            path += ` C ${controlX},${current.y} ${controlX},${next.y} ${next.x},${next.y}`;
-        }
-        return path;
-    })() : '';
-
-    // Create ribbon edges
-    const topRibbon = smoothPath;
-    const bottomRibbon = points.length > 2 ? (() => {
-        let path = `M ${points[0].x},${points[0].y + 6}`;
-        for (let i = 0; i < points.length - 1; i++) {
-            const current = points[i];
-            const next = points[i + 1];
-            const controlX = (current.x + next.x) / 2;
-            path += ` C ${controlX},${current.y + 6} ${controlX},${next.y + 6} ${next.x},${next.y + 6}`;
-        }
-        return path;
-    })() : '';
-
-    const gradientId = `gradient-ribbon-${color.replace('#', '')}`;
+    const path = buildSmoothPath(points);
+    const areaPath = path ? `${path} L ${points[points.length - 1].x},${height} L 0,${height} Z` : '';
+    const gradientId = `gradient-single-${color.replace('#', '')}`;
 
     return (
         <svg viewBox={`0 0 ${width} ${height}`} className="w-full h-full" preserveAspectRatio="none">
             <defs>
                 <linearGradient id={gradientId} x1="0%" y1="0%" x2="0%" y2="100%">
-                    <stop offset="0%" style={{ stopColor: color, stopOpacity: 0.9 }} />
-                    <stop offset="50%" style={{ stopColor: color, stopOpacity: 0.6 }} />
-                    <stop offset="100%" style={{ stopColor: color, stopOpacity: 0.3 }} />
+                    <stop offset="0%" style={{ stopColor: color, stopOpacity: 0.7 }} />
+                    <stop offset="100%" style={{ stopColor: color, stopOpacity: 0.15 }} />
                 </linearGradient>
             </defs>
-            
-            {smoothPath && (
-                <>
-                    {/* Ribbon fill */}
-                    <path
-                        d={`${topRibbon} L ${points[points.length - 1].x},${points[points.length - 1].y + 6} ${bottomRibbon.substring(1)} Z`}
-                        fill={`url(#${gradientId})`}
-                        opacity="0.8"
-                        style={{ transition: 'all 0.5s ease-out' }}
-                    />
-                    {/* Top edge */}
-                    <path
-                        d={topRibbon}
-                        stroke={color}
-                        strokeWidth="2"
-                        fill="none"
-                        strokeLinecap="round"
-                        opacity="0.9"
-                        style={{ transition: 'd 0.5s ease-out' }}
-                    />
-                    {/* Bottom edge */}
-                    <path
-                        d={bottomRibbon}
-                        stroke={color}
-                        strokeWidth="1"
-                        fill="none"
-                        strokeLinecap="round"
-                        opacity="0.5"
-                        style={{ transition: 'd 0.5s ease-out' }}
-                    />
-                    {/* Highlight dots */}
-                    {points.slice(-3).map((point, idx) => (
-                        <circle
-                            key={idx}
-                            cx={point.x}
-                            cy={point.y}
-                            r={idx === 2 ? 3 : 2}
-                            fill={color}
-                            opacity={idx === 2 ? 1 : 0.6}
-                            style={{ transition: 'cx 0.5s ease-out, cy 0.5s ease-out' }}
-                        >
-                            {idx === 2 && (
-                                <animate attributeName="opacity" values="0.6;1;0.6" dur="2s" repeatCount="indefinite" />
-                            )}
-                        </circle>
-                    ))}
-                </>
+            {areaPath && <path d={areaPath} fill={`url(#${gradientId})`} opacity={0.8} />}
+            {path && <path d={path} stroke={color} strokeWidth={2} fill="none" strokeLinecap="round" />}
+            {/* Latest point pulse */}
+            {points.length > 0 && (
+                <circle cx={points[points.length - 1].x} cy={points[points.length - 1].y} r={3} fill={color}>
+                    <animate attributeName="r" values="2;4;2" dur="2s" repeatCount="indefinite" />
+                </circle>
             )}
         </svg>
     );
 };
 
-// Design 4: Mirrored Mountain Range (Network RX/TX)
+// Dual metric (rx/tx) mirrored mountain graph with smoothing.
 const MirrorMountainGraph = ({ data, color1, color2 }: { data: NetworkDataPoint[]; color1: string; color2: string }) => {
-    if (data.length === 0) return null;
-
     const width = 100;
     const height = 32;
     const centerY = height / 2;
     const maxHeight = (height / 2) - 2;
-    
-    const maxValue = Math.max(
-        ...data.map(d => Math.max(d.rx, d.tx)),
-        1
-    );
+    const animDuration = 600;
+    const [animatedRx, setAnimatedRx] = useState<number[]>(data.map(d => d.rx));
+    const [animatedTx, setAnimatedTx] = useState<number[]>(data.map(d => d.tx));
+    const prevRx = useRef<number[]>(animatedRx);
+    const prevTx = useRef<number[]>(animatedTx);
+    const startTime = useRef<number | null>(null);
+    const frameRef = useRef<number | null>(null);
 
-    // Create smooth paths for RX (top) and TX (bottom)
-    const createMountainPath = (values: number[], isTop: boolean) => {
-        const points = values.map((val, index) => {
+    useEffect(() => {
+        const targetRx = data.map(d => d.rx);
+        const targetTx = data.map(d => d.tx);
+        const prevR = prevRx.current.length === targetRx.length ? prevRx.current : targetRx.map((v, i) => prevRx.current[i] ?? v);
+        const prevT = prevTx.current.length === targetTx.length ? prevTx.current : targetTx.map((v, i) => prevTx.current[i] ?? v);
+        prevRx.current = targetRx;
+        prevTx.current = targetTx;
+        startTime.current = performance.now();
+        const maxValue = Math.max(...targetRx.map(v => v), ...targetTx.map(v => v), 1);
+
+        const animate = (now: number) => {
+            if (!startTime.current) return;
+            const elapsed = now - startTime.current;
+            const t = Math.min(1, elapsed / animDuration);
+            const eased = 1 - Math.pow(1 - t, 3);
+            setAnimatedRx(targetRx.map((v, i) => prevR[i] + (v - prevR[i]) * eased));
+            setAnimatedTx(targetTx.map((v, i) => prevT[i] + (v - prevT[i]) * eased));
+            if (t < 1) frameRef.current = requestAnimationFrame(animate);
+        };
+        if (frameRef.current) cancelAnimationFrame(frameRef.current);
+        frameRef.current = requestAnimationFrame(animate);
+        return () => { if (frameRef.current) cancelAnimationFrame(frameRef.current); };
+    }, [data]);
+
+    if (animatedRx.length < 2 || animatedTx.length < 2) return null;
+    const maxValue = Math.max(...animatedRx.map(v => v), ...animatedTx.map(v => v), 1);
+
+    const buildMountain = (values: number[], isTop: boolean) => {
+        const pts = values.map((val, index) => {
             const x = (index / (MAX_DATA_POINTS - 1)) * width;
-            const normalizedValue = Math.min(100, (val / maxValue) * 100);
-            const yOffset = (normalizedValue / 100) * maxHeight;
+            const normalized = Math.min(100, (val / maxValue) * 100);
+            const yOffset = (normalized / 100) * maxHeight;
             const y = isTop ? centerY - yOffset : centerY + yOffset;
             return { x, y };
         });
-
-        if (points.length < 2) return '';
-
-        let path = `M ${points[0].x},${centerY}`;
-        for (let i = 0; i < points.length - 1; i++) {
-            const current = points[i];
-            const next = points[i + 1];
-            const controlX = (current.x + next.x) / 2;
-            path += ` C ${controlX},${current.y} ${controlX},${next.y} ${next.x},${next.y}`;
-        }
-        path += ` L ${points[points.length - 1].x},${centerY} Z`;
-        return path;
+        const path = buildSmoothPath(pts);
+        return { pts, path };
     };
 
-    const rxValues = data.map(d => d.rx);
-    const txValues = data.map(d => d.tx);
-
-    const rxPath = createMountainPath(rxValues, true);
-    const txPath = createMountainPath(txValues, false);
-
-    const gradientId1 = `gradient-mountain-${color1.replace('#', '')}`;
-    const gradientId2 = `gradient-mountain-${color2.replace('#', '')}`;
+    const top = buildMountain(animatedRx, true);
+    const bottom = buildMountain(animatedTx, false);
+    const gradientId1 = `gradient-mirror-${color1.replace('#', '')}`;
+    const gradientId2 = `gradient-mirror-${color2.replace('#', '')}`;
 
     return (
         <svg viewBox={`0 0 ${width} ${height}`} className="w-full h-full" preserveAspectRatio="none">
@@ -328,28 +173,23 @@ const MirrorMountainGraph = ({ data, color1, color2 }: { data: NetworkDataPoint[
                     <stop offset="100%" style={{ stopColor: color2, stopOpacity: 0.2 }} />
                 </linearGradient>
             </defs>
-            
-            {/* Center line */}
-            <line x1="0" y1={centerY} x2={width} y2={centerY} stroke="#374151" strokeWidth="1" opacity="0.3" />
-            
-            {/* RX (Download) - Top mountain */}
-            {rxPath && (
-                <path
-                    d={rxPath}
-                    fill={`url(#${gradientId1})`}
-                    opacity="0.9"
-                    style={{ transition: 'd 0.5s ease-out' }}
-                />
+            <line x1={0} y1={centerY} x2={width} y2={centerY} stroke="#374151" strokeWidth={1} opacity={0.3} />
+            {top.path && (
+                <path d={`${top.path} L ${top.pts[top.pts.length - 1].x},${centerY} L ${top.pts[0].x},${centerY} Z`} fill={`url(#${gradientId1})`} />
             )}
-            
-            {/* TX (Upload) - Bottom mountain */}
-            {txPath && (
-                <path
-                    d={txPath}
-                    fill={`url(#${gradientId2})`}
-                    opacity="0.9"
-                    style={{ transition: 'd 0.5s ease-out' }}
-                />
+            {bottom.path && (
+                <path d={`${bottom.path} L ${bottom.pts[bottom.pts.length - 1].x},${centerY} L ${bottom.pts[0].x},${centerY} Z`} fill={`url(#${gradientId2})`} />
+            )}
+            {/* Pulses */}
+            {top.pts.length > 0 && (
+                <circle cx={top.pts[top.pts.length - 1].x} cy={top.pts[top.pts.length - 1].y} r={3} fill={color1}>
+                    <animate attributeName="r" values="2;4;2" dur="2s" repeatCount="indefinite" />
+                </circle>
+            )}
+            {bottom.pts.length > 0 && (
+                <circle cx={bottom.pts[bottom.pts.length - 1].x} cy={bottom.pts[bottom.pts.length - 1].y} r={3} fill={color2}>
+                    <animate attributeName="r" values="2;4;2" dur="2s" repeatCount="indefinite" />
+                </circle>
             )}
         </svg>
     );
@@ -429,7 +269,11 @@ const ConsoleSidebar = () => {
     const cpuLimit = limits.cpu; // CPU limit (100% per core)
 
     // Calculate CPU percentage relative to the limit (accounts for multi-core)
-    const cpuPercent = isOffline ? 0 : Math.min(100, Math.round((stats.cpu / cpuLimit) * 100));
+    const cpuPercent = isOffline ? 0 : (() => {
+        if (!cpuLimit || cpuLimit <= 0) return Math.round(stats.cpu);
+        const pct = (stats.cpu / cpuLimit) * 100;
+        return Math.round(pct < 0 ? 0 : pct);
+    })();
 
     // Extract plan name from node (e.g., "Premium Utah" -> "premium")
     const planName = serverNode ? serverNode.split(' ')[0].toLowerCase() : 'standard';
@@ -490,7 +334,7 @@ const ConsoleSidebar = () => {
                 </div>
                 {cpuHistory.length > 0 && (
                     <div className="h-8">
-                        <WaveProgressGraph data={cpuHistory} color="#3b82f6" max={cpuLimit} />
+                        <SingleMountainGraph data={cpuHistory} color="#3b82f6" max={cpuLimit || 100} />
                     </div>
                 )}
             </div>
@@ -512,7 +356,7 @@ const ConsoleSidebar = () => {
                 </div>
                 {memoryHistory.length > 0 && (
                     <div className="h-8">
-                        <ColumnFillGraph data={memoryHistory} color="#10b981" max={100} />
+                        <SingleMountainGraph data={memoryHistory} color="#10b981" max={100} />
                     </div>
                 )}
             </div>
@@ -534,7 +378,7 @@ const ConsoleSidebar = () => {
                 </div>
                 {diskHistory.length > 0 && (
                     <div className="h-8">
-                        <RibbonGraph data={diskHistory} color="#a855f7" max={100} />
+                        <SingleMountainGraph data={diskHistory} color="#a855f7" max={100} />
                     </div>
                 )}
             </div>
