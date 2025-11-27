@@ -91,7 +91,7 @@ const TopServerDetails = () => {
 
     return (
         <Container>
-            <Card className={`!p-6 !px-8 mx-auto w-full !bg-gray-700`} style={{ maxWidth: '1200px' }}>
+            <Card className={`!p-6 !px-8 mx-auto w-full max-w-[1200px] !bg-gray-700`}>
                 <UtilContainer>
                     <div className={'flex items-center gap-x-3'}>
                         <Title className='text-3xl'>{name}</Title>
