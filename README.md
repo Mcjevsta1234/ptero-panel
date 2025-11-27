@@ -22,12 +22,11 @@ Stop settling for less. Make game servers a first class citizen on your platform
 
 ## Sponsors
 
-I would like to extend my sincere thanks to the following sponsors for helping fund Reviactyl's development.
-[Interested in becoming a sponsor?](https://github.com/sponsors/reviactyl)
+This panel has been customized and improved with Panel Revision 1.
 
 | Company                                                                           | About                                                                                                                                                                                                                                           |
 |-----------------------------------------------------------------------------------|-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| [**Tietokettu**](https://tietokettu.net/)                         | Tietokettu is a company that provides network and server services founded in 2019. Our goal is to create affordable and functional solutions for old ones.                                                                                                 |
+| [**WitchyWorlds**](https://witchyworlds.top/)                         | WitchyWorlds provides high-quality hosting services with Panel Revision 1.                                                                                                 |
 
 ## License
 

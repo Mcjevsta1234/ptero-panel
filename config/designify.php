@@ -30,13 +30,18 @@ return [
     'fontFamily' => 'Poppins',
 
     'customCopyright' => true,
-    'copyright' => 'Powered by [Reviactyl](https://reviactyl.dev/)',
+    'copyright' => 'Panel Revision 1',
 
     'isUnderMaintenance' => false,
     'maintenance' => 'We are currently under maintenance. Kindly check back later!',
 
     'alertType' => 'info',
     'alertMessage' => '**Welcome to Reviactyl!** You can modify Theme Look & Feel using [Designify](/admin/designify) at the administration area.',
+
+    'socialBilling' => 'https://client.witchyworlds.top',
+    'socialStatus' => 'https://status.witchyworlds.top',
+    'socialDiscord' => 'https://discord.gg/Af7k4fX8de',
+    'socialWebsite' => 'https://witchyworlds.top',
 
     'theme1' => [
         'name' => 'Petrascia',

@@ -20,13 +20,13 @@ export default () => {
             <Copyright>
                 <a
                     rel={'noopener nofollow noreferrer'}
-                    href={'https://reviactyl.dev'}
+                    href={'https://witchyworlds.top'}
                     target={'_blank'}
                     css={tw`no-underline text-neutral-500 hover:text-neutral-300`}
                 >
-                    Reviactyl&trade;
+                    WitchyWorlds&trade;
                 </a>
-                &nbsp;&copy; {new Date().getFullYear()}
+                &nbsp;&copy; 2025
             </Copyright>
             {customCopyright ? (
                 <Copyright>

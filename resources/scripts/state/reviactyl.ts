@@ -9,6 +9,10 @@ export interface ReviactylSettings {
     allocationBlur: boolean;
     alertType: string;
     alertMessage: string;
+    socialBilling?: string;
+    socialStatus?: string;
+    socialDiscord?: string;
+    socialWebsite?: string;
 }
 
 export interface ReviactylSettingsStore {

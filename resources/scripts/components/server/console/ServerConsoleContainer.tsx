@@ -6,6 +6,7 @@ import Spinner from '@/components/elements/Spinner';
 import Features from '@feature/Features';
 import ConsoleBlock from '@/components/server/console/ConsoleBlock';
 import ServerDetailsBlock from '@/components/server/console/ServerDetailsBlock';
+import SocialsSection from '@/components/server/console/SocialsSection';
 import { Alert } from '@/components/elements/alert';
 import { useTranslation } from 'react-i18next';
 
@@ -29,17 +30,26 @@ const ServerConsoleContainer = () => {
                         : t('server-transferring')}
                 </Alert>
             )}
-            <div>
-                <Spinner.Suspense>
-                    <ConsoleBlock />
-                </Spinner.Suspense>
+            <div className='grid lg:grid-cols-3 gap-4'>
+                <div className='lg:col-span-2 space-y-2'>
+                    <div>
+                        <Spinner.Suspense>
+                            <ConsoleBlock />
+                        </Spinner.Suspense>
+                    </div>
+                    <div>
+                        <Spinner.Suspense>
+                            <ServerDetailsBlock />
+                        </Spinner.Suspense>
+                    </div>
+                    <Features enabled={eggFeatures} />
+                </div>
+                <div className='lg:col-span-1'>
+                    <Spinner.Suspense>
+                        <SocialsSection />
+                    </Spinner.Suspense>
+                </div>
             </div>
-            <div className={'mt-2'}>
-                <Spinner.Suspense>
-                    <ServerDetailsBlock />
-                </Spinner.Suspense>
-            </div>
-            <Features enabled={eggFeatures} />
         </ServerContentBlock>
     );
 };

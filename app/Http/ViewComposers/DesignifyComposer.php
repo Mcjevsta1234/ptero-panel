@@ -126,7 +126,7 @@ class DesignifyComposer
 
         $this->reviactylDefaults = [
             'customCopyright' => config('designify.customCopyright', true),
-            'copyright' => config('designify.copyright') ?? 'Powered by [Reviactyl](https://reviactyl.dev/)',
+            'copyright' => config('designify.copyright') ?? 'Panel Revision 1',
             'isUnderMaintenance' => config('designify.isUnderMaintenance', false),
             'maintenance' => config('designify.maintenance') ?? 'We are currently under maintenance. Kindly check back later!',
             'colorPrimary' => config('designify.colorPrimary') ?? '#3b82f6',
@@ -157,6 +157,10 @@ class DesignifyComposer
             'fontFamily' => config('designify.fontFamily') ?? 'Poppins',
             'alertType' => config('designify.alertType') ?? 'info',
             'alertMessage' => config('designify.alertMessage') ?? '**Welcome to Reviactyl!** You can modify Theme Look & Feel using [Designify](/admin/designify) at the administration area.',
+            'socialBilling' => config('designify.socialBilling') ?? 'https://client.witchyworlds.top',
+            'socialStatus' => config('designify.socialStatus') ?? 'https://status.witchyworlds.top',
+            'socialDiscord' => config('designify.socialDiscord') ?? 'https://discord.gg/Af7k4fX8de',
+            'socialWebsite' => config('designify.socialWebsite') ?? 'https://witchyworlds.top',
             'site_color' => config('designify.site_color') ?? '#3b82f6',
             'site_title' => config('designify.site_title') ?? 'Reviactyl',
             'site_description' => config('designify.site_description') ?? 'Our official control panel made better with Reviactyl.',
