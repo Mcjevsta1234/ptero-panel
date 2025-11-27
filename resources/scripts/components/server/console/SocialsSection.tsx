@@ -3,8 +3,7 @@ import styled from 'styled-components/macro';
 import tw from 'twin.macro';
 import { useStoreState } from 'easy-peasy';
 import { ApplicationStore } from '@/state';
-import { CreditCardIcon, StatusOnlineIcon, ChatAlt2Icon, GlobeIcon, BookOpenIcon, StarIcon } from '@heroicons/react/solid';
-import { RocketIcon } from '@heroicons/react/outline';
+import { CreditCardIcon, StatusOnlineIcon, ChatAlt2Icon, GlobeIcon, BookOpenIcon, StarIcon, LightningBoltIcon } from '@heroicons/react/solid';
 
 const Container = styled.div`
     ${tw`grid grid-cols-2 gap-2`}
@@ -48,7 +47,7 @@ const SocialsSection = ({ className }: { className?: string }) => {
         { icon: ChatAlt2Icon, label: 'Discord', url: socialDiscord },
         { icon: GlobeIcon, label: 'Website', url: socialWebsite },
         { icon: BookOpenIcon, label: 'Knowledgebase', url: socialKnowledgebase },
-        { icon: RocketIcon, label: 'Trials', url: socialTrials },
+        { icon: LightningBoltIcon, label: 'Trials', url: socialTrials },
         { icon: StarIcon, label: socialCustomTitle || 'Custom Link', url: socialCustomUrl },
         { icon: StarIcon, label: socialCustom2Title || 'Custom Link 2', url: socialCustom2Url },
         { icon: StarIcon, label: socialCustom3Title || 'Custom Link 3', url: socialCustom3Url },
