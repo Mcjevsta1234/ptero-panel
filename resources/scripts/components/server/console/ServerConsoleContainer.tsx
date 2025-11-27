@@ -5,7 +5,7 @@ import isEqual from 'react-fast-compare';
 import Spinner from '@/components/elements/Spinner';
 import Features from '@feature/Features';
 import ConsoleBlock from '@/components/server/console/ConsoleBlock';
-import ServerStatsGrid from '@/components/server/console/ServerStatsGrid';
+import ServerStatsWithGraphs from '@/components/server/console/ServerStatsWithGraphs';
 import SocialsSection from '@/components/server/console/SocialsSection';
 import { Alert } from '@/components/elements/alert';
 import { useTranslation } from 'react-i18next';
@@ -32,7 +32,7 @@ const ServerConsoleContainer = () => {
             )}
             
             <Spinner.Suspense>
-                <ServerStatsGrid />
+                <ServerStatsWithGraphs />
             </Spinner.Suspense>
 
             <div className='grid lg:grid-cols-4 gap-4'>
