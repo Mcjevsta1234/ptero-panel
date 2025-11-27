@@ -57,33 +57,53 @@ print_step "Creating database backup"
 cd "$PANEL_DIR"
 
 if command -v mysqldump &> /dev/null; then
-    DB_HOST=$(grep DB_HOST .env | cut -d '=' -f2 | tr -d '\r')
-    DB_PORT=$(grep DB_PORT .env | cut -d '=' -f2 | tr -d '\r')
-    DB_DATABASE=$(grep DB_DATABASE .env | cut -d '=' -f2 | tr -d '\r')
-    DB_USERNAME=$(grep DB_USERNAME .env | cut -d '=' -f2 | tr -d '\r')
-    DB_PASSWORD=$(grep DB_PASSWORD .env | cut -d '=' -f2 | tr -d '\r')
+    # Read database credentials from .env
+    if [ ! -f ".env" ]; then
+        print_error ".env file not found in $PANEL_DIR"
+    fi
+    
+    DB_HOST=$(grep "^DB_HOST=" .env | cut -d '=' -f2 | tr -d '\r' | tr -d '"' | tr -d "'")
+    DB_PORT=$(grep "^DB_PORT=" .env | cut -d '=' -f2 | tr -d '\r' | tr -d '"' | tr -d "'")
+    DB_DATABASE=$(grep "^DB_DATABASE=" .env | cut -d '=' -f2 | tr -d '\r' | tr -d '"' | tr -d "'")
+    DB_USERNAME=$(grep "^DB_USERNAME=" .env | cut -d '=' -f2 | tr -d '\r' | tr -d '"' | tr -d "'")
+    DB_PASSWORD=$(grep "^DB_PASSWORD=" .env | cut -d '=' -f2 | tr -d '\r' | tr -d '"' | tr -d "'")
+    
+    # Set defaults if empty
+    DB_HOST=${DB_HOST:-127.0.0.1}
+    DB_PORT=${DB_PORT:-3306}
     
     BACKUP_FILE="backup_before_dedicated_$(date +%Y%m%d_%H%M%S).sql"
     
     # Create backups directory if it doesn't exist
     mkdir -p /var/backups
     
-    # Use environment variable for password to avoid command line exposure
-    export MYSQL_PWD="$DB_PASSWORD"
+    echo "Attempting database backup with host=$DB_HOST, port=$DB_PORT, database=$DB_DATABASE, user=$DB_USERNAME"
     
-    if mysqldump -h"$DB_HOST" -P"${DB_PORT:-3306}" -u"$DB_USERNAME" "$DB_DATABASE" > "/var/backups/$BACKUP_FILE" 2>&1; then
-        unset MYSQL_PWD
-        print_success "Database backup created: /var/backups/$BACKUP_FILE"
+    # Test connection first
+    if mysql -h"$DB_HOST" -P"$DB_PORT" -u"$DB_USERNAME" -p"$DB_PASSWORD" -e "SELECT 1" "$DB_DATABASE" &> /dev/null; then
+        # Use mysqldump with password
+        if mysqldump -h"$DB_HOST" -P"$DB_PORT" -u"$DB_USERNAME" -p"$DB_PASSWORD" "$DB_DATABASE" > "/var/backups/$BACKUP_FILE" 2>&1; then
+            print_success "Database backup created: /var/backups/$BACKUP_FILE"
+        else
+            print_warning "mysqldump failed. Continue anyway? (y/n)"
+            read -r response
+            if [[ ! "$response" =~ ^[Yy]$ ]]; then
+                print_error "Installation cancelled"
+            fi
+        fi
     else
-        unset MYSQL_PWD
-        print_warning "Could not create automatic backup. Continue anyway? (y/n)"
+        print_warning "Cannot connect to database. Continue without backup? (y/n)"
         read -r response
         if [[ ! "$response" =~ ^[Yy]$ ]]; then
             print_error "Installation cancelled"
         fi
     fi
 else
-    print_warning "mysqldump not found. Skipping automatic backup."
+    print_warning "mysqldump not found. Continue without backup? (y/n)"
+    read -r response
+    if [[ ! "$response" =~ ^[Yy]$ ]]; then
+        print_error "Installation cancelled"
+    fi
 fi
 
 # Put panel in maintenance mode
