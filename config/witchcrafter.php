@@ -1,8 +1,8 @@
 <?php
 
 return [
-    'site_title' => 'WitchyWorlds',
-    'site_description' => 'Our official control panel made better with WitchyWorlds.',
+    'site_title' => 'Reviactyl',
+    'site_description' => 'Our official control panel made better with Reviactyl.',
     'site_image' => '/witchyworlds/logo.png',
     'site_favicon' => '/witchyworlds/icon.png',
     'site_color' => '#3b82f6',
@@ -42,15 +42,6 @@ return [
     'socialStatus' => 'https://status.witchyworlds.top',
     'socialDiscord' => 'https://discord.gg/Af7k4fX8de',
     'socialWebsite' => 'https://witchyworlds.top',
-    'socialKnowledgebase' => '',
-    'socialCustomTitle' => '',
-    'socialCustomUrl' => '',
-    'socialCustom2Title' => '',
-    'socialCustom2Url' => '',
-    'socialCustom3Title' => '',
-    'socialCustom3Url' => '',
-    'socialCustom4Title' => '',
-    'socialCustom4Url' => '',
 
     'theme1' => [
         'name' => 'Petrascia',

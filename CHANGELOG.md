@@ -18,7 +18,7 @@ This project follows [Semantic Versioning](http://semver.org) guidelines.
 
 ### Changed
 
-* Updated Designify Editor to use proper settings system
+* Updated Witchcrafter Editor to use proper settings system
 * Use proper settings variable for Buttons
 * Use `revicons`, `react-icons` package for icons
 * Security Improvements
@@ -33,7 +33,7 @@ This project follows [Semantic Versioning](http://semver.org) guidelines.
 
 ### BREAKING CHANGES
 
-* Updated Designify Structure
+* Updated Witchcrafter Structure
 * Updated Sidebar Structure
 
 ## v2.0.2

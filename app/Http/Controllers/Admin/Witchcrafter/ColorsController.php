@@ -10,7 +10,7 @@ use Illuminate\View\Factory as ViewFactory;
 use Pterodactyl\Http\Controllers\Controller;
 use Illuminate\Contracts\Config\Repository as ConfigRepository;
 use Pterodactyl\Contracts\Repository\SettingsRepositoryInterface;
-use Pterodactyl\Http\Requests\Admin\Designify\ColorSettingsFormRequest;
+use Pterodactyl\Http\Requests\Admin\Witchcrafter\ColorSettingsFormRequest;
 
 class ColorsController extends Controller
 {
@@ -27,7 +27,7 @@ class ColorsController extends Controller
     }
 
     /**
-     * Render Designify settings UI.
+     * Render Witchcrafter settings UI.
      */
     public function index(): View
     {

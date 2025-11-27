@@ -10,7 +10,7 @@ use Illuminate\View\Factory as ViewFactory;
 use Pterodactyl\Http\Controllers\Controller;
 use Illuminate\Contracts\Config\Repository as ConfigRepository;
 use Pterodactyl\Contracts\Repository\SettingsRepositoryInterface;
-use Pterodactyl\Http\Requests\Admin\Designify\GeneralSettingsFormRequest;
+use Pterodactyl\Http\Requests\Admin\Witchcrafter\GeneralSettingsFormRequest;
 
 class GeneralController extends Controller
 {
@@ -27,7 +27,7 @@ class GeneralController extends Controller
     }
 
     /**
-     * Render Designify settings UI.
+     * Render Witchcrafter settings UI.
      */
     public function index(): View
     {

@@ -7,7 +7,7 @@ use Pterodactyl\Contracts\Repository\SettingsRepositoryInterface;
 
 class WitchcrafterComposer
 {
-    private array $witchyworldsDefaults;
+    private array $reviactylDefaults;
     private array $Theme1;
     private array $Theme2;
     private array $Theme3;
@@ -124,7 +124,7 @@ class WitchcrafterComposer
             'color900' => config('witchcrafter.theme7.color900') ?? '#171717',
         ];
 
-        $this->witchyworldsDefaults = [
+        $this->reviactylDefaults = [
             'customCopyright' => config('witchcrafter.customCopyright', true),
             'copyright' => config('witchcrafter.copyright') ?? 'Panel Revision 1',
             'isUnderMaintenance' => config('witchcrafter.isUnderMaintenance', false),
@@ -161,18 +161,9 @@ class WitchcrafterComposer
             'socialStatus' => config('witchcrafter.socialStatus') ?? 'https://status.witchyworlds.top',
             'socialDiscord' => config('witchcrafter.socialDiscord') ?? 'https://discord.gg/Af7k4fX8de',
             'socialWebsite' => config('witchcrafter.socialWebsite') ?? 'https://witchyworlds.top',
-            'socialKnowledgebase' => config('witchcrafter.socialKnowledgebase') ?? '',
-            'socialCustomTitle' => config('witchcrafter.socialCustomTitle') ?? '',
-            'socialCustomUrl' => config('witchcrafter.socialCustomUrl') ?? '',
-            'socialCustom2Title' => config('witchcrafter.socialCustom2Title') ?? '',
-            'socialCustom2Url' => config('witchcrafter.socialCustom2Url') ?? '',
-            'socialCustom3Title' => config('witchcrafter.socialCustom3Title') ?? '',
-            'socialCustom3Url' => config('witchcrafter.socialCustom3Url') ?? '',
-            'socialCustom4Title' => config('witchcrafter.socialCustom4Title') ?? '',
-            'socialCustom4Url' => config('witchcrafter.socialCustom4Url') ?? '',
             'site_color' => config('witchcrafter.site_color') ?? '#3b82f6',
-            'site_title' => config('witchcrafter.site_title') ?? 'WitchyWorlds',
-            'site_description' => config('witchcrafter.site_description') ?? 'Our official control panel made better with WitchyWorlds.',
+            'site_title' => config('witchcrafter.site_title') ?? 'Reviactyl',
+            'site_description' => config('witchcrafter.site_description') ?? 'Our official control panel made better with Reviactyl.',
             'site_image' => config('witchcrafter.site_image') ?? '/witchyworlds/logo.png',
             'site_favicon' => config('witchcrafter.site_favicon') ?? '/witchyworlds/icon.png',
         ];
@@ -180,6 +171,6 @@ class WitchcrafterComposer
 
     public function compose(View $view): void
     {
-        $view->with('witchyworldsConfiguration', $this->witchyworldsDefaults);
+        $view->with('reviactylConfiguration', $this->reviactylDefaults);
     }
 }
