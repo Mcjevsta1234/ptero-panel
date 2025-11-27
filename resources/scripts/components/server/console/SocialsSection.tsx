@@ -3,15 +3,14 @@ import styled from 'styled-components/macro';
 import tw from 'twin.macro';
 import { useStoreState } from 'easy-peasy';
 import { ApplicationStore } from '@/state';
-import Card from '@/witchyworlds/ui/Card';
 import { CreditCardIcon, StatusOnlineIcon, ChatAlt2Icon, GlobeIcon, BookOpenIcon, StarIcon } from '@heroicons/react/solid';
 
 const Container = styled.div`
-    ${tw`space-y-2 h-full flex flex-col`}
+    ${tw`space-y-2`}
 `;
 
 const SocialLink = styled.a`
-    ${tw`flex items-center gap-3 p-3 bg-gray-700 border border-gray-600 rounded-lg text-gray-200 hover:text-white hover:bg-gray-600 transition-all duration-150 no-underline`}
+    ${tw`flex items-center gap-3 p-3 bg-gray-600 rounded-lg text-gray-200 hover:text-white hover:bg-gray-500 transition-all duration-150 no-underline`}
 
     & > svg {
         ${tw`w-5 h-5 text-witchyworlds flex-shrink-0`}
@@ -23,7 +22,7 @@ const SocialLink = styled.a`
 `;
 
 const Title = styled.h3`
-    ${tw`text-lg font-semibold text-gray-100 mb-3`}
+    ${tw`text-sm font-semibold text-gray-300 uppercase tracking-wide mb-2`}
 `;
 
 const SocialsSection = ({ className }: { className?: string }) => {
@@ -56,7 +55,7 @@ const SocialsSection = ({ className }: { className?: string }) => {
     if (socials.length === 0) return null;
 
     return (
-        <Card className={className}>
+        <div className={`bg-gray-700 border border-gray-600 rounded-lg p-4 ${className || ''}`}>
             <Title>Quick Links</Title>
             <Container>
                 {socials.map((social, index) => (
@@ -71,7 +70,7 @@ const SocialsSection = ({ className }: { className?: string }) => {
                     </SocialLink>
                 ))}
             </Container>
-        </Card>
+        </div>
     );
 };
 

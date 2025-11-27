@@ -5,8 +5,7 @@ import isEqual from 'react-fast-compare';
 import Spinner from '@/components/elements/Spinner';
 import Features from '@feature/Features';
 import ConsoleBlock from '@/components/server/console/ConsoleBlock';
-import ServerStatsWithGraphs from '@/components/server/console/ServerStatsWithGraphs';
-import SocialsSection from '@/components/server/console/SocialsSection';
+import ConsoleSidebar from '@/components/server/console/ConsoleSidebar';
 import { Alert } from '@/components/elements/alert';
 import { useTranslation } from 'react-i18next';
 
@@ -30,21 +29,17 @@ const ServerConsoleContainer = () => {
                         : t('server-transferring')}
                 </Alert>
             )}
-            
-            <Spinner.Suspense>
-                <ServerStatsWithGraphs />
-            </Spinner.Suspense>
 
-            <div className='grid lg:grid-cols-4 gap-4'>
-                <div className='lg:col-span-3 space-y-4'>
+            <div className='grid grid-cols-1 lg:grid-cols-[1fr_320px] gap-4'>
+                <div className='space-y-4 order-2 lg:order-1'>
                     <Spinner.Suspense>
                         <ConsoleBlock />
                     </Spinner.Suspense>
                     <Features enabled={eggFeatures} />
                 </div>
-                <div className='lg:col-span-1'>
+                <div className='order-1 lg:order-2'>
                     <Spinner.Suspense>
-                        <SocialsSection className='h-full' />
+                        <ConsoleSidebar />
                     </Spinner.Suspense>
                 </div>
             </div>
