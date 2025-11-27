@@ -15,7 +15,6 @@ import Pagination from '@/components/elements/Pagination';
 import { useLocation } from 'react-router-dom';
 import Card from '@/witchyworlds/ui/Card';
 import Title from '@/witchyworlds/ui/Title';
-import SocialsSection from '@/components/server/console/SocialsSection';
 import { EmojiSadIcon } from '@heroicons/react/solid';
 import { useTranslation } from 'react-i18next';
 
@@ -80,35 +79,28 @@ export default () => {
             {!servers ? (
                 <Spinner centered size={'large'} />
             ) : (
-                <div className='grid lg:grid-cols-4 gap-4'>
-                    <div className='lg:col-span-3'>
-                        <Pagination data={servers} onPageSelect={setPage}>
-                            {({ items }) =>
-                                items.length > 0 ? (
-                                    <div className='grid lg:grid-cols-2 gap-3'>
-                                        {items.map((server, index) => (
-                                            <ServerRow
-                                                key={server.uuid}
-                                                server={server}
-                                                css={index > 0 ? tw`mt-2` : undefined}
-                                            />
-                                        ))}
-                                    </div>
-                                ) : (
-                                    <Card css={tw`col-span-1 lg:col-span-2`}>
-                                        <p className='flex justify-center text-center text-sm text-gray-400'>
-                                            <EmojiSadIcon className='w-5 h-5 mr-1' />{' '}
-                                            {showOnlyAdmin ? t('no-other-servers') : t('no-servers')}
-                                        </p>
-                                    </Card>
-                                )
-                            }
-                        </Pagination>
-                    </div>
-                    <div className='lg:col-span-1'>
-                        <SocialsSection />
-                    </div>
-                </div>
+                <Pagination data={servers} onPageSelect={setPage}>
+                    {({ items }) =>
+                        items.length > 0 ? (
+                            <div className='grid lg:grid-cols-2 gap-3'>
+                                {items.map((server, index) => (
+                                    <ServerRow
+                                        key={server.uuid}
+                                        server={server}
+                                        css={index > 0 ? tw`mt-2` : undefined}
+                                    />
+                                ))}
+                            </div>
+                        ) : (
+                            <Card css={tw`col-span-1 lg:col-span-2`}>
+                                <p className='flex justify-center text-center text-sm text-gray-400'>
+                                    <EmojiSadIcon className='w-5 h-5 mr-1' />{' '}
+                                    {showOnlyAdmin ? t('no-other-servers') : t('no-servers')}
+                                </p>
+                            </Card>
+                        )
+                    }
+                </Pagination>
             )}
         </PageContentBlock>
     );

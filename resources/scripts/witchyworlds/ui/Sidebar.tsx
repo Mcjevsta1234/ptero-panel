@@ -7,7 +7,14 @@ import { useStoreState } from 'easy-peasy';
 import { ApplicationStore } from '@/state';
 import { ExternalLinkIcon } from '@heroicons/react/solid';
 import { useTranslation } from 'react-i18next';
-import { FaHouse } from 'react-icons/fa6';
+import { FaHouse, FaDiscord } from 'react-icons/fa6';
+import {
+    BanknotesIcon,
+    CheckCircleIcon,
+    GlobeAltIcon,
+    LightBulbIcon,
+    BeakerIcon,
+} from '@heroicons/react/24/solid';
 
 interface Props {
     isOpen?: boolean;
@@ -61,12 +68,45 @@ export const SideNavigation = styled.div`
     }
 `;
 
+const SocialLinksContainer = styled.div`
+    ${tw`mt-auto border-t border-gray-600 p-4`};
+`;
+
+const SocialGrid = styled.div`
+    ${tw`grid grid-cols-2 gap-2`};
+`;
+
+const SocialLink = styled.a`
+    ${tw`flex items-center justify-center gap-2 p-3 bg-gray-600 rounded-ui text-white hover:bg-witchyworlds transition-colors duration-200`};
+`;
+
+const SocialIcon = styled.div`
+    ${tw`w-5 h-5 flex items-center justify-center`};
+`;
+
 const Sidebar = ({ children, isOpen = false, dashboard = false }: Props) => {
     const { t } = useTranslation('routes');
     const nameFirst = useStoreState((state) => state.user.data?.name_first);
     const nameLast = useStoreState((state) => state.user.data?.name_last);
     const rootAdmin = useStoreState((state) => state.user.data!.rootAdmin);
     const name = useStoreState((state: ApplicationStore) => state.settings.data!.name);
+    
+    // Social links data
+    const socialBilling = useStoreState((state: ApplicationStore) => state.witchyworlds.data?.socialBilling);
+    const socialStatus = useStoreState((state: ApplicationStore) => state.witchyworlds.data?.socialStatus);
+    const socialDiscord = useStoreState((state: ApplicationStore) => state.witchyworlds.data?.socialDiscord);
+    const socialWebsite = useStoreState((state: ApplicationStore) => state.witchyworlds.data?.socialWebsite);
+    const socialKnowledgebase = useStoreState((state: ApplicationStore) => state.witchyworlds.data?.socialKnowledgebase);
+    const socialTrials = useStoreState((state: ApplicationStore) => state.witchyworlds.data?.socialTrials);
+
+    const socialsOrdered = [
+        { icon: <BanknotesIcon />, label: 'Billing', url: socialBilling },
+        { icon: <CheckCircleIcon />, label: 'Status', url: socialStatus },
+        { icon: <FaDiscord />, label: 'Discord', url: socialDiscord },
+        { icon: <GlobeAltIcon />, label: 'Website', url: socialWebsite },
+        { icon: <LightBulbIcon />, label: 'Knowledgebase', url: socialKnowledgebase },
+        { icon: <BeakerIcon />, label: 'Trials', url: socialTrials || 'https://trials.witchyworlds.top' },
+    ].filter((s) => s.url && s.url !== '');
 
     return (
         <Container isOpen={isOpen}>
@@ -107,6 +147,19 @@ const Sidebar = ({ children, isOpen = false, dashboard = false }: Props) => {
                     </SideNavigation>
                 )}
                 {children && <SideNavigation>{children}</SideNavigation>}
+                
+                {socialsOrdered.length > 0 && (
+                    <SocialLinksContainer>
+                        <SocialGrid>
+                            {socialsOrdered.map((social, index) => (
+                                <SocialLink key={index} href={social.url} target='_blank' rel='noopener noreferrer'>
+                                    <SocialIcon>{social.icon}</SocialIcon>
+                                    <span className='text-xs font-medium'>{social.label}</span>
+                                </SocialLink>
+                            ))}
+                        </SocialGrid>
+                    </SocialLinksContainer>
+                )}
             </SidebarContent>
         </Container>
     );
