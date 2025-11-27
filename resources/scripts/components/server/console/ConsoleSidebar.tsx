@@ -40,37 +40,38 @@ const buildSmoothPath = (points: { x: number; y: number }[]) => {
     return d.join(' ');
 };
 
-// Single metric mountain graph with internal smoothing animation.
+// Single metric mountain graph with continuous smoothing (no endpoint circle, fine line).
 const SingleMountainGraph = ({ data, color, max = 100 }: { data: DataPoint[]; color: string; max?: number }) => {
     const width = 100;
     const height = 32;
     const padding = 2;
-    const animDuration = 600; // ms
+    const smoothing = 0.15; // interpolation factor per frame
     const [animated, setAnimated] = useState<number[]>(data.map(d => d.value));
-    const prevTarget = useRef<number[]>(animated);
-    const startTime = useRef<number | null>(null);
+    const targetRef = useRef<number[]>(data.map(d => d.value));
     const frameRef = useRef<number | null>(null);
 
-    // Trigger animation whenever data changes.
+    // Update target values when data changes
     useEffect(() => {
-        const target = data.map(d => d.value);
-        const prev = prevTarget.current.length === target.length ? prevTarget.current : target.map((v, i) => prevTarget.current[i] ?? v);
-        prevTarget.current = target;
-        startTime.current = performance.now();
-
-        const animate = (now: number) => {
-            if (!startTime.current) return;
-            const elapsed = now - startTime.current;
-            const t = Math.min(1, elapsed / animDuration);
-            const eased = 1 - Math.pow(1 - t, 3); // easeOutCubic
-            const current = target.map((v, i) => prev[i] + (v - prev[i]) * eased);
-            setAnimated(current);
-            if (t < 1) frameRef.current = requestAnimationFrame(animate);
-        };
-        if (frameRef.current) cancelAnimationFrame(frameRef.current);
-        frameRef.current = requestAnimationFrame(animate);
-        return () => { if (frameRef.current) cancelAnimationFrame(frameRef.current); };
+        targetRef.current = data.map(d => d.value);
+        // If length changed (initial fill), pad animated to match
+        if (animated.length !== targetRef.current.length) {
+            setAnimated(targetRef.current.slice());
+        }
+        if (!frameRef.current) {
+            const animate = () => {
+                setAnimated(prev => prev.map((v, i) => {
+                    const t = targetRef.current[i] ?? v;
+                    return v + (t - v) * smoothing;
+                }));
+                frameRef.current = requestAnimationFrame(animate);
+            };
+            frameRef.current = requestAnimationFrame(animate);
+        }
+        return () => { /* keep running */ };
     }, [data]);
+
+    // Cleanup on unmount
+    useEffect(() => () => { if (frameRef.current) cancelAnimationFrame(frameRef.current); }, []);
 
     if (animated.length === 0) return null;
     const points = animated.map((val, index) => {
@@ -80,25 +81,10 @@ const SingleMountainGraph = ({ data, color, max = 100 }: { data: DataPoint[]; co
         return { x, y };
     });
     const path = buildSmoothPath(points);
-    const areaPath = path ? `${path} L ${points[points.length - 1].x},${height} L 0,${height} Z` : '';
-    const gradientId = `gradient-single-${color.replace('#', '')}`;
 
     return (
         <svg viewBox={`0 0 ${width} ${height}`} className="w-full h-full" preserveAspectRatio="none">
-            <defs>
-                <linearGradient id={gradientId} x1="0%" y1="0%" x2="0%" y2="100%">
-                    <stop offset="0%" style={{ stopColor: color, stopOpacity: 0.7 }} />
-                    <stop offset="100%" style={{ stopColor: color, stopOpacity: 0.15 }} />
-                </linearGradient>
-            </defs>
-            {areaPath && <path d={areaPath} fill={`url(#${gradientId})`} opacity={0.8} />}
-            {path && <path d={path} stroke={color} strokeWidth={2} fill="none" strokeLinecap="round" />}
-            {/* Latest point pulse */}
-            {points.length > 0 && (
-                <circle cx={points[points.length - 1].x} cy={points[points.length - 1].y} r={3} fill={color}>
-                    <animate attributeName="r" values="2;4;2" dur="2s" repeatCount="indefinite" />
-                </circle>
-            )}
+            {path && <path d={path} stroke={color} strokeWidth={1.4} fill="none" strokeLinecap="round" />}
         </svg>
     );
 };
@@ -109,40 +95,33 @@ const MirrorMountainGraph = ({ data, color1, color2 }: { data: NetworkDataPoint[
     const height = 32;
     const centerY = height / 2;
     const maxHeight = (height / 2) - 2;
-    const animDuration = 600;
+    const smoothing = 0.15;
     const [animatedRx, setAnimatedRx] = useState<number[]>(data.map(d => d.rx));
     const [animatedTx, setAnimatedTx] = useState<number[]>(data.map(d => d.tx));
-    const prevRx = useRef<number[]>(animatedRx);
-    const prevTx = useRef<number[]>(animatedTx);
-    const startTime = useRef<number | null>(null);
+    const targetRx = useRef<number[]>(data.map(d => d.rx));
+    const targetTx = useRef<number[]>(data.map(d => d.tx));
     const frameRef = useRef<number | null>(null);
 
     useEffect(() => {
-        const targetRx = data.map(d => d.rx);
-        const targetTx = data.map(d => d.tx);
-        const prevR = prevRx.current.length === targetRx.length ? prevRx.current : targetRx.map((v, i) => prevRx.current[i] ?? v);
-        const prevT = prevTx.current.length === targetTx.length ? prevTx.current : targetTx.map((v, i) => prevTx.current[i] ?? v);
-        prevRx.current = targetRx;
-        prevTx.current = targetTx;
-        startTime.current = performance.now();
-        const maxValue = Math.max(...targetRx.map(v => v), ...targetTx.map(v => v), 1);
-
-        const animate = (now: number) => {
-            if (!startTime.current) return;
-            const elapsed = now - startTime.current;
-            const t = Math.min(1, elapsed / animDuration);
-            const eased = 1 - Math.pow(1 - t, 3);
-            setAnimatedRx(targetRx.map((v, i) => prevR[i] + (v - prevR[i]) * eased));
-            setAnimatedTx(targetTx.map((v, i) => prevT[i] + (v - prevT[i]) * eased));
-            if (t < 1) frameRef.current = requestAnimationFrame(animate);
-        };
-        if (frameRef.current) cancelAnimationFrame(frameRef.current);
-        frameRef.current = requestAnimationFrame(animate);
-        return () => { if (frameRef.current) cancelAnimationFrame(frameRef.current); };
+        targetRx.current = data.map(d => d.rx);
+        targetTx.current = data.map(d => d.tx);
+        if (animatedRx.length !== targetRx.current.length) setAnimatedRx(targetRx.current.slice());
+        if (animatedTx.length !== targetTx.current.length) setAnimatedTx(targetTx.current.slice());
+        if (!frameRef.current) {
+            const animate = () => {
+                setAnimatedRx(prev => prev.map((v, i) => v + ( (targetRx.current[i] ?? v) - v ) * smoothing));
+                setAnimatedTx(prev => prev.map((v, i) => v + ( (targetTx.current[i] ?? v) - v ) * smoothing));
+                frameRef.current = requestAnimationFrame(animate);
+            };
+            frameRef.current = requestAnimationFrame(animate);
+        }
+        return () => { /* keep running */ };
     }, [data]);
 
+    useEffect(() => () => { if (frameRef.current) cancelAnimationFrame(frameRef.current); }, []);
+
     if (animatedRx.length < 2 || animatedTx.length < 2) return null;
-    const maxValue = Math.max(...animatedRx.map(v => v), ...animatedTx.map(v => v), 1);
+    const maxValue = Math.max(...animatedRx, ...animatedTx, 1);
 
     const buildMountain = (values: number[], isTop: boolean) => {
         const pts = values.map((val, index) => {
@@ -163,34 +142,9 @@ const MirrorMountainGraph = ({ data, color1, color2 }: { data: NetworkDataPoint[
 
     return (
         <svg viewBox={`0 0 ${width} ${height}`} className="w-full h-full" preserveAspectRatio="none">
-            <defs>
-                <linearGradient id={gradientId1} x1="0%" y1="0%" x2="0%" y2="100%">
-                    <stop offset="0%" style={{ stopColor: color1, stopOpacity: 0.8 }} />
-                    <stop offset="100%" style={{ stopColor: color1, stopOpacity: 0.2 }} />
-                </linearGradient>
-                <linearGradient id={gradientId2} x1="0%" y1="100%" x2="0%" y2="0%">
-                    <stop offset="0%" style={{ stopColor: color2, stopOpacity: 0.8 }} />
-                    <stop offset="100%" style={{ stopColor: color2, stopOpacity: 0.2 }} />
-                </linearGradient>
-            </defs>
-            <line x1={0} y1={centerY} x2={width} y2={centerY} stroke="#374151" strokeWidth={1} opacity={0.3} />
-            {top.path && (
-                <path d={`${top.path} L ${top.pts[top.pts.length - 1].x},${centerY} L ${top.pts[0].x},${centerY} Z`} fill={`url(#${gradientId1})`} />
-            )}
-            {bottom.path && (
-                <path d={`${bottom.path} L ${bottom.pts[bottom.pts.length - 1].x},${centerY} L ${bottom.pts[0].x},${centerY} Z`} fill={`url(#${gradientId2})`} />
-            )}
-            {/* Pulses */}
-            {top.pts.length > 0 && (
-                <circle cx={top.pts[top.pts.length - 1].x} cy={top.pts[top.pts.length - 1].y} r={3} fill={color1}>
-                    <animate attributeName="r" values="2;4;2" dur="2s" repeatCount="indefinite" />
-                </circle>
-            )}
-            {bottom.pts.length > 0 && (
-                <circle cx={bottom.pts[bottom.pts.length - 1].x} cy={bottom.pts[bottom.pts.length - 1].y} r={3} fill={color2}>
-                    <animate attributeName="r" values="2;4;2" dur="2s" repeatCount="indefinite" />
-                </circle>
-            )}
+            <line x1={0} y1={centerY} x2={width} y2={centerY} stroke="#374151" strokeWidth={1} opacity={0.25} />
+            {top.path && <path d={top.path} stroke={color1} strokeWidth={1.4} fill="none" strokeLinecap="round" />}
+            {bottom.path && <path d={bottom.path} stroke={color2} strokeWidth={1.4} fill="none" strokeLinecap="round" />}
         </svg>
     );
 };
