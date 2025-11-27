@@ -54,37 +54,8 @@ const ServerContentBlock: React.FC<Props> = ({ title, children, ...props }) => {
 
     return (
         <PageContentBlock title={`(${servername}) ${title} | ${name}`} {...props}>
-            <div className="flex flex-wrap items-center justify-between gap-4 mb-4">
+            <div className="flex items-center mb-4">
                 <Title className='text-4xl'>{title}</Title>
-                <div className="flex flex-wrap items-center gap-6 text-sm">
-                    {/* Uptime */}
-                    <div className="flex items-center gap-2">
-                        <span className="text-gray-400 uppercase tracking-wide text-xs">Uptime:</span>
-                        <span className="text-white font-medium">
-                            {isOffline ? (
-                                'Offline'
-                            ) : stats.uptime > 0 ? (
-                                <UptimeDuration uptime={stats.uptime / 1000} />
-                            ) : (
-                                'Starting'
-                            )}
-                        </span>
-                    </div>
-                    {/* Network In */}
-                    <div className="flex items-center gap-2">
-                        <span className="text-gray-400 uppercase tracking-wide text-xs">RX:</span>
-                        <span className="text-white font-medium">
-                            {isOffline ? '0 B' : bytesToString(stats.rx)}
-                        </span>
-                    </div>
-                    {/* Network Out */}
-                    <div className="flex items-center gap-2">
-                        <span className="text-gray-400 uppercase tracking-wide text-xs">TX:</span>
-                        <span className="text-white font-medium">
-                            {isOffline ? '0 B' : bytesToString(stats.tx)}
-                        </span>
-                    </div>
-                </div>
             </div>
             {children}
         </PageContentBlock>

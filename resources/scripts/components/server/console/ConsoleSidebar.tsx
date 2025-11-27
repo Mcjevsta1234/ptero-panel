@@ -79,7 +79,7 @@ const ConsoleSidebar = () => {
         const diskLimitBytes = limits.disk * 1024 * 1024;
 
         setCpuHistory((prev) => {
-            const updated = [...prev, { time: now, value: Math.min(100, (newStats.cpu / limits.cpu) * 100) }];
+            const updated = [...prev, { time: now, value: Math.min(100, newStats.cpu) }];
             return updated.slice(-MAX_DATA_POINTS);
         });
 
@@ -98,7 +98,7 @@ const ConsoleSidebar = () => {
     const memoryLimitBytes = limits.memory * 1024 * 1024;
     const diskLimitBytes = limits.disk * 1024 * 1024;
 
-    const cpuPercent = isOffline ? 0 : Math.min(100, Math.round((stats.cpu / limits.cpu) * 100));
+    const cpuPercent = isOffline ? 0 : Math.min(100, Math.round(stats.cpu));
     const memoryPercent = isOffline ? 0 : Math.min(100, Math.round((stats.memory / memoryLimitBytes) * 100));
     const diskPercent = isOffline ? 0 : Math.min(100, Math.round((stats.disk / diskLimitBytes) * 100));
 
@@ -142,9 +142,9 @@ const ConsoleSidebar = () => {
     };
 
     return (
-        <div className="space-y-4 max-h-[600px] overflow-y-auto pr-2 scrollbar-thin scrollbar-thumb-gray-600 scrollbar-track-gray-800">
+        <div className="space-y-4">
             {/* Server Info - Moved to top */}
-            <div className="bg-gray-700 border border-gray-600 rounded-lg p-4 min-h-[120px] flex flex-col">
+            <div className="bg-gray-700 border border-gray-600 rounded-lg p-4 h-[140px] flex flex-col">
                 <div className="flex items-center gap-3 mb-3">
                     <div className="w-10 h-10 bg-orange-500/20 rounded-lg flex items-center justify-center flex-shrink-0">
                         <svg className="w-5 h-5 text-orange-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -173,7 +173,7 @@ const ConsoleSidebar = () => {
             </div>
 
             {/* Uptime */}
-            <div className="bg-gray-700 border border-gray-600 rounded-lg p-4 min-h-[120px] flex flex-col">
+            <div className="bg-gray-700 border border-gray-600 rounded-lg p-4 h-[120px] flex flex-col">
                 <div className="flex items-center gap-3">
                     <div className="w-10 h-10 bg-green-500/20 rounded-lg flex items-center justify-center flex-shrink-0">
                         <svg className="w-5 h-5 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -190,8 +190,8 @@ const ConsoleSidebar = () => {
             </div>
 
             {/* CPU Load */}
-            <div className="bg-gray-700 border border-gray-600 rounded-lg p-4 min-h-[120px] flex flex-col">
-                <div className="flex items-center gap-3 mb-3">
+            <div className="bg-gray-700 border border-gray-600 rounded-lg p-4 h-[120px] flex flex-col">
+                <div className="flex items-center gap-3">
                     <div className="w-10 h-10 bg-blue-500/20 rounded-lg flex items-center justify-center flex-shrink-0">
                         <svg className="w-5 h-5 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 3v2m6-2v2M9 19v2m6-2v2M5 9H3m2 6H3m18-6h-2m2 6h-2M7 19h10a2 2 0 002-2V7a2 2 0 00-2-2H7a2 2 0 00-2 2v10a2 2 0 002 2zM9 9h6v6H9V9z" />
@@ -203,15 +203,15 @@ const ConsoleSidebar = () => {
                     </div>
                 </div>
                 {cpuHistory.length > 0 && (
-                    <div className="h-12 mt-auto">
+                    <div className="h-12 mt-3">
                         <Line data={createChartData(cpuHistory, '#3b82f6')} options={chartOptions} />
                     </div>
                 )}
             </div>
 
             {/* Memory */}
-            <div className="bg-gray-700 border border-gray-600 rounded-lg p-4 min-h-[120px] flex flex-col">
-                <div className="flex items-center gap-3 mb-3">
+            <div className="bg-gray-700 border border-gray-600 rounded-lg p-4 h-[120px] flex flex-col">
+                <div className="flex items-center gap-3">
                     <div className="w-10 h-10 bg-emerald-500/20 rounded-lg flex items-center justify-center flex-shrink-0">
                         <svg className="w-5 h-5 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 7v10c0 2.21 3.582 4 8 4s8-1.79 8-4V7M4 7c0 2.21 3.582 4 8 4s8-1.79 8-4M4 7c0-2.21 3.582-4 8-4s8 1.79 8 4" />
@@ -225,15 +225,15 @@ const ConsoleSidebar = () => {
                     </div>
                 </div>
                 {memoryHistory.length > 0 && (
-                    <div className="h-12 mt-auto">
+                    <div className="h-12 mt-3">
                         <Line data={createChartData(memoryHistory, '#10b981')} options={chartOptions} />
                     </div>
                 )}
             </div>
 
             {/* Disk */}
-            <div className="bg-gray-700 border border-gray-600 rounded-lg p-4 min-h-[120px] flex flex-col">
-                <div className="flex items-center gap-3 mb-3">
+            <div className="bg-gray-700 border border-gray-600 rounded-lg p-4 h-[120px] flex flex-col">
+                <div className="flex items-center gap-3">
                     <div className="w-10 h-10 bg-purple-500/20 rounded-lg flex items-center justify-center flex-shrink-0">
                         <svg className="w-5 h-5 text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 19a2 2 0 01-2-2V7a2 2 0 012-2h4l2 2h4a2 2 0 012 2v1M5 19h14a2 2 0 002-2v-5a2 2 0 00-2-2H9a2 2 0 00-2 2v5a2 2 0 01-2 2z" />
@@ -247,14 +247,14 @@ const ConsoleSidebar = () => {
                     </div>
                 </div>
                 {diskHistory.length > 0 && (
-                    <div className="h-12 mt-auto">
+                    <div className="h-12 mt-3">
                         <Line data={createChartData(diskHistory, '#a855f7')} options={chartOptions} />
                     </div>
                 )}
             </div>
 
             {/* Network */}
-            <div className="bg-gray-700 border border-gray-600 rounded-lg p-4 min-h-[120px] flex flex-col">
+            <div className="bg-gray-700 border border-gray-600 rounded-lg p-4 h-[120px] flex flex-col">
                 <div className="flex items-center gap-3">
                     <div className="w-10 h-10 bg-cyan-500/20 rounded-lg flex items-center justify-center flex-shrink-0">
                         <svg className="w-5 h-5 text-cyan-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
