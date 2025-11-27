@@ -259,3 +259,22 @@ Route::group(['prefix' => 'witchcrafter'], function () {
     Route::get('/socials', [Admin\Witchcrafter\SocialsController::class, 'index'])->name('admin.witchcrafter.socials');
     Route::patch('/socials', [Admin\Witchcrafter\SocialsController::class, 'update']);
 });
+
+/*
+|--------------------------------------------------------------------------
+| Dedicated Server Allocation Routes
+|--------------------------------------------------------------------------
+|
+| Endpoint: /admin/dedicated
+|
+*/
+Route::group(['prefix' => 'dedicated'], function () {
+    Route::get('/', [Admin\DedicatedAllocationsController::class, 'index'])->name('admin.dedicated.index');
+    Route::get('/create', [Admin\DedicatedAllocationsController::class, 'create'])->name('admin.dedicated.create');
+    Route::get('/{allocation}', [Admin\DedicatedAllocationsController::class, 'show'])->name('admin.dedicated.show');
+    Route::get('/{allocation}/edit', [Admin\DedicatedAllocationsController::class, 'edit'])->name('admin.dedicated.edit');
+    
+    Route::post('/', [Admin\DedicatedAllocationsController::class, 'store']);
+    Route::patch('/{allocation}', [Admin\DedicatedAllocationsController::class, 'update']);
+    Route::delete('/{allocation}', [Admin\DedicatedAllocationsController::class, 'destroy']);
+});
