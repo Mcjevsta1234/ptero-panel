@@ -33,7 +33,7 @@ const Container = styled.div`
 `;
 
 const SocialIcon = styled.a`
-    ${tw`relative flex items-center justify-center w-9 h-9 bg-gray-800 hover:bg-gray-600 rounded-lg transition-colors cursor-pointer group`}
+    ${tw`relative flex items-center justify-center w-9 h-9 bg-gray-800 hover:bg-gray-600 rounded-lg transition-colors cursor-pointer`}
     
     svg {
         ${tw`w-5 h-5 text-gray-300`}
