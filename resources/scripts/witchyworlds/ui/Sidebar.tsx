@@ -77,7 +77,7 @@ const SocialGrid = styled.div`
 `;
 
 const SocialLink = styled.a`
-    ${tw`flex items-center justify-center gap-2 p-3 bg-gray-600 rounded-ui text-white hover:bg-witchyworlds transition-colors duration-200`};
+    ${tw`flex items-center justify-start gap-2 p-3 bg-gray-600 rounded-ui text-white hover:bg-witchyworlds transition-colors duration-200`};
 `;
 
 const SocialIcon = styled.div`
