@@ -144,7 +144,7 @@ export default ({ server }: { server: Server }) => {
                             )
                         ) : (
                             <React.Fragment>
-                                <StatBlock className='backdrop-blur-sm bg-gray-500/20 border border-gray-500/50'>
+                                <StatBlock className='backdrop-blur-sm bg-gray-500/20 border border-gray-500/50 min-h-[44px]'>
                                     <span className='w-4 sm:w-5 text-gray-300'>
                                         <FaGlobe />
                                     </span>
@@ -158,7 +158,7 @@ export default ({ server }: { server: Server }) => {
                                             ))}
                                     </Blur>
                                 </StatBlock>
-                                <StatBlock className='backdrop-blur-sm bg-gray-500/20 border border-gray-500/50'>
+                                <StatBlock className='backdrop-blur-sm bg-gray-500/20 border border-gray-500/50 min-h-[44px]'>
                                     <span className='w-4 sm:w-5 text-gray-300'>
                                         <FaMicrochip />
                                     </span>
@@ -167,7 +167,7 @@ export default ({ server }: { server: Server }) => {
                                     </p>
                                     <span className='text-xs sm:text-sm text-gray-300'>/ {cpuLimit}</span>
                                 </StatBlock>
-                                <StatBlock className='backdrop-blur-sm bg-gray-500/20 border border-gray-500/50'>
+                                <StatBlock className='backdrop-blur-sm bg-gray-500/20 border border-gray-500/50 min-h-[44px]'>
                                     <span className='w-4 sm:w-5 text-gray-300'>
                                         <FaMemory />
                                     </span>
@@ -176,7 +176,7 @@ export default ({ server }: { server: Server }) => {
                                     </p>
                                     <span className='text-xs sm:text-sm text-gray-300'>/ {memoryLimit}</span>
                                 </StatBlock>
-                                <StatBlock className='backdrop-blur-sm bg-gray-500/20 border border-gray-500/50'>
+                                <StatBlock className='backdrop-blur-sm bg-gray-500/20 border border-gray-500/50 min-h-[44px]'>
                                     <span className='w-4 sm:w-5 text-gray-300'>
                                         <FaFloppyDisk />
                                     </span>
