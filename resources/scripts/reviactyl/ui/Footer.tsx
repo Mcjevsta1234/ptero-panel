@@ -2,7 +2,7 @@ import React from 'react';
 import styled from 'styled-components/macro';
 import tw from 'twin.macro';
 import { useStoreState } from 'easy-peasy';
-import Md2React from '@/reviactyl/ui/Md2React';
+import Md2React from '@/witchyworlds/ui/Md2React';
 
 const Container = styled.div`
     ${tw`mt-4 mb-4`}
