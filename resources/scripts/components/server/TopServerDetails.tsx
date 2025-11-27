@@ -92,24 +92,24 @@ const TopServerDetails = () => {
     return (
         <Container>
             <Card className={`!p-6 !px-8 mx-auto w-full max-w-[1200px] !bg-gray-700`}>
-                <UtilContainer>
-                    <div className={'flex items-center gap-x-3'}>
-                        <Title className='text-3xl'>{name}</Title>
-                        {rootAdmin && (
-                            // eslint-disable-next-line react/jsx-no-target-blank
-                            <a href={`/admin/servers/view/${serverId}`} target={'_blank'} className='h-5 w-5'>
-                                <ExternalLinkIcon />
-                            </a>
-                        )}
-                    </div>
-                    
-                    <Can action={['control.start', 'control.stop', 'control.restart']} matchAny>
-                        <PowerButtons className='grid grid-cols-3 gap-2' />
-                    </Can>
-                </UtilContainer>
-                
-                {/* Stats row - centered */}
-                <div className='flex items-center justify-center gap-2 mt-4 flex-wrap'>
+                {/* Header Row: Name + Status + Admin Link */}
+                <div className='flex items-center gap-3 flex-wrap mb-4'>
+                    <Title className='text-3xl'>{name}</Title>
+                    <span
+                        className={`px-3 py-1 text-xs font-semibold rounded-ui tracking-wide uppercase bg-gray-600 text-gray-100 ${status === 'online' ? 'bg-green-700/60 text-green-200' : status === 'offline' ? 'bg-gray-600 text-gray-300' : 'bg-yellow-700/60 text-yellow-200'}`}
+                    >
+                        {status || 'Unknown'}
+                    </span>
+                    {rootAdmin && (
+                        // eslint-disable-next-line react/jsx-no-target-blank
+                        <a href={`/admin/servers/view/${serverId}`} target={'_blank'} className='h-5 w-5 text-gray-300'>
+                            <ExternalLinkIcon />
+                        </a>
+                    )}
+                </div>
+
+                {/* Stats Row */}
+                <div className='flex items-center gap-2 flex-wrap mb-6'>
                     <StatBlock className='bg-gray-800 border-gray-600'>
                         <span className='w-5 text-gray-300'>
                             <FaGlobe />
@@ -162,6 +162,12 @@ const TopServerDetails = () => {
                             <span className='text-sm text-gray-100'>{id}</span>
                         </CopyOnClick>
                     </StatBlock>
+                </div>
+                {/* Actions Row */}
+                <div className='flex w-full justify-end'>
+                    <Can action={['control.start', 'control.stop', 'control.restart']} matchAny>
+                        <PowerButtons className='grid grid-cols-3 gap-2' />
+                    </Can>
                 </div>
             </Card>
         </Container>
