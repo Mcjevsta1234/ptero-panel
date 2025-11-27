@@ -40,58 +40,16 @@ const buildSmoothPath = (points: { x: number; y: number }[]) => {
     return d.join(' ');
 };
 
-// Single metric mountain graph with spring-damped smoothing & gradient fill (no endpoint pulse).
+// Single metric mountain graph with gradient fill (no smoothing).
 const SingleMountainGraph = ({ data, color, max = 100 }: { data: DataPoint[]; color: string; max?: number }) => {
     const width = 100;
     const height = 32;
     const padding = 2;
-    const stiffness = 0.08; // Spring stiffness (lower = softer)
-    const damping = 0.75; // Damping factor (higher = less oscillation)
-    const [animated, setAnimated] = useState<number[]>(data.map(d => d.value));
-    const velocityRef = useRef<number[]>(data.map(() => 0));
-    const targetRef = useRef<number[]>(data.map(d => d.value));
-    const frameRef = useRef<number | null>(null);
-    const lastTimeRef = useRef<number>(performance.now());
 
-    // Update target when data changes
-    useEffect(() => {
-        targetRef.current = data.map(d => d.value);
-        if (animated.length !== data.length) {
-            setAnimated(data.map(d => d.value));
-            velocityRef.current = data.map(() => 0);
-        }
-    }, [data]);
-
-    // Spring physics interpolation loop
-    useEffect(() => {
-        const animate = (now: number) => {
-            const deltaTime = Math.min((now - lastTimeRef.current) / 16.67, 2); // Cap at 2 frames
-            lastTimeRef.current = now;
-            
-            setAnimated(prev => {
-                return prev.map((val, i) => {
-                    const target = targetRef.current[i] ?? val;
-                    const delta = target - val;
-                    if (Math.abs(delta) < 0.005 && Math.abs(velocityRef.current[i]) < 0.005) {
-                        velocityRef.current[i] = 0;
-                        return target;
-                    }
-                    // Spring physics: F = -kx - cv
-                    const force = delta * stiffness;
-                    velocityRef.current[i] = (velocityRef.current[i] + force) * damping;
-                    return val + velocityRef.current[i] * deltaTime;
-                });
-            });
-            frameRef.current = requestAnimationFrame(animate);
-        };
-        frameRef.current = requestAnimationFrame(animate);
-        return () => { if (frameRef.current) cancelAnimationFrame(frameRef.current); };
-    }, []);
-
-    if (!animated.length) return null;
-    const points = animated.map((val, index) => {
+    if (!data.length) return null;
+    const points = data.map((d, index) => {
         const x = (index / (MAX_DATA_POINTS - 1)) * width;
-        const normalizedValue = Math.min(100, (val / max) * 100);
+        const normalizedValue = Math.min(100, (d.value / max) * 100);
         const y = height - (normalizedValue / 100) * (height - padding * 2) - padding;
         return { x, y };
     });
@@ -114,73 +72,15 @@ const SingleMountainGraph = ({ data, color, max = 100 }: { data: DataPoint[]; co
     );
 };
 
-// Dual metric (rx/tx) mirrored mountain graph with spring-damped smoothing.
+// Dual metric (rx/tx) mirrored mountain graph (no smoothing).
 const MirrorMountainGraph = ({ data, color1, color2 }: { data: NetworkDataPoint[]; color1: string; color2: string }) => {
     const width = 100;
     const height = 32;
     const centerY = height / 2;
     const maxHeight = (height / 2) - 2;
-    const stiffness = 0.08;
-    const damping = 0.75;
-    const [animatedRx, setAnimatedRx] = useState<number[]>(data.map(d => d.rx));
-    const [animatedTx, setAnimatedTx] = useState<number[]>(data.map(d => d.tx));
-    const velocityRxRef = useRef<number[]>(data.map(() => 0));
-    const velocityTxRef = useRef<number[]>(data.map(() => 0));
-    const targetRxRef = useRef<number[]>(data.map(d => d.rx));
-    const targetTxRef = useRef<number[]>(data.map(d => d.tx));
-    const frameRef = useRef<number | null>(null);
-    const lastTimeRef = useRef<number>(performance.now());
 
-    // Update targets when data changes
-    useEffect(() => {
-        targetRxRef.current = data.map(d => d.rx);
-        targetTxRef.current = data.map(d => d.tx);
-        if (animatedRx.length !== data.length) {
-            setAnimatedRx(data.map(d => d.rx));
-            setAnimatedTx(data.map(d => d.tx));
-            velocityRxRef.current = data.map(() => 0);
-            velocityTxRef.current = data.map(() => 0);
-        }
-    }, [data]);
-
-    // Spring physics interpolation loop
-    useEffect(() => {
-        const animate = (now: number) => {
-            const deltaTime = Math.min((now - lastTimeRef.current) / 16.67, 2);
-            lastTimeRef.current = now;
-            
-            setAnimatedRx(prev => prev.map((val, i) => {
-                const target = targetRxRef.current[i] ?? val;
-                const delta = target - val;
-                if (Math.abs(delta) < 0.005 && Math.abs(velocityRxRef.current[i]) < 0.005) {
-                    velocityRxRef.current[i] = 0;
-                    return target;
-                }
-                const force = delta * stiffness;
-                velocityRxRef.current[i] = (velocityRxRef.current[i] + force) * damping;
-                return val + velocityRxRef.current[i] * deltaTime;
-            }));
-            
-            setAnimatedTx(prev => prev.map((val, i) => {
-                const target = targetTxRef.current[i] ?? val;
-                const delta = target - val;
-                if (Math.abs(delta) < 0.005 && Math.abs(velocityTxRef.current[i]) < 0.005) {
-                    velocityTxRef.current[i] = 0;
-                    return target;
-                }
-                const force = delta * stiffness;
-                velocityTxRef.current[i] = (velocityTxRef.current[i] + force) * damping;
-                return val + velocityTxRef.current[i] * deltaTime;
-            }));
-            
-            frameRef.current = requestAnimationFrame(animate);
-        };
-        frameRef.current = requestAnimationFrame(animate);
-        return () => { if (frameRef.current) cancelAnimationFrame(frameRef.current); };
-    }, []);
-
-    if (animatedRx.length < 2 || animatedTx.length < 2) return null;
-    const maxValue = Math.max(...animatedRx, ...animatedTx, 1);
+    if (data.length < 2) return null;
+    const maxValue = Math.max(...data.map(d => d.rx), ...data.map(d => d.tx), 1);
 
     const buildMountain = (values: number[], isTop: boolean) => {
         const pts = values.map((val, index) => {
@@ -194,8 +94,8 @@ const MirrorMountainGraph = ({ data, color1, color2 }: { data: NetworkDataPoint[
         return { pts, path };
     };
 
-    const top = buildMountain(animatedRx, true);
-    const bottom = buildMountain(animatedTx, false);
+    const top = buildMountain(data.map(d => d.rx), true);
+    const bottom = buildMountain(data.map(d => d.tx), false);
 
     const gradientId1 = `mmg-top-${color1.replace('#', '')}`;
     const gradientId2 = `mmg-bottom-${color2.replace('#', '')}`;
