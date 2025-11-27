@@ -9,12 +9,12 @@ import { ExternalLinkIcon } from '@heroicons/react/solid';
 import { useTranslation } from 'react-i18next';
 import { FaHouse, FaDiscord } from 'react-icons/fa6';
 import {
-    BanknotesIcon,
+    CashIcon as BanknotesIcon,
     CheckCircleIcon,
     GlobeAltIcon,
     LightBulbIcon,
     BeakerIcon,
-} from '@heroicons/react/24/solid';
+} from '@heroicons/react/solid';
 
 interface Props {
     isOpen?: boolean;
