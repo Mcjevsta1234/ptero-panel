@@ -104,7 +104,7 @@ const Sidebar = ({ children, isOpen = false, dashboard = false }: Props) => {
         { icon: <CheckCircleIcon />, label: 'Status', url: socialStatus },
         { icon: <FaDiscord />, label: 'Discord', url: socialDiscord },
         { icon: <GlobeAltIcon />, label: 'Website', url: socialWebsite },
-        { icon: <LightBulbIcon />, label: 'Knowledgebase', url: socialKnowledgebase },
+        { icon: <LightBulbIcon />, label: 'KB', url: socialKnowledgebase },
         { icon: <BeakerIcon />, label: 'Trials', url: socialTrials || 'https://trials.witchyworlds.top' },
     ].filter((s) => s.url && s.url !== '');
 
