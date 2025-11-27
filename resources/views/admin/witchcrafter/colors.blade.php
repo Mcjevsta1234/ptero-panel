@@ -10,7 +10,7 @@
         @method('PATCH')
         <div class="mb-8">
             <h1 class="text-2xl font-bold text-white mb-2">Color settings</h1>
-            <p class="text-zinc-400 text-sm">Change the color scheme of Reviactyl Theme.</p>
+            <p class="text-zinc-400 text-sm">Change the color scheme of Witchcrafter Theme.</p>
         </div>
         <div class="flex-1 space-y-6 pb-[80px]">
             <div class="space-y-4">

@@ -10,7 +10,7 @@
         @method('PATCH')
         <div class="mb-8">
             <h1 class="text-2xl font-bold text-white mb-2">Alert settings</h1>
-            <p class="text-zinc-400 text-sm">Change the alert settings of Reviactyl Theme.</p>
+            <p class="text-zinc-400 text-sm">Change the alert settings of Witchcrafter Theme.</p>
         </div>
         <div class="flex-1 space-y-6">
             <div class="space-y-3">
@@ -42,7 +42,7 @@
                 <input type="text" id="witchcrafter:alertMessage" name="witchcrafter:alertMessage"
                     value="{{ old('witchcrafter:alertMessage', config('witchcrafter.alertMessage')) }}"
                     class="w-full px-4 py-3 bg-zinc-800/50 border border-zinc-700 rounded-xl text-white placeholder-zinc-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
-                    placeholder="**bold** [link](https://reviactyl.dev)" />
+                    placeholder="**bold** [link](https://witchyworlds.top)" />
             </div>
         </div>
     </form>

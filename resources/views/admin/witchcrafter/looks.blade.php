@@ -10,12 +10,12 @@
         @method('PATCH')
         <div class="mb-8">
             <h1 class="text-2xl font-bold text-white mb-2">Look & Feel</h1>
-            <p class="text-zinc-400 text-sm">Change the look & feel of Reviactyl Theme.</p>
+            <p class="text-zinc-400 text-sm">Change the look & feel of Witchcrafter Theme.</p>
         </div>
         <div class="flex-1 space-y-6 pb-[80px]">
             <div class="space-y-3">
                 <label class="block text-sm font-medium text-zinc-700 dark:text-zinc-300" for="witchcrafter:themeSelector">
-                    Reviactyl Styles <span class="bg-blue-800 rounded-xl px-2">Soon</span>
+                    WitchyWorlds Styles <span class="bg-blue-800 rounded-xl px-2">Soon</span>
                 </label>
                 <div class="inline-flex gap-2">
                     <a class="bg-zinc-800/50 border border-blue-700 rounded-xl p-1">

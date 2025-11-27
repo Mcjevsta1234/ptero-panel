@@ -97,20 +97,28 @@
                             Site Meta Settings
                         </span>
                     </a>
+                    <a href="{{ route('admin.witchcrafter.socials') }}"
+                        class="{{ !starts_with(Route::currentRouteName(), 'admin.witchcrafter.socials') ?: 'bg-sky-600/20 border border-sky-500/30 ring-2 ring-sky-500 bg-sky-600/30' }} group relative flex items-center justify-center h-10 w-10 md:h-12 md:w-12 rounded-lg md:rounded-xl text-sky-500 hover:bg-sky-600/30 hover:text-sky-300 transition-all duration-200">
+                        <i class="fa-solid fa-link"></i>
+                        <span
+                            class="absolute left-full ml-2 px-2 py-1 bg-zinc-800 text-white text-sm rounded opacity-0 group-hover:opacity-100 transition-opacity duration-200 whitespace-nowrap z-100 pointer-events-none hidden md:block">
+                            Quick Links
+                        </span>
+                    </a>
                 </nav>
             </div>
 
             <div class="flex flex-col space-y-2 px-2">
                 @include('partials/admin.witchcrafter.save')
                 <form action="{{ route('admin.witchcrafter.reset') }}" method="POST"
-                    onsubmit="return confirm('Are you sure you want to reset Reviactyl settings to default?');">
+                    onsubmit="return confirm('Are you sure you want to reset Witchcrafter settings to default?');">
                     @csrf
                     <button type="submit"
                         class="group relative flex items-center justify-center h-10 w-10 md:h-12 md:w-12 rounded-lg md:rounded-xl bg-red-800/50 border border-red-700 text-red-400 hover:bg-red-700/50 hover:text-red-300 transition-all duration-200">
                         <i class="fa-solid fa-trash-can"></i>
                         <div
                             class="absolute left-full ml-2 px-2 py-1 bg-zinc-800 text-white text-sm rounded opacity-0 group-hover:opacity-100 transition-opacity duration-200 whitespace-nowrap z-50 pointer-events-none hidden md:block">
-                            Reset Reviactyl to Defaults
+                            Reset Witchcrafter to Defaults
                         </div>
                     </button>
                 </form>
@@ -203,7 +211,7 @@
 
     <footer
         class="fixed bottom-0 left-0 right-0 h-6 flex bg-zinc-950 border-t border-zinc-800 items-center justify-center text-xs text-zinc-400 z-40">
-        <span>&copy; Reviactyl</span>
+        <span>&copy; WitchyWorlds</span>
     </footer>
 
     <script src="https://unpkg.com/lucide@latest"></script>
