@@ -64,8 +64,10 @@ if command -v mysqldump &> /dev/null; then
         BACKUP_LOG="/var/backups/backup_before_dedicated_${timestamp}.log"
         mkdir -p /var/backups
         echo "[${timestamp}] Attempting ${mode} backup: host=${host} port=${port} db=${db} user=${user}" | tee -a "$BACKUP_LOG"
-        if mysql -h"$host" -P"$port" -u"$user" -p"$pass" -e "SELECT 1" "$db" &>> "$BACKUP_LOG"; then
-            if mysqldump -h"$host" -P"$port" -u"$user" -p"$pass" "$db" > "/var/backups/$BACKUP_FILE" 2>> "$BACKUP_LOG"; then
+        
+        # Use mysql_config_editor credentials or pass via stdin to handle special chars
+        if mysql --host="$host" --port="$port" --user="$user" --password="$pass" -e "SELECT 1" "$db" &>> "$BACKUP_LOG"; then
+            if mysqldump --host="$host" --port="$port" --user="$user" --password="$pass" "$db" > "/var/backups/$BACKUP_FILE" 2>> "$BACKUP_LOG"; then
                 print_success "Database backup created: /var/backups/$BACKUP_FILE"
                 echo "Log: $BACKUP_LOG"
                 return 0
