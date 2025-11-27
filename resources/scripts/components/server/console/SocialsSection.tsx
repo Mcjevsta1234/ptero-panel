@@ -6,7 +6,7 @@ import { ApplicationStore } from '@/state';
 import { CreditCardIcon, StatusOnlineIcon, ChatAlt2Icon, GlobeIcon, BookOpenIcon, StarIcon } from '@heroicons/react/solid';
 
 const Container = styled.div`
-    ${tw`space-y-2`}
+    ${tw`grid grid-cols-2 gap-2`}
 `;
 
 const SocialLink = styled.a`
