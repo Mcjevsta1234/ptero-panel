@@ -65,16 +65,22 @@ cp -rf ptero-panel-develop/* .
 rm -rf ptero-panel-develop
 print_success "Files downloaded successfully"
 
+# Remove old theme/assets to avoid stale files
+print_info "Removing old compiled assets and legacy theme files..."
+rm -rf public/assets/*.js public/assets/*.map public/assets/*.css || true
+rm -rf storage/framework/views/* || true
+
 # Set permissions
 print_info "Setting permissions..."
 chmod -R 755 storage/* bootstrap/cache/
 
 # Install composer dependencies
 print_info "Installing Composer dependencies..."
-composer install --no-dev --optimize-autoloader
+composer install --no-interaction --prefer-dist --optimize-autoloader
 
 # Clear cache
 print_info "Clearing application cache..."
+php artisan cache:clear
 php artisan view:clear
 php artisan config:clear
 php artisan route:clear
@@ -89,17 +95,28 @@ chown -R www-data:www-data /var/www/pterodactyl/*
 
 # Build frontend assets
 print_info "Building frontend assets (this may take a while)..."
-yarn install
+export NODE_OPTIONS=--openssl-legacy-provider
+yarn install --frozen-lockfile || yarn install
 yarn build:production
+
+# Rebuild Laravel caches
+print_info "Rebuilding Laravel caches..."
+php artisan config:cache
+php artisan route:cache
+php artisan view:cache
+
+# Restart queue workers to pick up new config
+print_info "Restarting queue workers..."
+php artisan queue:restart
 
 print_success "Installation completed successfully!"
 echo ""
 print_info "Next steps:"
 echo "1. Configure social links in: config/witchcrafter.php"
-echo "2. Restart PHP-FPM and Nginx:"
+echo "2. Restart PHP-FPM and Nginx (if applicable):"
 echo "   systemctl restart php8.2-fpm"
 echo "   systemctl restart nginx"
-echo "3. Restart queue workers:"
+echo "3. If using pteroq system service, also:"
 echo "   systemctl restart pteroq"
 echo ""
 print_success "Access your panel at: https://panel.witchyworlds.top"
