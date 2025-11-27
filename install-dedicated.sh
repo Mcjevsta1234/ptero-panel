@@ -57,17 +57,25 @@ print_step "Creating database backup"
 cd "$PANEL_DIR"
 
 if command -v mysqldump &> /dev/null; then
-    DB_HOST=$(grep DB_HOST .env | cut -d '=' -f2)
-    DB_PORT=$(grep DB_PORT .env | cut -d '=' -f2)
-    DB_DATABASE=$(grep DB_DATABASE .env | cut -d '=' -f2)
-    DB_USERNAME=$(grep DB_USERNAME .env | cut -d '=' -f2)
-    DB_PASSWORD=$(grep DB_PASSWORD .env | cut -d '=' -f2)
+    DB_HOST=$(grep DB_HOST .env | cut -d '=' -f2 | tr -d '\r')
+    DB_PORT=$(grep DB_PORT .env | cut -d '=' -f2 | tr -d '\r')
+    DB_DATABASE=$(grep DB_DATABASE .env | cut -d '=' -f2 | tr -d '\r')
+    DB_USERNAME=$(grep DB_USERNAME .env | cut -d '=' -f2 | tr -d '\r')
+    DB_PASSWORD=$(grep DB_PASSWORD .env | cut -d '=' -f2 | tr -d '\r')
     
     BACKUP_FILE="backup_before_dedicated_$(date +%Y%m%d_%H%M%S).sql"
     
-    if mysqldump -h"$DB_HOST" -P"$DB_PORT" -u"$DB_USERNAME" -p"$DB_PASSWORD" "$DB_DATABASE" > "/var/backups/$BACKUP_FILE" 2>/dev/null; then
+    # Create backups directory if it doesn't exist
+    mkdir -p /var/backups
+    
+    # Use environment variable for password to avoid command line exposure
+    export MYSQL_PWD="$DB_PASSWORD"
+    
+    if mysqldump -h"$DB_HOST" -P"${DB_PORT:-3306}" -u"$DB_USERNAME" "$DB_DATABASE" > "/var/backups/$BACKUP_FILE" 2>&1; then
+        unset MYSQL_PWD
         print_success "Database backup created: /var/backups/$BACKUP_FILE"
     else
+        unset MYSQL_PWD
         print_warning "Could not create automatic backup. Continue anyway? (y/n)"
         read -r response
         if [[ ! "$response" =~ ^[Yy]$ ]]; then
