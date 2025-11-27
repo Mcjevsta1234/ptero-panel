@@ -21,139 +21,159 @@ interface NetworkDataPoint {
 
 const MAX_DATA_POINTS = 20;
 
-// Design 1: Radial/Circular Progress Meter (CPU)
-const RadialGraph = ({ data, color, max = 100 }: { data: DataPoint[]; color: string; max?: number }) => {
+// Design 1: Wave-filled Progress Bar (CPU)
+const WaveProgressGraph = ({ data, color, max = 100 }: { data: DataPoint[]; color: string; max?: number }) => {
     if (data.length === 0) return null;
 
     const width = 100;
     const height = 32;
-    const centerY = height / 2;
-    const radius = 12;
-    const strokeWidth = 3;
-
+    
     const latestValue = data[data.length - 1].value;
     const normalizedValue = Math.min(100, (latestValue / max) * 100);
-    const circumference = 2 * Math.PI * radius;
-    const progress = (normalizedValue / 100) * circumference;
+    const fillWidth = (normalizedValue / 100) * width;
 
-    // Create mini sparkline on the right
-    const sparklineWidth = width - 35;
-    const sparklinePoints = data.map((point, index) => {
-        const x = 35 + (index / (MAX_DATA_POINTS - 1)) * sparklineWidth;
-        const normalizedVal = Math.min(100, (point.value / max) * 100);
-        const y = height - (normalizedVal / 100) * (height - 4) - 2;
-        return { x, y };
-    });
+    // Create wave pattern
+    const waveCount = 4;
+    const waveHeight = 4;
+    const waveWidth = width / waveCount;
+    
+    let wavePath = `M 0,${height / 2}`;
+    for (let i = 0; i <= waveCount; i++) {
+        const x = i * waveWidth;
+        const y1 = (height / 2) - waveHeight;
+        const y2 = (height / 2) + waveHeight;
+        wavePath += ` Q ${x + waveWidth / 4},${y1} ${x + waveWidth / 2},${height / 2}`;
+        wavePath += ` Q ${x + (waveWidth * 3) / 4},${y2} ${x + waveWidth},${height / 2}`;
+    }
 
-    const sparkPath = sparklinePoints.length > 1
-        ? `M ${sparklinePoints[0].x},${sparklinePoints[0].y} ` + sparklinePoints.slice(1).map(p => `L ${p.x},${p.y}`).join(' ')
-        : '';
+    const gradientId = `gradient-wave-${color.replace('#', '')}`;
+    const glowId = `glow-wave-${color.replace('#', '')}`;
 
-    const gradientId = `gradient-radial-${color.replace('#', '')}`;
+    return (
+        <svg viewBox={`0 0 ${width} ${height}`} className="w-full h-full" style={{ overflow: 'visible' }}>
+            <defs>
+                <linearGradient id={gradientId} x1="0%" y1="0%" x2="100%" y2="0%">
+                    <stop offset="0%" style={{ stopColor: color, stopOpacity: 0.8 }} />
+                    <stop offset="100%" style={{ stopColor: color, stopOpacity: 1 }} />
+                </linearGradient>
+                <filter id={glowId}>
+                    <feGaussianBlur stdDeviation="2" result="coloredBlur"/>
+                    <feMerge>
+                        <feMergeNode in="coloredBlur"/>
+                        <feMergeNode in="SourceGraphic"/>
+                    </feMerge>
+                </filter>
+                <clipPath id={`clip-${color.replace('#', '')}`}>
+                    <rect x="0" y="0" width={fillWidth} height={height} style={{ transition: 'width 0.5s ease-out' }} />
+                </clipPath>
+            </defs>
+            
+            {/* Background bar */}
+            <rect x="0" y={height / 2 - 3} width={width} height="6" fill="#374151" rx="3" opacity="0.3" />
+            
+            {/* Filled wave */}
+            <g clipPath={`url(#clip-${color.replace('#', '')})`}>
+                <path
+                    d={wavePath}
+                    stroke={`url(#${gradientId})`}
+                    strokeWidth="6"
+                    fill="none"
+                    strokeLinecap="round"
+                    filter={`url(#${glowId})`}
+                >
+                    <animateTransform
+                        attributeName="transform"
+                        type="translate"
+                        from={`${-waveWidth} 0`}
+                        to="0 0"
+                        dur="2s"
+                        repeatCount="indefinite"
+                    />
+                </path>
+            </g>
+            
+            {/* Progress indicator dot */}
+            <circle
+                cx={fillWidth}
+                cy={height / 2}
+                r="4"
+                fill={color}
+                filter={`url(#${glowId})`}
+                style={{ transition: 'cx 0.5s ease-out' }}
+            >
+                <animate attributeName="r" values="3;5;3" dur="1.5s" repeatCount="indefinite" />
+            </circle>
+        </svg>
+    );
+};
+
+// Design 2: Vertical Column Fill (RAM)
+const ColumnFillGraph = ({ data, color, max = 100 }: { data: DataPoint[]; color: string; max?: number }) => {
+    if (data.length === 0) return null;
+
+    const width = 100;
+    const height = 32;
+    const columnCount = 16;
+    const columnWidth = (width / columnCount) - 1.5;
+    const gap = 1.5;
+
+    const gradientId = `gradient-column-${color.replace('#', '')}`;
 
     return (
         <svg viewBox={`0 0 ${width} ${height}`} className="w-full h-full">
             <defs>
-                <linearGradient id={gradientId} x1="0%" y1="0%" x2="100%" y2="0%">
+                <linearGradient id={gradientId} x1="0%" y1="100%" x2="0%" y2="0%">
                     <stop offset="0%" style={{ stopColor: color, stopOpacity: 0.6 }} />
+                    <stop offset="50%" style={{ stopColor: color, stopOpacity: 0.85 }} />
                     <stop offset="100%" style={{ stopColor: color, stopOpacity: 1 }} />
                 </linearGradient>
             </defs>
             
-            {/* Background circle */}
-            <circle
-                cx={radius + 4}
-                cy={centerY}
-                r={radius}
-                fill="none"
-                stroke="#374151"
-                strokeWidth={strokeWidth}
-            />
-            
-            {/* Progress circle */}
-            <circle
-                cx={radius + 4}
-                cy={centerY}
-                r={radius}
-                fill="none"
-                stroke={`url(#${gradientId})`}
-                strokeWidth={strokeWidth}
-                strokeDasharray={circumference}
-                strokeDashoffset={circumference - progress}
-                strokeLinecap="round"
-                transform={`rotate(-90 ${radius + 4} ${centerY})`}
-                style={{ transition: 'stroke-dashoffset 0.3s ease-out' }}
-            />
-            
-            {/* Sparkline */}
-            {sparkPath && (
-                <path
-                    d={sparkPath}
-                    stroke={color}
-                    strokeWidth="1.5"
-                    fill="none"
-                    strokeLinecap="round"
-                    opacity="0.6"
-                    style={{ transition: 'd 0.3s ease-out' }}
-                />
-            )}
+            {data.slice(-columnCount).map((point, index) => {
+                const normalizedValue = Math.min(100, (point.value / max) * 100);
+                const columnHeight = (normalizedValue / 100) * height;
+                const x = index * (columnWidth + gap);
+                const opacity = 0.4 + (index / columnCount) * 0.6;
+                
+                return (
+                    <g key={index}>
+                        {/* Background column */}
+                        <rect
+                            x={x}
+                            y={0}
+                            width={columnWidth}
+                            height={height}
+                            fill="#374151"
+                            opacity="0.2"
+                            rx="1"
+                        />
+                        {/* Filled column */}
+                        <rect
+                            x={x}
+                            y={height - columnHeight}
+                            width={columnWidth}
+                            height={columnHeight}
+                            fill={`url(#${gradientId})`}
+                            opacity={opacity}
+                            rx="1"
+                            style={{ 
+                                transition: 'height 0.5s ease-out, y 0.5s ease-out'
+                            }}
+                        />
+                    </g>
+                );
+            })}
         </svg>
     );
 };
 
-// Design 2: Block/Grid Fill Pattern (RAM)
-const BlockGraph = ({ data, color, max = 100 }: { data: DataPoint[]; color: string; max?: number }) => {
+// Design 3: Flowing Ribbon (Disk)
+const RibbonGraph = ({ data, color, max = 100 }: { data: DataPoint[]; color: string; max?: number }) => {
     if (data.length === 0) return null;
 
     const width = 100;
     const height = 32;
-    const cols = 20;
-    const rows = 4;
-    const blockWidth = (width / cols) - 0.5;
-    const blockHeight = (height / rows) - 0.5;
-
-    const latestValue = data[data.length - 1].value;
-    const normalizedValue = Math.min(100, (latestValue / max) * 100);
-    const totalBlocks = cols * rows;
-    const filledBlocks = Math.round((normalizedValue / 100) * totalBlocks);
-
-    const blocks = [];
-    for (let i = 0; i < totalBlocks; i++) {
-        const row = Math.floor(i / cols);
-        const col = i % cols;
-        const x = col * (blockWidth + 0.5);
-        const y = height - (row + 1) * (blockHeight + 0.5);
-        const isFilled = i < filledBlocks;
-        
-        blocks.push(
-            <rect
-                key={i}
-                x={x}
-                y={y}
-                width={blockWidth}
-                height={blockHeight}
-                fill={isFilled ? color : '#374151'}
-                opacity={isFilled ? 0.7 + (i / totalBlocks) * 0.3 : 0.3}
-                rx="0.5"
-                style={{ transition: 'fill 0.3s ease-out, opacity 0.3s ease-out' }}
-            />
-        );
-    }
-
-    return (
-        <svg viewBox={`0 0 ${width} ${height}`} className="w-full h-full">
-            {blocks}
-        </svg>
-    );
-};
-
-// Design 3: Smooth curved line with particles (Disk - keeping this one)
-const CurvedLineGraph = ({ data, color, max = 100 }: { data: DataPoint[]; color: string; max?: number }) => {
-    if (data.length === 0) return null;
-
-    const width = 100;
-    const height = 32;
-    const padding = 2;
+    const padding = 4;
     
     const points = data.map((point, index) => {
         const x = (index / (MAX_DATA_POINTS - 1)) * width;
@@ -162,55 +182,87 @@ const CurvedLineGraph = ({ data, color, max = 100 }: { data: DataPoint[]; color:
         return { x, y };
     });
 
+    // Create smooth bezier curve
     const smoothPath = points.length > 2 ? (() => {
         let path = `M ${points[0].x},${points[0].y}`;
-        for (let i = 1; i < points.length; i++) {
-            const prev = points[i - 1];
-            const curr = points[i];
-            const cpX = (prev.x + curr.x) / 2;
-            path += ` Q ${prev.x},${prev.y} ${cpX},${(prev.y + curr.y) / 2}`;
-            if (i === points.length - 1) {
-                path += ` T ${curr.x},${curr.y}`;
-            }
+        for (let i = 0; i < points.length - 1; i++) {
+            const current = points[i];
+            const next = points[i + 1];
+            const controlX = (current.x + next.x) / 2;
+            path += ` C ${controlX},${current.y} ${controlX},${next.y} ${next.x},${next.y}`;
         }
         return path;
     })() : '';
 
-    const gradientId = `gradient-curved-${color.replace('#', '')}`;
+    // Create ribbon edges
+    const topRibbon = smoothPath;
+    const bottomRibbon = points.length > 2 ? (() => {
+        let path = `M ${points[0].x},${points[0].y + 6}`;
+        for (let i = 0; i < points.length - 1; i++) {
+            const current = points[i];
+            const next = points[i + 1];
+            const controlX = (current.x + next.x) / 2;
+            path += ` C ${controlX},${current.y + 6} ${controlX},${next.y + 6} ${next.x},${next.y + 6}`;
+        }
+        return path;
+    })() : '';
+
+    const gradientId = `gradient-ribbon-${color.replace('#', '')}`;
 
     return (
         <svg viewBox={`0 0 ${width} ${height}`} className="w-full h-full" preserveAspectRatio="none">
             <defs>
                 <linearGradient id={gradientId} x1="0%" y1="0%" x2="0%" y2="100%">
-                    <stop offset="0%" style={{ stopColor: color, stopOpacity: 0.4 }} />
-                    <stop offset="100%" style={{ stopColor: color, stopOpacity: 0.1 }} />
+                    <stop offset="0%" style={{ stopColor: color, stopOpacity: 0.9 }} />
+                    <stop offset="50%" style={{ stopColor: color, stopOpacity: 0.6 }} />
+                    <stop offset="100%" style={{ stopColor: color, stopOpacity: 0.3 }} />
                 </linearGradient>
             </defs>
+            
             {smoothPath && (
                 <>
+                    {/* Ribbon fill */}
                     <path
-                        d={`${smoothPath} L ${width},${height} L 0,${height} Z`}
+                        d={`${topRibbon} L ${points[points.length - 1].x},${points[points.length - 1].y + 6} ${bottomRibbon.substring(1)} Z`}
                         fill={`url(#${gradientId})`}
-                        style={{ transition: 'd 0.3s ease-out' }}
+                        opacity="0.8"
+                        style={{ transition: 'all 0.5s ease-out' }}
                     />
+                    {/* Top edge */}
                     <path
-                        d={smoothPath}
+                        d={topRibbon}
                         stroke={color}
                         strokeWidth="2"
                         fill="none"
                         strokeLinecap="round"
-                        style={{ transition: 'd 0.3s ease-out' }}
+                        opacity="0.9"
+                        style={{ transition: 'd 0.5s ease-out' }}
                     />
-                    {points.slice(-5).map((point, idx) => (
+                    {/* Bottom edge */}
+                    <path
+                        d={bottomRibbon}
+                        stroke={color}
+                        strokeWidth="1"
+                        fill="none"
+                        strokeLinecap="round"
+                        opacity="0.5"
+                        style={{ transition: 'd 0.5s ease-out' }}
+                    />
+                    {/* Highlight dots */}
+                    {points.slice(-3).map((point, idx) => (
                         <circle
                             key={idx}
                             cx={point.x}
                             cy={point.y}
-                            r={idx === 4 ? 2 : 1}
+                            r={idx === 2 ? 3 : 2}
                             fill={color}
-                            opacity={0.5 + (idx / 5) * 0.5}
-                            style={{ transition: 'cx 0.3s ease-out, cy 0.3s ease-out' }}
-                        />
+                            opacity={idx === 2 ? 1 : 0.6}
+                            style={{ transition: 'cx 0.5s ease-out, cy 0.5s ease-out' }}
+                        >
+                            {idx === 2 && (
+                                <animate attributeName="opacity" values="0.6;1;0.6" dur="2s" repeatCount="indefinite" />
+                            )}
+                        </circle>
                     ))}
                 </>
             )}
@@ -218,82 +270,87 @@ const CurvedLineGraph = ({ data, color, max = 100 }: { data: DataPoint[]; color:
     );
 };
 
-// Design 4: Split Horizontal Bars (Network RX/TX)
-const SplitBarGraph = ({ data, color1, color2 }: { data: NetworkDataPoint[]; color1: string; color2: string }) => {
+// Design 4: Mirrored Mountain Range (Network RX/TX)
+const MirrorMountainGraph = ({ data, color1, color2 }: { data: NetworkDataPoint[]; color1: string; color2: string }) => {
     if (data.length === 0) return null;
 
     const width = 100;
     const height = 32;
-    const barHeight = (height / 2) - 2;
-    const gap = 4;
-
+    const centerY = height / 2;
+    const maxHeight = (height / 2) - 2;
+    
     const maxValue = Math.max(
         ...data.map(d => Math.max(d.rx, d.tx)),
         1
     );
 
-    const latestData = data[data.length - 1];
-    const rxPercent = (latestData.rx / maxValue) * 100;
-    const txPercent = (latestData.tx / maxValue) * 100;
+    // Create smooth paths for RX (top) and TX (bottom)
+    const createMountainPath = (values: number[], isTop: boolean) => {
+        const points = values.map((val, index) => {
+            const x = (index / (MAX_DATA_POINTS - 1)) * width;
+            const normalizedValue = Math.min(100, (val / maxValue) * 100);
+            const yOffset = (normalizedValue / 100) * maxHeight;
+            const y = isTop ? centerY - yOffset : centerY + yOffset;
+            return { x, y };
+        });
 
-    // Create mini bars for history
-    const barCount = Math.min(data.length, 10);
-    const barWidth = width / barCount - 1;
+        if (points.length < 2) return '';
 
-    const gradientId1 = `gradient-split-${color1.replace('#', '')}`;
-    const gradientId2 = `gradient-split-${color2.replace('#', '')}`;
+        let path = `M ${points[0].x},${centerY}`;
+        for (let i = 0; i < points.length - 1; i++) {
+            const current = points[i];
+            const next = points[i + 1];
+            const controlX = (current.x + next.x) / 2;
+            path += ` C ${controlX},${current.y} ${controlX},${next.y} ${next.x},${next.y}`;
+        }
+        path += ` L ${points[points.length - 1].x},${centerY} Z`;
+        return path;
+    };
+
+    const rxValues = data.map(d => d.rx);
+    const txValues = data.map(d => d.tx);
+
+    const rxPath = createMountainPath(rxValues, true);
+    const txPath = createMountainPath(txValues, false);
+
+    const gradientId1 = `gradient-mountain-${color1.replace('#', '')}`;
+    const gradientId2 = `gradient-mountain-${color2.replace('#', '')}`;
 
     return (
-        <svg viewBox={`0 0 ${width} ${height}`} className="w-full h-full">
+        <svg viewBox={`0 0 ${width} ${height}`} className="w-full h-full" preserveAspectRatio="none">
             <defs>
-                <linearGradient id={gradientId1} x1="0%" y1="0%" x2="100%" y2="0%">
-                    <stop offset="0%" style={{ stopColor: color1, stopOpacity: 0.5 }} />
-                    <stop offset="100%" style={{ stopColor: color1, stopOpacity: 1 }} />
+                <linearGradient id={gradientId1} x1="0%" y1="0%" x2="0%" y2="100%">
+                    <stop offset="0%" style={{ stopColor: color1, stopOpacity: 0.8 }} />
+                    <stop offset="100%" style={{ stopColor: color1, stopOpacity: 0.2 }} />
                 </linearGradient>
-                <linearGradient id={gradientId2} x1="0%" y1="0%" x2="100%" y2="0%">
-                    <stop offset="0%" style={{ stopColor: color2, stopOpacity: 0.5 }} />
-                    <stop offset="100%" style={{ stopColor: color2, stopOpacity: 1 }} />
+                <linearGradient id={gradientId2} x1="0%" y1="100%" x2="0%" y2="0%">
+                    <stop offset="0%" style={{ stopColor: color2, stopOpacity: 0.8 }} />
+                    <stop offset="100%" style={{ stopColor: color2, stopOpacity: 0.2 }} />
                 </linearGradient>
             </defs>
             
-            {/* RX (Download) - Top half */}
-            {data.slice(-barCount).map((point, index) => {
-                const barRxPercent = Math.min(100, (point.rx / maxValue) * 100);
-                const barRxWidth = (barRxPercent / 100) * width;
-                const x = (index / barCount) * width;
-                return (
-                    <rect
-                        key={`rx-${index}`}
-                        x={0}
-                        y={index * (barHeight / barCount)}
-                        width={barRxWidth}
-                        height={barHeight / barCount - 0.5}
-                        fill={`url(#${gradientId1})`}
-                        opacity={0.5 + (index / barCount) * 0.5}
-                        rx="1"
-                        style={{ transition: 'width 0.3s ease-out' }}
-                    />
-                );
-            })}
+            {/* Center line */}
+            <line x1="0" y1={centerY} x2={width} y2={centerY} stroke="#374151" strokeWidth="1" opacity="0.3" />
             
-            {/* TX (Upload) - Bottom half */}
-            {data.slice(-barCount).map((point, index) => {
-                const barTxPercent = Math.min(100, (point.tx / maxValue) * 100);
-                const barTxWidth = (barTxPercent / 100) * width;
-                return (
-                    <rect
-                        key={`tx-${index}`}
-                        x={0}
-                        y={barHeight + gap + (index * (barHeight / barCount))}
-                        width={barTxWidth}
-                        height={barHeight / barCount - 0.5}
-                        fill={`url(#${gradientId2})`}
-                        opacity={0.5 + (index / barCount) * 0.5}
-                        rx="1"
-                        style={{ transition: 'width 0.3s ease-out' }}
-                    />
-                );
-            })}
+            {/* RX (Download) - Top mountain */}
+            {rxPath && (
+                <path
+                    d={rxPath}
+                    fill={`url(#${gradientId1})`}
+                    opacity="0.9"
+                    style={{ transition: 'd 0.5s ease-out' }}
+                />
+            )}
+            
+            {/* TX (Upload) - Bottom mountain */}
+            {txPath && (
+                <path
+                    d={txPath}
+                    fill={`url(#${gradientId2})`}
+                    opacity="0.9"
+                    style={{ transition: 'd 0.5s ease-out' }}
+                />
+            )}
         </svg>
     );
 };
@@ -433,7 +490,7 @@ const ConsoleSidebar = () => {
                 </div>
                 {cpuHistory.length > 0 && (
                     <div className="h-8">
-                        <RadialGraph data={cpuHistory} color="#3b82f6" max={cpuLimit} />
+                        <WaveProgressGraph data={cpuHistory} color="#3b82f6" max={cpuLimit} />
                     </div>
                 )}
             </div>
@@ -455,7 +512,7 @@ const ConsoleSidebar = () => {
                 </div>
                 {memoryHistory.length > 0 && (
                     <div className="h-8">
-                        <BlockGraph data={memoryHistory} color="#10b981" max={100} />
+                        <ColumnFillGraph data={memoryHistory} color="#10b981" max={100} />
                     </div>
                 )}
             </div>
@@ -477,7 +534,7 @@ const ConsoleSidebar = () => {
                 </div>
                 {diskHistory.length > 0 && (
                     <div className="h-8">
-                        <CurvedLineGraph data={diskHistory} color="#a855f7" max={100} />
+                        <RibbonGraph data={diskHistory} color="#a855f7" max={100} />
                     </div>
                 )}
             </div>
@@ -506,7 +563,7 @@ const ConsoleSidebar = () => {
                 </div>
                 {networkHistory.length > 0 && (
                     <div className="h-8">
-                        <SplitBarGraph data={networkHistory} color1="#06b6d4" color2="#a855f7" />
+                        <MirrorMountainGraph data={networkHistory} color1="#06b6d4" color2="#a855f7" />
                     </div>
                 )}
             </div>
