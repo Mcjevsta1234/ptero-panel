@@ -7,7 +7,7 @@
 @section('content')
     <div class="h-full flex flex-col">
         <div class="mb-8">
-            <h1 class="text-2xl font-bold text-white mb-2">Welcome to Designify</h1>
+            <h1 class="text-2xl font-bold text-white mb-2">Welcome to Witchcrafter</h1>
             <p class="text-zinc-400 text-sm">To begin configuring, use Sidebar to navigate between options.</p>
         </div>
         <section class="mb-8">

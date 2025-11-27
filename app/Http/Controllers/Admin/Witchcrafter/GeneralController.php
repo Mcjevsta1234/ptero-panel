@@ -1,6 +1,6 @@
 <?php
 
-namespace Pterodactyl\Http\Controllers\Admin\Designify;
+namespace Pterodactyl\Http\Controllers\Admin\Witchcrafter;
 
 use Illuminate\View\View;
 use Illuminate\Http\RedirectResponse;
@@ -31,7 +31,7 @@ class GeneralController extends Controller
      */
     public function index(): View
     {
-        return $this->view->make('admin.designify.general');
+        return $this->view->make('admin.witchcrafter.general');
     }
 
     /**
@@ -47,6 +47,6 @@ class GeneralController extends Controller
         $this->kernel->call('queue:restart');
         $this->alert->success('General settings have been updated successfully and the queue worker was restarted to apply these changes.')->flash();
 
-        return redirect()->route('admin.designify.general');
+        return redirect()->route('admin.witchcrafter.general');
     }
 }

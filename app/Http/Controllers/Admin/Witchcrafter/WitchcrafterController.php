@@ -1,15 +1,15 @@
 <?php
 
-namespace Pterodactyl\Http\Controllers\Admin\Designify;
+namespace Pterodactyl\Http\Controllers\Admin\Witchcrafter;
 
 use Illuminate\Http\RedirectResponse;
 use Prologue\Alerts\AlertsMessageBag;
 use Pterodactyl\Http\Controllers\Controller;
-use Pterodactyl\Providers\DesignifyServiceProvider;
+use Pterodactyl\Providers\WitchcrafterServiceProvider;
 use Pterodactyl\Contracts\Repository\SettingsRepositoryInterface;
 use Psr\Log\LoggerInterface;
 
-class DesignifyController extends Controller
+class WitchcrafterController extends Controller
 {
     public function __construct(
         private AlertsMessageBag $alert,
@@ -17,11 +17,11 @@ class DesignifyController extends Controller
     }
 
     /**
-     * Reset Reviactyl theme settings to default.
+     * Reset WitchyWorlds theme settings to default.
      */
     public function resetToDefaults(): RedirectResponse
     {
-        $service = new DesignifyServiceProvider(app());
+        $service = new WitchcrafterServiceProvider(app());
         $settings = app(SettingsRepositoryInterface::class);
         $log = app(LoggerInterface::class);
 
@@ -29,6 +29,6 @@ class DesignifyController extends Controller
 
         $this->alert->success('All settings have been reset to defaults.')->flash();
 
-        return redirect()->route('admin.designify');
+        return redirect()->route('admin.witchcrafter');
     }
 }

@@ -230,29 +230,32 @@ Route::group(['prefix' => 'nests'], function () {
 
 /*
 |--------------------------------------------------------------------------
-| Reviactyl Controller Routes
+| Witchcrafter Controller Routes
 |--------------------------------------------------------------------------
 |
-| Endpoint: /admin/designify
+| Endpoint: /admin/witchcrafter
 |
 */
-Route::group(['prefix' => 'designify'], function () {
-    Route::view('/', 'admin.designify.index')->name('admin.designify');
+Route::group(['prefix' => 'witchcrafter'], function () {
+    Route::view('/', 'admin.witchcrafter.index')->name('admin.witchcrafter');
 
-    Route::get('/general', [Admin\Designify\GeneralController::class, 'index'])->name('admin.designify.general');
-    Route::patch('/general', [Admin\Designify\GeneralController::class, 'update']);
+    Route::get('/general', [Admin\Witchcrafter\GeneralController::class, 'index'])->name('admin.witchcrafter.general');
+    Route::patch('/general', [Admin\Witchcrafter\GeneralController::class, 'update']);
 
-    Route::post('/reset', [Admin\Designify\DesignifyController::class, 'resetToDefaults'])->name('admin.designify.reset');
+    Route::post('/reset', [Admin\Witchcrafter\WitchcrafterController::class, 'resetToDefaults'])->name('admin.witchcrafter.reset');
 
-    Route::get('/colors', [Admin\Designify\ColorsController::class, 'index'])->name('admin.designify.colors');
-    Route::patch('/colors', [Admin\Designify\ColorsController::class, 'update']);
+    Route::get('/colors', [Admin\Witchcrafter\ColorsController::class, 'index'])->name('admin.witchcrafter.colors');
+    Route::patch('/colors', [Admin\Witchcrafter\ColorsController::class, 'update']);
 
-    Route::get('/looks', [Admin\Designify\LookNFeelController::class, 'index'])->name('admin.designify.looks');
-    Route::patch('/looks', [Admin\Designify\LookNFeelController::class, 'update']);
+    Route::get('/looks', [Admin\Witchcrafter\LookNFeelController::class, 'index'])->name('admin.witchcrafter.looks');
+    Route::patch('/looks', [Admin\Witchcrafter\LookNFeelController::class, 'update']);
 
-    Route::get('/alerts', [Admin\Designify\AlertController::class, 'index'])->name('admin.designify.alerts');
-    Route::patch('/alerts', [Admin\Designify\AlertController::class, 'update']);
+    Route::get('/alerts', [Admin\Witchcrafter\AlertController::class, 'index'])->name('admin.witchcrafter.alerts');
+    Route::patch('/alerts', [Admin\Witchcrafter\AlertController::class, 'update']);
 
-    Route::get('/site', [Admin\Designify\SiteController::class, 'index'])->name('admin.designify.site');
-    Route::patch('/site', [Admin\Designify\SiteController::class, 'update']);
+    Route::get('/site', [Admin\Witchcrafter\SiteController::class, 'index'])->name('admin.witchcrafter.site');
+    Route::patch('/site', [Admin\Witchcrafter\SiteController::class, 'update']);
+
+    Route::get('/socials', [Admin\Witchcrafter\SocialsController::class, 'index'])->name('admin.witchcrafter.socials');
+    Route::patch('/socials', [Admin\Witchcrafter\SocialsController::class, 'update']);
 });

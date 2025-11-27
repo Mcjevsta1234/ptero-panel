@@ -1,6 +1,6 @@
 <?php
 
-namespace Pterodactyl\Http\Requests\Admin\Designify;
+namespace Pterodactyl\Http\Requests\Admin\Witchcrafter;
 
 use Pterodactyl\Http\Requests\Admin\AdminFormRequest;
 
@@ -12,16 +12,16 @@ class AlertSettingsFormRequest extends AdminFormRequest
     public function rules(): array
     {
         return [
-            'designify:alertType' => 'required|string',
-            'designify:alertMessage' => 'required|string',
+            'witchcrafter:alertType' => 'required|string',
+            'witchcrafter:alertMessage' => 'required|string',
         ];
     }
 
     public function attributes(): array
     {
         return [
-            'designify:alertType' => 'Alert Type',
-            'designify:alertMessage' => 'Alert Message',
+            'witchcrafter:alertType' => 'Alert Type',
+            'witchcrafter:alertMessage' => 'Alert Message',
         ];
     }
 }

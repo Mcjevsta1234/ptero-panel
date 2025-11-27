@@ -1,6 +1,6 @@
 <?php
 
-namespace Pterodactyl\Http\Controllers\Admin\Designify;
+namespace Pterodactyl\Http\Controllers\Admin\Witchcrafter;
 
 use Illuminate\View\View;
 use Illuminate\Http\RedirectResponse;
@@ -10,7 +10,7 @@ use Illuminate\View\Factory as ViewFactory;
 use Pterodactyl\Http\Controllers\Controller;
 use Illuminate\Contracts\Config\Repository as ConfigRepository;
 use Pterodactyl\Contracts\Repository\SettingsRepositoryInterface;
-use Pterodactyl\Http\Requests\Admin\Designify\AlertSettingsFormRequest;
+use Pterodactyl\Http\Requests\Admin\Witchcrafter\AlertSettingsFormRequest;
 
 class AlertController extends Controller
 {
@@ -27,11 +27,11 @@ class AlertController extends Controller
     }
 
     /**
-     * Render Designify settings UI.
+     * Render Witchcrafter settings UI.
      */
     public function index(): View
     {
-        return $this->view->make('admin.designify.alerts');
+        return $this->view->make('admin.witchcrafter.alerts');
     }
 
     /**
@@ -47,6 +47,6 @@ class AlertController extends Controller
         $this->kernel->call('queue:restart');
         $this->alert->success('Alert settings have been updated successfully and the queue worker was restarted to apply these changes.')->flash();
 
-        return redirect()->route('admin.designify.alerts');
+        return redirect()->route('admin.witchcrafter.alerts');
     }
 }
