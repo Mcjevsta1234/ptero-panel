@@ -46,6 +46,20 @@ Route::prefix('/account')->middleware(AccountSubject::class)->group(function () 
 
 /*
 |--------------------------------------------------------------------------
+| Dedicated Server Allocation API
+|--------------------------------------------------------------------------
+|
+| Endpoint: /api/client/dedicated
+|
+*/
+Route::prefix('/dedicated')->group(function () {
+    Route::get('/', [Client\DedicatedController::class, 'index']);
+    Route::post('/', [Client\DedicatedController::class, 'store']);
+    Route::get('/egg/{egg}', [Client\DedicatedController::class, 'egg']);
+});
+
+/*
+|--------------------------------------------------------------------------
 | Client Control API
 |--------------------------------------------------------------------------
 |

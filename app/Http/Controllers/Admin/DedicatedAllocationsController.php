@@ -108,8 +108,6 @@ class DedicatedAllocationsController extends Controller
     public function update(Request $request, DedicatedServerAllocation $allocation): RedirectResponse
     {
         $validated = $request->validate([
-            'user_id' => 'required|exists:users,id',
-            'node_id' => 'required|exists:nodes,id',
             'name' => 'nullable|string|max:255',
             'memory' => 'required|integer|min:128',
             'disk' => 'required|integer|min:512',
@@ -136,7 +134,7 @@ class DedicatedAllocationsController extends Controller
 
         $allocation->update($validated);
 
-        return redirect()->route('admin.dedicated.index')
+        return redirect()->route('admin.dedicated.show', $allocation->id)
             ->with('success', 'Dedicated server allocation updated successfully.');
     }
 
