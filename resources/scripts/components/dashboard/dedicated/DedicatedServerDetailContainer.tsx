@@ -24,8 +24,12 @@ const MetricsPanel = styled.div`
 
 const MetricGrid = styled.div`
     ${tw`grid gap-4 w-full`}
-    grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+    grid-template-columns: repeat(3, 1fr);
     grid-auto-rows: auto;
+
+    @media (max-width: 1024px) {
+        grid-template-columns: repeat(2, 1fr);
+    }
 
     @media (max-width: 640px) {
         grid-template-columns: 1fr;
