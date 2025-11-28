@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
-import tw from 'twin.macro';
+            <div css={tw`mb-4 flex justify-between items-center`}>
 import { getAllocationStats, getFormData, getEggDetails, createDedicatedServer, deleteDedicatedServer } from '@/api/dedicated';
 import PageContentBlock from '@/components/elements/PageContentBlock';
 import Spinner from '@/components/elements/Spinner';
@@ -8,23 +8,32 @@ import TitledGreyBox from '@/components/elements/TitledGreyBox';
 import useFlash from '@/plugins/useFlash';
 import { Button } from '@/components/elements/button';
 import { Link } from 'react-router-dom';
-import { Field, Form, Formik, FormikHelpers } from 'formik';
-import Field2 from '@/components/elements/Field';
-import { Nest, Egg } from '@/api/dedicated/types';
+            <div css={tw`grid grid-cols-1 md:grid-cols-2 gap-4 mb-6`}>
+                {/* Left: Node summary styled like screenshot - thicker card */}
+                <TitledGreyBox title={'Node Name'}>
+                    <div css={tw`py-2 min-h-[150px]`}>
+                        <p css={tw`text-lg font-semibold`}>{allocation.node.name}</p>
+                        {/* Node address removed per request */}
+                        <div css={tw`mt-3 space-y-1 text-sm`}>
+                            <p>
+                                Node ram - allocated {allocation.limits.memory === 0 ? 'Unlimited' : `${(allocation.limits.memory / 1024).toFixed(1)} GB`}
+                                {node_usage?.memory_capacity ? ` (Node ${(node_usage.memory_capacity / 1024).toFixed(1)} GB)` : ''}
+                            </p>
+                            <p>
+                                Node cpu - allocated {allocation.limits.cpu === 0 ? 'Unlimited' : `${allocation.limits.cpu}%`}
+                                {node_usage?.cpu_capacity ? ` (Node ${node_usage.cpu_capacity}%)` : ''}
+                            </p>
+                            <p>
+                                Node disk - allocated {allocation.limits.disk === 0 ? 'Unlimited' : `${(allocation.limits.disk / 1024).toFixed(1)} GB`}
+                                {node_usage?.disk_capacity ? ` (Node ${(node_usage.disk_capacity / 1024).toFixed(1)} GB)` : ''}
+                            </p>
+                        </div>
+                    </div>
+                </TitledGreyBox>
 
-interface AllocationStats {
-    allocation: {
-        id: number;
-        name: string;
-        node: {
-            id: number;
-            name: string;
-            fqdn: string;
-            location: string;
-        };
-        limits: {
-            cpu: number;
-            memory: number;
+                {/* Right: Server management list (click to manage, delete button) — thicker card */}
+                <TitledGreyBox title={'Server list'}>
+                    <div css={tw`py-2 space-y-2 min-h-[150px]`}>
             disk: number;
             databases: number;
             allocations: number;
@@ -63,69 +72,26 @@ interface AllocationStats {
         suspended: boolean;
         created_at: string;
     }>;
-    node_usage?: {
-        memory_allocated: number;
-        memory_capacity: number;
-        disk_allocated: number;
-        disk_capacity: number;
-        cpu_allocated: number;
-        cpu_capacity: number | null;
-    };
-}
+            {/* Three small usage tiles */}
+            <div css={tw`grid grid-cols-1 md:grid-cols-3 gap-4 mb-6`}>
+                <TitledGreyBox title={'used cpu'}>
+                    <div css={tw`py-2 min-h-[100px]`}>
+                        <p css={tw`text-2xl`}>{allocation.used.cpu}%</p>
+                    </div>
+                </TitledGreyBox>
 
-interface CreateServerFormValues {
-    name: string;
-    nest_id: number | null;
-    egg_id: number | null;
-    docker_image: string | null;
-    memory: number;
-    disk: number;
-    cpu: number;
-    databases: number;
-    allocations: number;
-    backups: number;
-}
+                <TitledGreyBox title={'used ram'}>
+                    <div css={tw`py-2 min-h-[100px]`}>
+                        <p css={tw`text-2xl`}>{(allocation.used.memory / 1024).toFixed(1)} GB</p>
+                    </div>
+                </TitledGreyBox>
 
-export default () => {
-    const [loading, setLoading] = useState(true);
-    const [stats, setStats] = useState<AllocationStats | null>(null);
-    const [showCreateForm, setShowCreateForm] = useState(false);
-    const [nests, setNests] = useState<Nest[]>([]);
-    const [selectedNest, setSelectedNest] = useState<number | null>(null);
-    const [selectedEgg, setSelectedEgg] = useState<Egg | null>(null);
-    const [loadingFormData, setLoadingFormData] = useState(false);
-    const { clearFlashes, clearAndAddHttpError, addFlash } = useFlash();
-    const { id } = useParams<{ id: string }>();
-    const allocationId = parseInt(id as string);
-
-    const fetchStats = () => {
-        setLoading(true);
-        clearFlashes('dedicated:detail');
-        getAllocationStats(allocationId)
-            .then((data) => setStats(data))
-            .catch((error) => clearAndAddHttpError({ key: 'dedicated:detail', error }))
-            .finally(() => setLoading(false));
-    };
-
-    useEffect(() => {
-        fetchStats();
-        const interval = setInterval(fetchStats, 30000); // Refresh every 30 seconds
-        return () => clearInterval(interval);
-    }, [allocationId]);
-
-    useEffect(() => {
-        if (showCreateForm && nests.length === 0) {
-            setLoadingFormData(true);
-            getFormData(allocationId)
-                .then((data) => setNests(data.nests))
-                .catch((error) => clearAndAddHttpError({ key: 'dedicated:detail', error }))
-                .finally(() => setLoadingFormData(false));
-        }
-    }, [showCreateForm, allocationId]);
-
-    const handleEggSelect = async (eggId: number) => {
-        if (!eggId) {
-            setSelectedEgg(null);
+                <TitledGreyBox title={'used disk'}>
+                    <div css={tw`py-2 min-h-[100px]`}>
+                        <p css={tw`text-2xl`}>{(allocation.used.disk / 1024).toFixed(1)} GB</p>
+                    </div>
+                </TitledGreyBox>
+            </div>
             return;
         }
         try {
@@ -198,9 +164,9 @@ export default () => {
                 <p css={tw`text-sm text-neutral-400`}>Auto-refreshes every 30 seconds</p>
             </div>
 
-            {/* Limits summary strip */}
-            <div css={tw`w-full mt-2 mb-6`}>
-                <div css={tw`px-4 py-2 bg-neutral-800 rounded text-center`}>
+            {/* Long limits bar at bottom */}
+            <div css={tw`w-full mt-2`}>
+                <div css={tw`px-4 py-3 bg-neutral-800 rounded text-center`}>
                     <span css={tw`mx-2`}>database {allocation.used.databases}/{allocation.limits.databases}</span>
                     <span css={tw`mx-2`}>allocation {allocation.used.allocations}/{allocation.limits.allocations}</span>
                     <span css={tw`mx-2`}>backups {allocation.used.backups}/{allocation.limits.backups}</span>
@@ -346,217 +312,7 @@ export default () => {
                 </TitledGreyBox>
             </div>
 
-            {/* Create Server Section */}
-            <div css={tw`mb-6`}>
-                {!showCreateForm ? (
-                    <Button onClick={() => setShowCreateForm(true)} css={tw`w-full`}>
-                        + Create New Server
-                    </Button>
-                ) : (
-                    <TitledGreyBox title={'Create New Server'}>
-                        {loadingFormData ? (
-                            <div css={tw`py-8`}>
-                                <Spinner centered />
-                            </div>
-                        ) : (
-                            <Formik<CreateServerFormValues>
-                                initialValues={{
-                                    name: '',
-                                    nest_id: null,
-                                    egg_id: null,
-                                    docker_image: null,
-                                    memory: 512,
-                                    disk: 1024,
-                                    cpu: 50,
-                                    databases: 0,
-                                    allocations: 1,
-                                    backups: 0,
-                                }}
-                                onSubmit={handleCreateServer}
-                                validate={(values) => {
-                                    const errors: Record<string, string> = {};
-                                    if (!values.name) errors.name = 'Server name is required';
-                                    if (!values.nest_id) errors.nest_id = 'Please select a nest';
-                                    if (!values.egg_id) errors.egg_id = 'Please select an egg';
-                                    if (values.memory < 128) errors.memory = 'Minimum 128 MB';
-                                    if (values.disk < 512) errors.disk = 'Minimum 512 MB';
-                                    if (values.cpu < 0) errors.cpu = 'CPU cannot be negative';
-                                    
-                                    // Check against available resources
-                                    if (allocation.available.memory !== -1 && values.memory > allocation.available.memory) {
-                                        errors.memory = `Only ${allocation.available.memory} MB available`;
-                                    }
-                                    if (allocation.available.disk !== -1 && values.disk > allocation.available.disk) {
-                                        errors.disk = `Only ${allocation.available.disk} MB available`;
-                                    }
-                                    if (allocation.available.cpu !== -1 && values.cpu > allocation.available.cpu) {
-                                        errors.cpu = `Only ${allocation.available.cpu}% available`;
-                                    }
-
-                                    if (values.allocations < 1) {
-                                        errors.allocations = 'At least 1 allocation required';
-                                    }
-                                    
-                                    return errors;
-                                }}
-                            >
-                                {({ values, setFieldValue, isSubmitting, errors, touched }) => (
-                                    <Form>
-                                        <div css={tw`grid grid-cols-1 md:grid-cols-2 gap-4 mb-4`}>
-                                            <Field2
-                                                name="name"
-                                                label="Server Name"
-                                                type="text"
-                                                placeholder="My Awesome Server"
-                                            />
-
-                                            <div>
-                                                <label css={tw`block text-sm font-medium mb-2`}>Nest</label>
-                                                <select
-                                                    value={values.nest_id || ''}
-                                                    onChange={(e) => {
-                                                        const nestId = parseInt(e.target.value);
-                                                        setFieldValue('nest_id', nestId);
-                                                        setFieldValue('egg_id', null);
-                                                        setSelectedNest(nestId);
-                                                        setSelectedEgg(null);
-                                                    }}
-                                                    css={tw`w-full px-3 py-2 border border-neutral-600 bg-neutral-700 rounded text-sm focus:border-cyan-400 focus:ring-1 focus:ring-cyan-400`}
-                                                >
-                                                    <option value="">Select a nest...</option>
-                                                    {nests.map((nest) => (
-                                                        <option key={nest.id} value={nest.id}>
-                                                            {nest.name}
-                                                        </option>
-                                                    ))}
-                                                </select>
-                                                {touched.nest_id && errors.nest_id && (
-                                                    <p css={tw`text-red-400 text-xs mt-1`}>{errors.nest_id}</p>
-                                                )}
-                                            </div>
-
-                                            <div>
-                                                <label css={tw`block text-sm font-medium mb-2`}>Egg (Software)</label>
-                                                <select
-                                                    value={values.egg_id || ''}
-                                                    disabled={!selectedNest}
-                                                    onChange={(e) => {
-                                                        const eggId = parseInt(e.target.value);
-                                                        setFieldValue('egg_id', eggId);
-                                                        handleEggSelect(eggId);
-                                                        // Reset image selection when egg changes
-                                                        setFieldValue('docker_image', null);
-                                                    }}
-                                                    css={tw`w-full px-3 py-2 border border-neutral-600 bg-neutral-700 rounded text-sm focus:border-cyan-400 focus:ring-1 focus:ring-cyan-400 disabled:opacity-50`}
-                                                >
-                                                    <option value="">Select software...</option>
-                                                    {selectedNest &&
-                                                        nests
-                                                            .find((n) => n.id === selectedNest)
-                                                            ?.eggs.map((egg) => (
-                                                                <option key={egg.id} value={egg.id}>
-                                                                    {egg.name}
-                                                                </option>
-                                                            ))}
-                                                </select>
-                                                {touched.egg_id && errors.egg_id && (
-                                                    <p css={tw`text-red-400 text-xs mt-1`}>{errors.egg_id}</p>
-                                                )}
-                                            </div>
-                                        </div>
-
-                                        <div css={tw`grid grid-cols-1 md:grid-cols-3 gap-4 mb-4`}>
-                                            <div>
-                                                <Field2
-                                                    name="memory"
-                                                    label={`Memory (MB) - Available: ${allocation.available.memory === -1 ? 'Unlimited' : allocation.available.memory}`}
-                                                    type="number"
-                                                />
-                                            </div>
-                                            <div>
-                                                <Field2
-                                                    name="disk"
-                                                    label={`Disk (MB) - Available: ${allocation.available.disk === -1 ? 'Unlimited' : allocation.available.disk}`}
-                                                    type="number"
-                                                />
-                                            </div>
-                                            <div>
-                                                <Field2
-                                                    name="cpu"
-                                                    label={`CPU (%) - Available: ${allocation.available.cpu === -1 ? 'Unlimited' : allocation.available.cpu}`}
-                                                    type="number"
-                                                />
-                                            </div>
-                                        </div>
-
-                                        <div css={tw`grid grid-cols-1 md:grid-cols-3 gap-4 mb-4`}>
-                                            <Field2
-                                                name="databases"
-                                                label="Database Limit"
-                                                type="number"
-                                            />
-                                            <Field2
-                                                name="allocations"
-                                                label="Allocation Limit"
-                                                type="number"
-                                            />
-                                            <Field2
-                                                name="backups"
-                                                label="Backup Limit"
-                                                type="number"
-                                            />
-                                        </div>
-
-                                        {selectedEgg && (
-                                            <div css={tw`mb-4 p-4 bg-neutral-700 rounded border border-neutral-600`}>
-                                                <p css={tw`text-sm font-semibold mb-2`}>About {selectedEgg.name}</p>
-                                                {selectedEgg.description && (
-                                                    <p css={tw`text-xs text-neutral-400 mb-2`}>{selectedEgg.description}</p>
-                                                )}
-                                                {selectedEgg.docker_images && (
-                                                    <div>
-                                                        <label css={tw`block text-sm font-medium mb-2`}>Docker Image</label>
-                                                        <select
-                                                            value={values.docker_image || ''}
-                                                            onChange={(e) => setFieldValue('docker_image', e.target.value)}
-                                                            css={tw`w-full px-3 py-2 border border-neutral-600 bg-neutral-700 rounded text-sm focus:border-cyan-400 focus:ring-1 focus:ring-cyan-400`}
-                                                        >
-                                                            <option value="">Default (first)</option>
-                                                            {Object.entries(selectedEgg.docker_images).map(([label, image]) => (
-                                                                <option key={label} value={image}>
-                                                                    {label}
-                                                                </option>
-                                                            ))}
-                                                        </select>
-                                                        <p css={tw`text-xs text-neutral-500 mt-1`}>Sends the actual image reference to the server.</p>
-                                                    </div>
-                                                )}
-                                            </div>
-                                        )}
-
-                                        <div css={tw`flex gap-2 justify-end`}>
-                                            <Button.Text
-                                                type="button"
-                                                onClick={() => {
-                                                    setShowCreateForm(false);
-                                                    setSelectedNest(null);
-                                                    setSelectedEgg(null);
-                                                }}
-                                                disabled={isSubmitting}
-                                            >
-                                                Cancel
-                                            </Button.Text>
-                                            <Button type="submit" disabled={isSubmitting}>
-                                                {isSubmitting ? 'Creating...' : 'Create Server'}
-                                            </Button>
-                                        </div>
-                                    </Form>
-                                )}
-                            </Formik>
-                        )}
-                    </TitledGreyBox>
-                )}
-            </div>
+            {/* Create Server section removed per request (button replaced by limits bar). */}
 
             {/* Removed bottom servers table as requested */}
         </PageContentBlock>
