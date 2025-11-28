@@ -188,6 +188,9 @@ export default function DedicatedServerDetailContainer() {
             .then((data) => {
                 console.log('Stats data:', data);
                 console.log('Servers:', data.servers);
+                if (data.servers && data.servers.length > 0) {
+                    console.log('First server details:', data.servers[0]);
+                }
                 setStats(data);
             })
             .catch((error) => clearAndAddHttpError({ key: 'dedicated:detail', error }))

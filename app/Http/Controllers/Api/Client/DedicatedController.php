@@ -397,13 +397,23 @@ class DedicatedController extends ClientApiController
      */
     public function destroy(Request $request, string $server): JsonResponse
     {
+        \Log::info('Delete server request', [
+            'server_param' => $server,
+            'user_id' => $request->user()->id,
+        ]);
+
         // Find the server by UUID or short UUID
         $serverModel = Server::query()
-            ->where(function ($query) use ($server) {
-                $query->where('uuid', $server)
-                    ->orWhere('uuidShort', $server);
-            })
+            ->where('uuid', $server)
+            ->orWhere('uuidShort', $server)
             ->first();
+
+        \Log::info('Server lookup result', [
+            'found' => $serverModel ? 'yes' : 'no',
+            'server_id' => $serverModel->id ?? null,
+            'owner_id' => $serverModel->owner_id ?? null,
+            'dedicated_allocation_id' => $serverModel->dedicated_allocation_id ?? null,
+        ]);
 
         if (!$serverModel) {
             return response()->json(['error' => 'Server not found.'], 404);
