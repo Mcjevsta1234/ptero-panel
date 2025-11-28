@@ -9,7 +9,6 @@ import useFlash from '@/plugins/useFlash';
 import { Button } from '@/components/elements/button';
 import styled, { css } from 'styled-components/macro';
 import DeleteConfirmModal from './DeleteConfirmModal';
-import CreateServerInlineForm from './CreateServerInlineForm';
 
 const TitleText = styled.div`
     ${tw`text-center font-semibold text-base text-neutral-100`}
@@ -359,35 +358,40 @@ export default function DedicatedServerDetailContainer() {
 
     return (
         <PageContentBlock title={allocation.name || 'Dedicated Server'}>
-            <div css={tw`grid grid-cols-1 xl:grid-cols-2 gap-6 mb-8`}>
-                <MetricsPanel>
-                    <MetricGrid>
-                        {usageMetrics.map((metric) => (
-                            <MetricCard key={metric.key}>
-                                <MetricLabel>{metric.label}</MetricLabel>
-                                <MetricValue>
-                                    <span css={tw`font-semibold text-neutral-100`}>
-                                        {metric.key === 'cpu' || metric.key === 'memory' || metric.key === 'disk'
-                                            ? `${metric.used} / ${metric.total}`
-                                            : metric.used}
-                                    </span>
-                                </MetricValue>
-                                <ProgressBar>
-                                    <ProgressFill percent={metric.percent} color={metric.color} />
-                                </ProgressBar>
-                            </MetricCard>
-                        ))}
-                    </MetricGrid>
-                </MetricsPanel>
+            {/* Stats Cards */}
+            <MetricsPanel css={tw`mb-6`}>
+                <MetricGrid>
+                    {usageMetrics.map((metric) => (
+                        <MetricCard key={metric.key}>
+                            <MetricLabel>{metric.label}</MetricLabel>
+                            <MetricValue>
+                                <span css={tw`font-semibold text-neutral-100`}>
+                                    {metric.key === 'cpu' || metric.key === 'memory' || metric.key === 'disk'
+                                        ? `${metric.used} / ${metric.total}`
+                                        : metric.used}
+                                </span>
+                            </MetricValue>
+                            <ProgressBar>
+                                <ProgressFill percent={metric.percent} color={metric.color} />
+                            </ProgressBar>
+                        </MetricCard>
+                    ))}
+                </MetricGrid>
+            </MetricsPanel>
 
-                <CreateServerInlineForm
-                    allocationId={allocation.id}
-                    limits={allocation.limits}
-                    used={allocation.used}
-                    onCreated={() => fetchStats()}
-                    titleOverride={renderTitle('Create Server')}
-                />
+            {/* Create Server Button */}
+            <div css={tw`mb-6`}>
+                <Link to={`/dedicated/${allocationId}/create`}>
+                    <Button.Success css={tw`w-full py-3`}>
+                        <svg css={tw`w-5 h-5 mr-2`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+                        </svg>
+                        Create New Server
+                    </Button.Success>
+                </Link>
             </div>
+
+            {/* Server List */}
 
             <TitledGreyBox title={renderTitle(`Servers (${servers.length})`)}>
                 {servers.length === 0 ? (

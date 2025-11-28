@@ -90,6 +90,7 @@ export interface EggVariable {
 export interface CreateServerRequest {
     allocation_id: number;
     name: string;
+    description?: string;
     egg_id: number;
     cpu: number;
     memory: number;
@@ -101,4 +102,6 @@ export interface CreateServerRequest {
     io: number;
     docker_image?: string;
     allocation_port_id?: number;
+    startup?: string;
+    environment?: Record<string, string>;
 }
