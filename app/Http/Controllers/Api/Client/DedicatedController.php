@@ -140,15 +140,17 @@ class DedicatedController extends ClientApiController
     /**
      * Get egg details for configuration.
      */
-    public function egg(Request $request, Egg $egg): JsonResponse
+    public function egg(Request $request, int $egg): JsonResponse
     {
+        $eggModel = Egg::query()->with('variables')->findOrFail($egg);
+
         return new JsonResponse([
-            'id' => $egg->id,
-            'name' => $egg->name,
-            'description' => $egg->description,
-            'docker_images' => $egg->docker_images,
-            'startup' => $egg->startup,
-            'variables' => $egg->variables->map(fn($v) => [
+            'id' => $eggModel->id,
+            'name' => $eggModel->name,
+            'description' => $eggModel->description,
+            'docker_images' => $eggModel->docker_images,
+            'startup' => $eggModel->startup,
+            'variables' => $eggModel->variables->map(fn($v) => [
                 'name' => $v->name,
                 'description' => $v->description,
                 'env_variable' => $v->env_variable,

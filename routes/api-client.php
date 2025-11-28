@@ -58,7 +58,7 @@ Route::prefix('/dedicated')->group(function () {
     Route::delete('/server/{serverUuid}', [Client\DedicatedController::class, 'destroy']);
     
     // Egg routes must come before allocation routes to avoid conflicts
-    Route::get('/eggs/{egg}', [Client\DedicatedController::class, 'egg']);
+    Route::get('/eggs/{egg}', [Client\DedicatedController::class, 'egg'])->whereNumber('egg');
     
     // Allocation routes
     Route::get('/{allocation}/nests', [Client\DedicatedController::class, 'nests']);
