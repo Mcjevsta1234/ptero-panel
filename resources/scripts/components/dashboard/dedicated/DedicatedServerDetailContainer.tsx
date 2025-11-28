@@ -7,6 +7,19 @@ import Spinner from '@/components/elements/Spinner';
 import TitledGreyBox from '@/components/elements/TitledGreyBox';
 import useFlash from '@/plugins/useFlash';
 import { Button } from '@/components/elements/button';
+import styled from 'styled-components/macro';
+
+const InfoCard = styled.div`
+    ${tw`bg-neutral-700 rounded p-3 flex justify-between items-center`}
+`;
+
+const InfoLabel = styled.span`
+    ${tw`text-neutral-400 text-sm`}
+`;
+
+const InfoValue = styled.span`
+    ${tw`font-semibold text-neutral-100`}
+`;
 
 interface AllocationStats {
     allocation: {
@@ -109,72 +122,120 @@ export default function DedicatedServerDetailContainer() {
         );
     }
 
-    const { allocation, servers, node_usage } = stats;
+    const { allocation, servers } = stats;
+
+    const handleDelete = async (serverId: number) => {
+        if (!confirm('Are you sure you want to delete this server? This action cannot be undone.')) {
+            return;
+        }
+        
+        clearFlashes('dedicated:detail');
+        try {
+            await deleteDedicatedServer(serverId);
+            addFlash({ 
+                key: 'dedicated:detail', 
+                type: 'success', 
+                message: 'Server deleted successfully.' 
+            });
+            fetchStats();
+        } catch (error) {
+            console.error('Delete error:', error);
+            clearAndAddHttpError({ key: 'dedicated:detail', error });
+        }
+    };
 
     return (
         <PageContentBlock title={allocation.name || 'Dedicated Server'}>
-            <div css={tw`mb-4 flex justify-between items-center`}>
+            <div css={tw`mb-6 flex justify-between items-center`}>
                 <Link to={'/account/dedicated'}>
                     <Button.Text>&larr; Back to Allocations</Button.Text>
                 </Link>
-                <p css={tw`text-sm text-neutral-400`}>Auto-refreshes every 30 seconds</p>
+                <p css={tw`text-xs text-neutral-400`}>Auto-refreshes every 30 seconds</p>
             </div>
 
-            {/* Top: two larger cards */}
-            <div css={tw`grid grid-cols-1 md:grid-cols-2 gap-4 mb-6`}>
-                <TitledGreyBox title={'Node Name'}>
-                    <div css={tw`py-2 min-h-[150px]`}>
-                        <p css={tw`text-lg font-semibold`}>{allocation.node.name}</p>
-                        {/* Node address intentionally hidden */}
-                        <div css={tw`mt-3 space-y-1 text-sm`}>
-                            <p>
-                                Node ram - allocated {allocation.limits.memory === 0 ? 'Unlimited' : `${(allocation.limits.memory / 1024).toFixed(1)} GB`}
-                                {node_usage?.memory_capacity ? ` (Node ${(node_usage.memory_capacity / 1024).toFixed(1)} GB)` : ''}
-                            </p>
-                            <p>
-                                Node cpu - allocated {allocation.limits.cpu === 0 ? 'Unlimited' : `${allocation.limits.cpu}%`}
-                                {node_usage?.cpu_capacity ? ` (Node ${node_usage.cpu_capacity}%)` : ''}
-                            </p>
-                            <p>
-                                Node disk - allocated {allocation.limits.disk === 0 ? 'Unlimited' : `${(allocation.limits.disk / 1024).toFixed(1)} GB`}
-                                {node_usage?.disk_capacity ? ` (Node ${(node_usage.disk_capacity / 1024).toFixed(1)} GB)` : ''}
-                            </p>
-                        </div>
+            {/* Top Row: Server Plan Info & Server List */}
+            <div css={tw`grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6`}>
+                {/* Left: Server Plan - Nested info cards */}
+                <TitledGreyBox title={'Server Plan'}>
+                    <div css={tw`space-y-3`}>
+                        <InfoCard>
+                            <InfoLabel>CPU</InfoLabel>
+                            <InfoValue>{allocation.limits.cpu === 0 ? 'Unlimited' : `${allocation.limits.cpu}%`}</InfoValue>
+                        </InfoCard>
+                        <InfoCard>
+                            <InfoLabel>Memory</InfoLabel>
+                            <InfoValue>{allocation.limits.memory === 0 ? 'Unlimited' : `${(allocation.limits.memory / 1024).toFixed(1)} GB`}</InfoValue>
+                        </InfoCard>
+                        <InfoCard>
+                            <InfoLabel>Disk</InfoLabel>
+                            <InfoValue>{allocation.limits.disk === 0 ? 'Unlimited' : `${(allocation.limits.disk / 1024).toFixed(1)} GB`}</InfoValue>
+                        </InfoCard>
+                        <InfoCard>
+                            <InfoLabel>Databases</InfoLabel>
+                            <InfoValue>{allocation.limits.databases === 0 ? 'Unlimited' : allocation.limits.databases}</InfoValue>
+                        </InfoCard>
+                        <InfoCard>
+                            <InfoLabel>Allocations</InfoLabel>
+                            <InfoValue>{allocation.limits.allocations === 0 ? 'Unlimited' : allocation.limits.allocations}</InfoValue>
+                        </InfoCard>
+                        <InfoCard>
+                            <InfoLabel>Backups</InfoLabel>
+                            <InfoValue>{allocation.limits.backups === 0 ? 'Unlimited' : allocation.limits.backups}</InfoValue>
+                        </InfoCard>
                     </div>
                 </TitledGreyBox>
 
-                <TitledGreyBox title={'Server list'}>
-                    <div css={tw`py-2 space-y-2 min-h-[150px]`}>
+                {/* Right: Server List */}
+                <TitledGreyBox title={'Servers'}>
+                    <div css={tw`space-y-3 min-h-[300px]`}>
                         {servers.length === 0 ? (
-                            <p css={tw`text-neutral-400 text-sm`}>No servers yet</p>
+                            <div css={tw`flex items-center justify-center h-full`}>
+                                <p css={tw`text-neutral-400 text-sm`}>No servers created yet</p>
+                            </div>
                         ) : (
                             servers.map((s) => (
-                                <div key={s.id} css={tw`flex items-center justify-between bg-neutral-800 rounded px-3 py-2`}>
-                                    <div>
-                                        <Link to={`/server/${s.identifier}`} css={tw`text-sm font-semibold hover:underline`}>
-                                            {s.address ?? s.identifier}
-                                        </Link>
-                                        <p css={tw`text-xs text-neutral-500`}>{s.name}</p>
+                                <div key={s.id} css={tw`bg-neutral-700 rounded p-4`}>
+                                    <div css={tw`flex items-start justify-between mb-3`}>
+                                        <div css={tw`flex-1`}>
+                                            <Link 
+                                                to={`/server/${s.identifier}`} 
+                                                css={tw`text-base font-semibold text-neutral-100 hover:text-cyan-400 transition-colors`}
+                                            >
+                                                {s.name}
+                                            </Link>
+                                            <p css={tw`text-xs text-neutral-400 mt-1`}>{s.address ?? s.identifier}</p>
+                                        </div>
+                                        <div css={tw`flex items-center gap-2`}>
+                                            <Link to={`/server/${s.identifier}`}>
+                                                <Button.Text css={tw`text-xs px-3 py-1`}>Manage</Button.Text>
+                                            </Link>
+                                            <Button.Danger
+                                                css={tw`text-xs px-3 py-1`}
+                                                onClick={() => handleDelete(s.id)}
+                                            >
+                                                Delete
+                                            </Button.Danger>
+                                        </div>
                                     </div>
-                                    <div css={tw`flex items-center gap-2`}>
-                                        <Link to={`/server/${s.identifier}`}>
-                                            <Button.Text css={tw`text-xs`}>Manage</Button.Text>
-                                        </Link>
-                                        <Button.Text
-                                            css={tw`text-xs text-red-400`}
-                                            onClick={async () => {
-                                                clearFlashes('dedicated:detail');
-                                                try {
-                                                    await deleteDedicatedServer(s.id);
-                                                    addFlash({ key: 'dedicated:detail', type: 'success', message: 'Server deleted.' });
-                                                    fetchStats();
-                                                } catch (error) {
-                                                    clearAndAddHttpError({ key: 'dedicated:detail', error });
-                                                }
-                                            }}
-                                        >
-                                            Delete
-                                        </Button.Text>
+                                    
+                                    {/* Server specs in nested cards */}
+                                    <div css={tw`grid grid-cols-2 gap-2`}>
+                                        <InfoCard css={tw`py-2`}>
+                                            <InfoLabel>CPU</InfoLabel>
+                                            <InfoValue>{s.cpu}%</InfoValue>
+                                        </InfoCard>
+                                        <InfoCard css={tw`py-2`}>
+                                            <InfoLabel>Memory</InfoLabel>
+                                            <InfoValue>{(s.memory / 1024).toFixed(1)} GB</InfoValue>
+                                        </InfoCard>
+                                        <InfoCard css={tw`py-2`}>
+                                            <InfoLabel>Disk</InfoLabel>
+                                            <InfoValue>{(s.disk / 1024).toFixed(1)} GB</InfoValue>
+                                        </InfoCard>
+                                        <InfoCard css={tw`py-2`}>
+                                            <InfoLabel>Egg</InfoLabel>
+                                            <InfoValue css={tw`text-xs`}>{s.egg}</InfoValue>
+                                        </InfoCard>
                                     </div>
                                 </div>
                             ))
@@ -183,33 +244,59 @@ export default function DedicatedServerDetailContainer() {
                 </TitledGreyBox>
             </div>
 
-            {/* Three smaller cards */}
+            {/* Bottom Row: Usage Stats */}
             <div css={tw`grid grid-cols-1 md:grid-cols-3 gap-4 mb-6`}>
-                <TitledGreyBox title={'used cpu'}>
-                    <div css={tw`py-2 min-h-[100px]`}>
-                        <p css={tw`text-2xl`}>{allocation.used.cpu}%</p>
+                <TitledGreyBox title={'CPU Usage'}>
+                    <div css={tw`py-4`}>
+                        <p css={tw`text-4xl font-bold text-cyan-400`}>{allocation.used.cpu}%</p>
+                        <p css={tw`text-xs text-neutral-400 mt-2`}>
+                            of {allocation.limits.cpu === 0 ? 'unlimited' : `${allocation.limits.cpu}%`}
+                        </p>
                     </div>
                 </TitledGreyBox>
-                <TitledGreyBox title={'used ram'}>
-                    <div css={tw`py-2 min-h-[100px]`}>
-                        <p css={tw`text-2xl`}>{(allocation.used.memory / 1024).toFixed(1)} GB</p>
+
+                <TitledGreyBox title={'Memory Usage'}>
+                    <div css={tw`py-4`}>
+                        <p css={tw`text-4xl font-bold text-green-400`}>{(allocation.used.memory / 1024).toFixed(1)} GB</p>
+                        <p css={tw`text-xs text-neutral-400 mt-2`}>
+                            of {allocation.limits.memory === 0 ? 'unlimited' : `${(allocation.limits.memory / 1024).toFixed(1)} GB`}
+                        </p>
                     </div>
                 </TitledGreyBox>
-                <TitledGreyBox title={'used disk'}>
-                    <div css={tw`py-2 min-h-[100px]`}>
-                        <p css={tw`text-2xl`}>{(allocation.used.disk / 1024).toFixed(1)} GB</p>
+
+                <TitledGreyBox title={'Disk Usage'}>
+                    <div css={tw`py-4`}>
+                        <p css={tw`text-4xl font-bold text-yellow-400`}>{(allocation.used.disk / 1024).toFixed(1)} GB</p>
+                        <p css={tw`text-xs text-neutral-400 mt-2`}>
+                            of {allocation.limits.disk === 0 ? 'unlimited' : `${(allocation.limits.disk / 1024).toFixed(1)} GB`}
+                        </p>
                     </div>
                 </TitledGreyBox>
             </div>
 
-            {/* Bottom long limits bar */}
-            <div css={tw`w-full mt-2`}>
-                <div css={tw`px-4 py-3 bg-neutral-800 rounded text-center`}>
-                    <span css={tw`mx-2`}>database {allocation.used.databases}/{allocation.limits.databases}</span>
-                    <span css={tw`mx-2`}>allocation {allocation.used.allocations}/{allocation.limits.allocations}</span>
-                    <span css={tw`mx-2`}>backups {allocation.used.backups}/{allocation.limits.backups}</span>
+            {/* Bottom: Resource Limits Bar */}
+            <TitledGreyBox title={'Resource Usage'}>
+                <div css={tw`grid grid-cols-1 md:grid-cols-3 gap-4`}>
+                    <InfoCard>
+                        <InfoLabel>Databases</InfoLabel>
+                        <InfoValue>
+                            {allocation.used.databases} / {allocation.limits.databases === 0 ? '∞' : allocation.limits.databases}
+                        </InfoValue>
+                    </InfoCard>
+                    <InfoCard>
+                        <InfoLabel>Allocations</InfoLabel>
+                        <InfoValue>
+                            {allocation.used.allocations} / {allocation.limits.allocations === 0 ? '∞' : allocation.limits.allocations}
+                        </InfoValue>
+                    </InfoCard>
+                    <InfoCard>
+                        <InfoLabel>Backups</InfoLabel>
+                        <InfoValue>
+                            {allocation.used.backups} / {allocation.limits.backups === 0 ? '∞' : allocation.limits.backups}
+                        </InfoValue>
+                    </InfoCard>
                 </div>
-            </div>
+            </TitledGreyBox>
         </PageContentBlock>
     );
 }
