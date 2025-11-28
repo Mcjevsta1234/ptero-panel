@@ -47,7 +47,7 @@ export default ({ visible, allocation, onDismissed }: Props) => {
         cpu: Math.min(100, allocation.available_resources.cpu * 100),
         memory: Math.min(1024, allocation.available_resources.memory),
         disk: Math.min(5120, allocation.available_resources.disk),
-        port: allocation.port_range_start,
+        port: allocation.port_range_start ?? 0,
         environment: {},
     };
 
@@ -69,8 +69,11 @@ export default ({ visible, allocation, onDismissed }: Props) => {
             .max(allocation.available_resources.disk, `Maximum ${allocation.available_resources.disk} MB available`),
         port: Yup.number()
             .required()
-            .min(allocation.port_range_start)
-            .max(allocation.port_range_end),
+            .test('port-range', 'Port must be within allowed range', (value) => {
+                if (allocation.port_range_start == null || allocation.port_range_end == null) return true;
+                if (typeof value !== 'number') return false;
+                return value >= allocation.port_range_start && value <= allocation.port_range_end;
+            }),
     });
 
     useEffect(() => {
