@@ -56,6 +56,14 @@ interface AllocationStats {
         suspended: boolean;
         created_at: string;
     }>;
+    node_usage?: {
+        memory_allocated: number;
+        memory_capacity: number;
+        disk_allocated: number;
+        disk_capacity: number;
+        cpu_allocated: number;
+        cpu_capacity: number | null;
+    };
 }
 
 interface CreateServerFormValues {
