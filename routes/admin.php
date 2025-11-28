@@ -274,7 +274,7 @@ Route::group(['prefix' => 'dedicated'], function () {
     Route::get('/{allocation}', [Admin\DedicatedAllocationsController::class, 'show'])->name('admin.dedicated.show');
     Route::get('/{allocation}/edit', [Admin\DedicatedAllocationsController::class, 'edit'])->name('admin.dedicated.edit');
     
-    Route::post('/', [Admin\DedicatedAllocationsController::class, 'store']);
-    Route::patch('/{allocation}', [Admin\DedicatedAllocationsController::class, 'update']);
-    Route::delete('/{allocation}', [Admin\DedicatedAllocationsController::class, 'destroy']);
+    Route::post('/', [Admin\DedicatedAllocationsController::class, 'store'])->name('admin.dedicated.store');
+    Route::patch('/{allocation}', [Admin\DedicatedAllocationsController::class, 'update'])->name('admin.dedicated.update');
+    Route::delete('/{allocation}', [Admin\DedicatedAllocationsController::class, 'destroy'])->name('admin.dedicated.destroy');
 });

@@ -1,35 +1,50 @@
 export interface DedicatedAllocation {
     id: number;
+    name: string | null;
     user_id: number;
     node_id: number;
     node: {
         id: number;
         name: string;
     };
-    cpu_limit: number;
-    memory_limit: number;
-    disk_limit: number;
+    cpu: number;
+    memory: number;
+    disk: number;
+    swap: number;
+    io: number;
     backup_limit: number;
     allocation_limit: number;
     database_limit: number;
-    max_servers: number;
-    port_range_start: number;
-    port_range_end: number;
-    allow_cpu_overallocation: boolean;
+    port_range_start: number | null;
+    port_range_end: number | null;
     allow_memory_overallocation: boolean;
     allow_disk_overallocation: boolean;
     allowed_nests: number[] | null;
     allowed_eggs: number[] | null;
+    active: boolean;
     servers_count: number;
+    servers: Array<{
+        id: number;
+        uuid: string;
+        name: string;
+        identifier: string;
+    }>;
     used_resources: {
         cpu: number;
         memory: number;
         disk: number;
+        databases: number;
+        allocations: number;
+        backups: number;
+        server_count: number;
     };
     available_resources: {
         cpu: number;
         memory: number;
         disk: number;
+        databases: number;
+        allocations: number;
+        backups: number;
     };
 }
 
