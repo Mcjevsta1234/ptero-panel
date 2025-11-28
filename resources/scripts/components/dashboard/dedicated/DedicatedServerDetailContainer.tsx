@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import tw from 'twin.macro';
-import { getAllocationStats, getFormData, getEggDetails, createDedicatedServer } from '@/api/dedicated';
+import { getAllocationStats, getFormData, getEggDetails, createDedicatedServer, deleteDedicatedServer } from '@/api/dedicated';
 import PageContentBlock from '@/components/elements/PageContentBlock';
 import Spinner from '@/components/elements/Spinner';
 import TitledGreyBox from '@/components/elements/TitledGreyBox';
@@ -222,17 +222,42 @@ export default () => {
                     </div>
                 </TitledGreyBox>
 
-                {/* Right: Simple server list with address */}
+                {/* Right: Server management list (click to manage, delete button) */}
                 <TitledGreyBox title={'Server list'}>
-                    <div css={tw`py-2 space-y-1 text-lg`}>
+                    <div css={tw`py-2 space-y-2`}>
                         {servers.length === 0 ? (
                             <p css={tw`text-neutral-400 text-sm`}>No servers yet</p>
                         ) : (
-                            servers
-                                .filter(s => s.address)
-                                .map(s => (
-                                    <p key={s.id}>{s.address}</p>
-                                ))
+                            servers.map(s => (
+                                <div key={s.id} css={tw`flex items-center justify-between bg-neutral-800 rounded px-3 py-2`}>
+                                    <div>
+                                        <Link to={`/server/${s.identifier}`} css={tw`text-sm font-semibold hover:underline`}>
+                                            {s.address ?? s.identifier}
+                                        </Link>
+                                        <p css={tw`text-xs text-neutral-500`}>{s.name}</p>
+                                    </div>
+                                    <div css={tw`flex items-center gap-2`}>
+                                        <Link to={`/server/${s.identifier}`}>
+                                            <Button.Text css={tw`text-xs`}>Manage</Button.Text>
+                                        </Link>
+                                        <Button.Text
+                                            css={tw`text-xs text-red-400`}
+                                            onClick={async () => {
+                                                clearFlashes('dedicated:detail');
+                                                try {
+                                                    await deleteDedicatedServer(s.id);
+                                                    addFlash({ key: 'dedicated:detail', type: 'success', message: 'Server deleted.' });
+                                                    fetchStats();
+                                                } catch (error) {
+                                                    clearAndAddHttpError({ key: 'dedicated:detail', error });
+                                                }
+                                            }}
+                                        >
+                                            Delete
+                                        </Button.Text>
+                                    </div>
+                                </div>
+                            ))
                         )}
                     </div>
                 </TitledGreyBox>
@@ -533,58 +558,7 @@ export default () => {
                 )}
             </div>
 
-            {/* Servers List */}
-            <TitledGreyBox title={`Servers (${servers.length})`}>
-                {servers.length === 0 ? (
-                    <p css={tw`text-center text-neutral-400 py-4`}>No servers created yet.</p>
-                ) : (
-                    <div css={tw`overflow-x-auto`}>
-                        <table css={tw`w-full`}>
-                            <thead>
-                                <tr css={tw`border-b border-neutral-700`}>
-                                    <th css={tw`text-left py-3 px-4`}>Name</th>
-                                    <th css={tw`text-left py-3 px-4`}>Software</th>
-                                    <th css={tw`text-center py-3 px-4`}>CPU</th>
-                                    <th css={tw`text-center py-3 px-4`}>Memory</th>
-                                    <th css={tw`text-center py-3 px-4`}>Disk</th>
-                                    <th css={tw`text-center py-3 px-4`}>Status</th>
-                                    <th css={tw`text-right py-3 px-4`}>Actions</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {servers.map((server) => (
-                                    <tr key={server.id} css={tw`border-b border-neutral-700 hover:bg-neutral-700 transition-colors`}>
-                                        <td css={tw`py-3 px-4`}>
-                                            <p css={tw`font-semibold`}>{server.name}</p>
-                                            <p css={tw`text-xs text-neutral-500`}>{server.identifier}</p>
-                                        </td>
-                                        <td css={tw`py-3 px-4 text-sm`}>{server.egg}</td>
-                                        <td css={tw`py-3 px-4 text-center text-sm`}>{server.cpu}%</td>
-                                        <td css={tw`py-3 px-4 text-center text-sm`}>{(server.memory / 1024).toFixed(1)} GB</td>
-                                        <td css={tw`py-3 px-4 text-center text-sm`}>{(server.disk / 1024).toFixed(1)} GB</td>
-                                        <td css={tw`py-3 px-4 text-center`}>
-                                            {server.suspended ? (
-                                                <span css={tw`px-2 py-1 bg-red-500 bg-opacity-25 text-red-400 rounded text-xs`}>
-                                                    Suspended
-                                                </span>
-                                            ) : (
-                                                <span css={tw`px-2 py-1 bg-green-500 bg-opacity-25 text-green-400 rounded text-xs`}>
-                                                    Active
-                                                </span>
-                                            )}
-                                        </td>
-                                        <td css={tw`py-3 px-4 text-right`}>
-                                            <Link to={`/server/${server.identifier}`}>
-                                                <Button.Text css={tw`text-xs py-1 px-2`}>Manage</Button.Text>
-                                            </Link>
-                                        </td>
-                                    </tr>
-                                ))}
-                            </tbody>
-                        </table>
-                    </div>
-                )}
-            </TitledGreyBox>
+            {/* Removed bottom servers table as requested */}
         </PageContentBlock>
     );
 };

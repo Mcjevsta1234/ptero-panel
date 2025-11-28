@@ -8,6 +8,7 @@ use Pterodactyl\Models\Server;
 use Pterodactyl\Models\Allocation;
 use Pterodactyl\Models\DedicatedServerAllocation;
 use Pterodactyl\Services\Servers\ServerCreationService;
+use Pterodactyl\Services\Servers\ServerDeletionService;
 use Pterodactyl\Transformers\Api\Client\ServerTransformer;
 use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
@@ -19,6 +20,7 @@ class DedicatedController extends ClientApiController
 {
     public function __construct(
         private ServerCreationService $creationService,
+        private ServerDeletionService $serverDeletionService,
     ) {
         parent::__construct();
     }
@@ -343,5 +345,24 @@ class DedicatedController extends ClientApiController
             ],
             'servers' => $serverStats,
         ]);
+    }
+
+    /**
+     * Delete a server owned by the authenticated user under dedicated allocation context.
+     */
+    public function destroy(Request $request, Server $server): JsonResponse
+    {
+        // Ensure the server belongs to the user and is tied to a dedicated allocation
+        if ($server->owner_id !== $request->user()->id || !$server->dedicated_allocation_id) {
+            return response()->json(['error' => 'Access denied.'], 403);
+        }
+
+        try {
+            $this->serverDeletionService->handle($server);
+        } catch (\Throwable $ex) {
+            return response()->json(['error' => 'Failed to delete server: ' . $ex->getMessage()], 500);
+        }
+
+        return response()->json([ 'deleted' => true ]);
     }
 }

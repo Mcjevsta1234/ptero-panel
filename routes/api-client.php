@@ -58,6 +58,7 @@ Route::prefix('/dedicated')->group(function () {
     Route::get('/{allocation}/nests', [Client\DedicatedController::class, 'nests']);
     Route::get('/{allocation}/stats', [Client\DedicatedController::class, 'stats']);
     Route::get('/egg/{egg}', [Client\DedicatedController::class, 'egg']);
+    Route::delete('/server/{server}', [Client\DedicatedController::class, 'destroy']);
 });
 
 /*
