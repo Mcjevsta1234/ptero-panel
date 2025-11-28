@@ -311,7 +311,7 @@ export default ({ match }: RouteComponentProps<{ id: string }>) => {
                                 <Spinner centered />
                             </div>
                         ) : (
-                            <Formik
+                            <Formik<CreateServerFormValues>
                                 initialValues={{
                                     name: '',
                                     nest_id: null,

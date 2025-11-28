@@ -87,6 +87,7 @@ export interface CreateServerRequest {
     cpu: number;
     memory: number;
     disk: number;
-    port: number;
-    environment: Record<string, string>;
+    databases: number;
+    allocations: number;
+    backups: number;
 }
