@@ -46,9 +46,8 @@
                             </select>
                         </div>
                         <div class="form-group">
-                            <label for="max_servers" class="control-label">Maximum Servers *</label>
-                            <input type="number" name="max_servers" id="max_servers" class="form-control" value="{{ old('max_servers', 5) }}" min="1" required>
-                            <p class="text-muted small">Number of servers this user can create within this allocation.</p>
+                            <label for="name" class="control-label">Name (optional)</label>
+                            <input type="text" name="name" id="name" class="form-control" value="{{ old('name') }}" maxlength="255">
                         </div>
                     </div>
                 </div>
@@ -78,29 +77,41 @@
                     </div>
                     <div class="box-body">
                         <div class="form-group">
-                            <label for="cpu_limit" class="control-label">CPU Cores *</label>
-                            <input type="number" name="cpu_limit" id="cpu_limit" class="form-control" value="{{ old('cpu_limit', 4) }}" min="1" step="1" required>
-                            <p class="text-muted small">Total CPU cores available for allocation.</p>
+                            <label for="cpu" class="control-label">CPU (Percent) *</label>
+                            <input type="number" name="cpu" id="cpu" class="form-control" value="{{ old('cpu', 0) }}" min="0" step="1" required>
+                            <p class="text-muted small">Total CPU (in percentage points) reserved. Use 0 to allow dynamic distribution.</p>
                         </div>
                         <div class="form-group">
-                            <label for="memory_limit" class="control-label">Memory (MB) *</label>
-                            <input type="number" name="memory_limit" id="memory_limit" class="form-control" value="{{ old('memory_limit', 8192) }}" min="128" step="128" required>
+                            <label for="memory" class="control-label">Memory (MB) *</label>
+                            <input type="number" name="memory" id="memory" class="form-control" value="{{ old('memory', 8192) }}" min="128" step="128" required>
                         </div>
                         <div class="form-group">
-                            <label for="disk_limit" class="control-label">Disk (MB) *</label>
-                            <input type="number" name="disk_limit" id="disk_limit" class="form-control" value="{{ old('disk_limit', 20480) }}" min="512" step="512" required>
+                            <label for="disk" class="control-label">Disk (MB) *</label>
+                            <input type="number" name="disk" id="disk" class="form-control" value="{{ old('disk', 20480) }}" min="512" step="512" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="swap" class="control-label">Swap (MB) *</label>
+                            <input type="number" name="swap" id="swap" class="form-control" value="{{ old('swap', 0) }}" min="-1" required>
+                            <p class="text-muted small">Set -1 to disable swap limits.</p>
+                        </div>
+                        <div class="form-group">
+                            <label for="io" class="control-label">IO Weight *</label>
+                            <input type="number" name="io" id="io" class="form-control" value="{{ old('io', 500) }}" min="10" max="1000" required>
                         </div>
                         <div class="form-group">
                             <label for="backup_limit" class="control-label">Backup Slots *</label>
-                            <input type="number" name="backup_limit" id="backup_limit" class="form-control" value="{{ old('backup_limit', 3) }}" min="0" required>
+                            <input type="number" name="backup_limit" id="backup_limit" class="form-control" value="{{ old('backup_limit', 3) }}" min="-1" required>
+                            <p class="text-muted small">Use -1 for unlimited.</p>
                         </div>
                         <div class="form-group">
                             <label for="allocation_limit" class="control-label">Allocation Slots *</label>
-                            <input type="number" name="allocation_limit" id="allocation_limit" class="form-control" value="{{ old('allocation_limit', 1) }}" min="1" required>
+                            <input type="number" name="allocation_limit" id="allocation_limit" class="form-control" value="{{ old('allocation_limit', 1) }}" min="-1" required>
+                            <p class="text-muted small">Use -1 for unlimited.</p>
                         </div>
                         <div class="form-group">
                             <label for="database_limit" class="control-label">Database Slots *</label>
-                            <input type="number" name="database_limit" id="database_limit" class="form-control" value="{{ old('database_limit', 1) }}" min="0" required>
+                            <input type="number" name="database_limit" id="database_limit" class="form-control" value="{{ old('database_limit', 1) }}" min="-1" required>
+                            <p class="text-muted small">Use -1 for unlimited.</p>
                         </div>
                     </div>
                 </div>
@@ -112,12 +123,6 @@
                     <div class="box-body">
                         <div class="checkbox">
                             <label>
-                                <input type="checkbox" name="allow_cpu_overallocation" value="1" {{ old('allow_cpu_overallocation') ? 'checked' : '' }}>
-                                Allow CPU Overallocation
-                            </label>
-                        </div>
-                        <div class="checkbox">
-                            <label>
                                 <input type="checkbox" name="allow_memory_overallocation" value="1" {{ old('allow_memory_overallocation') ? 'checked' : '' }}>
                                 Allow Memory Overallocation
                             </label>
@@ -126,6 +131,12 @@
                             <label>
                                 <input type="checkbox" name="allow_disk_overallocation" value="1" {{ old('allow_disk_overallocation') ? 'checked' : '' }}>
                                 Allow Disk Overallocation
+                            </label>
+                        </div>
+                        <div class="checkbox">
+                            <label>
+                                <input type="checkbox" name="active" value="1" {{ old('active', true) ? 'checked' : '' }}>
+                                Active
                             </label>
                         </div>
                         <p class="text-muted small">If enabled, user can create servers exceeding these limits (total resources across all servers can exceed the allocation).</p>

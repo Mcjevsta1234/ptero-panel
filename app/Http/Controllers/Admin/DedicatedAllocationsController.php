@@ -46,6 +46,7 @@ class DedicatedAllocationsController extends Controller
             'users' => User::orderBy('email')->get(),
             'nodes' => Node::orderBy('name')->get(),
             'nests' => Nest::with('eggs')->orderBy('name')->get(),
+            'eggs' => Egg::with('nest')->orderBy('name')->get(),
         ]);
     }
 
@@ -97,6 +98,7 @@ class DedicatedAllocationsController extends Controller
             'users' => User::orderBy('email')->get(),
             'nodes' => Node::orderBy('name')->get(),
             'nests' => Nest::with('eggs')->orderBy('name')->get(),
+            'eggs' => Egg::with('nest')->orderBy('name')->get(),
         ]);
     }
 
