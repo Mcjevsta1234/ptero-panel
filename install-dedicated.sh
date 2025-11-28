@@ -219,13 +219,18 @@ php artisan view:clear
 php artisan config:clear
 php artisan cache:clear
 php artisan route:clear
-print_success "Caches cleared"
+
+# Manually delete compiled views to ensure fresh compilation
+print_step "Removing compiled view cache files"
+rm -rf storage/framework/views/*
+rm -rf storage/framework/cache/*
+rm -rf bootstrap/cache/*.php
+print_success "All caches cleared"
 
 # Rebuild cache
 print_step "Rebuilding application cache"
 php artisan config:cache
 php artisan route:cache
-php artisan view:cache
 print_success "Cache rebuilt"
 
 # Set correct permissions
@@ -233,12 +238,6 @@ print_step "Setting file permissions"
 chmod -R 755 storage/* bootstrap/cache/
 chown -R www-data:www-data "$PANEL_DIR"/*
 print_success "Permissions updated"
-
-# Update browserslist database to suppress warnings
-print_step "Updating browserslist database"
-if command -v npx &> /dev/null; then
-    npx --yes update-browserslist-db@latest >/dev/null 2>&1 || print_warning "Could not update browserslist"
-fi
 
 # Install npm dependencies and build assets (if needed)
 print_step "Building frontend assets"
