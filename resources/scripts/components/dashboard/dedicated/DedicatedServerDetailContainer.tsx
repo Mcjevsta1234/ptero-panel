@@ -286,7 +286,7 @@ export default function DedicatedServerDetailContainer() {
                         </div>
                     </TitledGreyBox>
                 </div>
-                </TitledGreyBox>
+                {/* End Top Stats Grid */}
 
                 <TitledGreyBox title={'Disk Usage'}>
                     <div css={tw`py-4`}>
@@ -326,7 +326,7 @@ export default function DedicatedServerDetailContainer() {
                 visible={deleteModal.visible}
                 serverName={deleteModal.serverName}
                 onConfirm={handleDeleteConfirm}
-                onModalDismissed={() => setDeleteModal({ visible: false, serverName: '', serverUuid: '' })}
+                onModalDismissed={() => setDeleteModal({ visible: false, serverName: '', serverIdentifier: '' })}
             />
 
             {stats && (
