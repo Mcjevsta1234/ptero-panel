@@ -18,9 +18,22 @@ const TitleText = styled.div`
 const CIRCLE_RADIUS = 50;
 const CIRCLE_CIRCUMFERENCE = 2 * Math.PI * CIRCLE_RADIUS;
 
+const MetricsPanel = styled.div`
+    ${tw`bg-neutral-900 border border-neutral-800 rounded-2xl p-6`}
+    width: min(560px, 100%);
+    min-width: min(560px, 100%);
+    max-width: 560px;
+    min-height: 560px;
+    max-height: 1000px;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+`;
+
 const CircleGrid = styled.div`
-    ${tw`grid gap-4 justify-items-center`}
+    ${tw`grid gap-4 justify-items-center w-full`}
     grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+    flex: 1;
 `;
 
 const CircleCard = styled.div`
@@ -361,29 +374,27 @@ export default function DedicatedServerDetailContainer() {
     return (
         <PageContentBlock title={allocation.name || 'Dedicated Server'}>
             <div css={tw`grid grid-cols-1 xl:grid-cols-2 gap-6 mb-8`}>
-                <div css={tw`h-full`}>
-                    <div css={tw`space-y-6`}>
-                        <CircleGrid>
-                            {circleMetrics.map((metric) => (
-                                <CircleCard key={metric.key}>
-                                    <CircleLabel>{metric.label}</CircleLabel>
-                                    <CircleSvg viewBox="0 0 120 120">
-                                        <CircleTrack cx={60} cy={60} r={CIRCLE_RADIUS} />
-                                        <CircleProgress
-                                            cx={60}
-                                            cy={60}
-                                            r={CIRCLE_RADIUS}
-                                            color={metric.color}
-                                            dashoffset={metric.dashOffset}
-                                        />
-                                    </CircleSvg>
-                                    <CircleValue>{metric.detail}</CircleValue>
-                                    <CircleDetail>Available: {metric.available}</CircleDetail>
-                                </CircleCard>
-                            ))}
-                        </CircleGrid>
-                    </div>
-                </div>
+                <MetricsPanel>
+                    <CircleGrid>
+                        {circleMetrics.map((metric) => (
+                            <CircleCard key={metric.key}>
+                                <CircleLabel>{metric.label}</CircleLabel>
+                                <CircleSvg viewBox="0 0 120 120">
+                                    <CircleTrack cx={60} cy={60} r={CIRCLE_RADIUS} />
+                                    <CircleProgress
+                                        cx={60}
+                                        cy={60}
+                                        r={CIRCLE_RADIUS}
+                                        color={metric.color}
+                                        dashoffset={metric.dashOffset}
+                                    />
+                                </CircleSvg>
+                                <CircleValue>{metric.detail}</CircleValue>
+                                <CircleDetail>Available: {metric.available}</CircleDetail>
+                            </CircleCard>
+                        ))}
+                    </CircleGrid>
+                </MetricsPanel>
 
                 <CreateServerInlineForm
                     allocationId={allocation.id}
