@@ -66,7 +66,7 @@ interface CreateServerFormValues {
     disk: number;
     cpu: number;
     databases: number;
-    allocations_count: number;
+    allocations: number;
     backups: number;
 }
 
@@ -131,7 +131,7 @@ export default () => {
                 disk: values.disk,
                 cpu: values.cpu,
                 databases: values.databases,
-                allocations_count: values.allocations_count,
+                allocations: values.allocations,
                 backups: values.backups,
             });
             addFlash({
@@ -321,7 +321,7 @@ export default () => {
                                     disk: 1024,
                                     cpu: 50,
                                     databases: 0,
-                                    allocations_count: 1,
+                                    allocations: 1,
                                     backups: 0,
                                 }}
                                 onSubmit={handleCreateServer}
@@ -346,7 +346,7 @@ export default () => {
                                     }
 
                                     if (values.allocations_count < 1) {
-                                        errors.allocations_count = 'At least 1 allocation required';
+                                        errors.allocations = 'At least 1 allocation required';
                                     }
                                     
                                     return errors;
