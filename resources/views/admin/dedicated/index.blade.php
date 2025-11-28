@@ -30,7 +30,8 @@
                             <tr>
                                 <th>User</th>
                                 <th>Node</th>
-                                <th>CPU (cores)</th>
+                                <th>Name</th>
+                                <th>CPU</th>
                                 <th>Memory (MB)</th>
                                 <th>Disk (MB)</th>
                                 <th>Servers</th>
@@ -49,30 +50,31 @@
                                             {{ $allocation->node->name }}
                                         </a>
                                     </td>
-                                    <td>{{ $allocation->cpu_limit }}</td>
-                                    <td>{{ $allocation->memory_limit }}</td>
-                                    <td>{{ $allocation->disk_limit }}</td>
+                                    <td>{{ $allocation->name ?? '-' }}</td>
+                                    <td>{{ $allocation->cpu }}%</td>
+                                    <td>{{ $allocation->memory }}</td>
+                                    <td>{{ $allocation->disk }}</td>
                                     <td>
-                                        {{ $allocation->servers()->count() }} / {{ $allocation->max_servers }}
+                                        {{ $allocation->servers()->count() }}
                                     </td>
                                     <td>
                                         @php
-                                            $used = $allocation->used_resources();
+                                            $used = $allocation->used_resources;
                                             $limits = [
-                                                'cpu' => $allocation->cpu_limit,
-                                                'memory' => $allocation->memory_limit,
-                                                'disk' => $allocation->disk_limit,
+                                                'cpu' => $allocation->cpu,
+                                                'memory' => $allocation->memory,
+                                                'disk' => $allocation->disk,
                                             ];
                                             $overallocated = false;
-                                            foreach(['cpu', 'memory', 'disk'] as $resource) {
-                                                if (!$allocation->{"allow_{$resource}_overallocation"} && $used[$resource] > $limits[$resource]) {
-                                                    $overallocated = true;
-                                                    break;
-                                                }
+                                            if (!$allocation->allow_memory_overallocation && $used['memory'] > $limits['memory']) {
+                                                $overallocated = true;
+                                            }
+                                            if (!$allocation->allow_disk_overallocation && $used['disk'] > $limits['disk']) {
+                                                $overallocated = true;
                                             }
                                         @endphp
-                                        <span class="label label-{{ $overallocated ? 'danger' : 'success' }}">
-                                            {{ $overallocated ? 'Over Limit' : 'Active' }}
+                                        <span class="label label-{{ $allocation->active ? ($overallocated ? 'warning' : 'success') : 'default' }}">
+                                            {{ !$allocation->active ? 'Inactive' : ($overallocated ? 'Over Limit' : 'Active') }}
                                         </span>
                                     </td>
                                     <td class="text-center">
