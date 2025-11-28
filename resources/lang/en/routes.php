@@ -9,6 +9,7 @@ return [
         'api' => 'API Keys',
         'ssh' => 'SSH Keys',
         'activity' => 'Activity',
+        'dedicated' => 'Dedicated Servers',
     ],
     'server' => [
         'console' => 'Console',

@@ -121,6 +121,11 @@
                             <i class="RiServer"></i> <span>@lang('admin/navigation.management.servers')</span>
                         </a>
                     </li>
+                    <li class="{{ !starts_with(Route::currentRouteName(), 'admin.dedicated') ?: 'active' }}">
+                        <a href="{{ route('admin.dedicated.index') }}">
+                            <i class="RiCpuChip"></i> <span>Dedicated Servers</span>
+                        </a>
+                    </li>
                     <li class="{{ !starts_with(Route::currentRouteName(), 'admin.users') ?: 'active' }}">
                         <a href="{{ route('admin.users') }}">
                             <i class="RiUsers"></i> <span>@lang('admin/navigation.management.users')</span>
