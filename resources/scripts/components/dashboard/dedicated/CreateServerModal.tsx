@@ -131,7 +131,7 @@ export default ({ visible, allocation, onDismissed }: Props) => {
             memory: values.memory,
             disk: values.disk,
             databases: 0,
-            allocations: 1,
+            allocations_count: 1,
             backups: 0,
         };
 
