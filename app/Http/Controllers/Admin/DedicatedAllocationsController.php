@@ -6,11 +6,13 @@ use Pterodactyl\Models\User;
 use Pterodactyl\Models\Node;
 use Pterodactyl\Models\Nest;
 use Pterodactyl\Models\DedicatedServerAllocation;
+use Pterodactyl\Models\Egg;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
 use Illuminate\Http\RedirectResponse;
+use Pterodactyl\Http\Controllers\Controller;
 
-class DedicatedAllocationsController extends BaseController
+class DedicatedAllocationsController extends Controller
 {
     /**
      * Display all dedicated server allocations.
