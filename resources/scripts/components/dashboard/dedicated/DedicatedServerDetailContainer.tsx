@@ -19,20 +19,20 @@ const CIRCLE_RADIUS = 50;
 const CIRCLE_CIRCUMFERENCE = 2 * Math.PI * CIRCLE_RADIUS;
 
 const MetricsPanel = styled.div`
-    ${tw`bg-neutral-900 border border-neutral-800 rounded-2xl p-6`}
-    width: min(560px, 100%);
-    min-width: min(560px, 100%);
-    max-width: 560px;
-    min-height: 560px;
-    max-height: 1000px;
+    ${tw`bg-neutral-900 border border-neutral-800 rounded-2xl p-8`}
+    width: min(600px, 100%);
+    min-width: min(600px, 100%);
+    max-width: 600px;
+    min-height: 640px;
+    max-height: 1100px;
     height: 100%;
     display: flex;
     flex-direction: column;
 `;
 
 const CircleGrid = styled.div`
-    ${tw`grid gap-4 justify-items-center w-full`}
-    grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+    ${tw`grid gap-6 justify-items-center w-full`}
+    grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
     flex: 1;
 `;
 
