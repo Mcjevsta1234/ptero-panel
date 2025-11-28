@@ -1,11 +1,11 @@
 <?php
 
-namespace App\Http\Controllers\Admin;
+namespace Pterodactyl\Http\Controllers\Admin;
 
-use App\Models\User;
-use App\Models\Node;
-use App\Models\Nest;
-use App\Models\DedicatedServerAllocation;
+use Pterodactyl\Models\User;
+use Pterodactyl\Models\Node;
+use Pterodactyl\Models\Nest;
+use Pterodactyl\Models\DedicatedServerAllocation;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
 use Illuminate\Http\RedirectResponse;

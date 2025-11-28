@@ -1,19 +1,19 @@
 <?php
 
-namespace App\Http\Controllers\Base;
+namespace Pterodactyl\Http\Controllers\Base;
 
-use App\Models\Egg;
-use App\Models\Nest;
-use App\Models\Server;
-use App\Models\Allocation;
-use App\Models\DedicatedServerAllocation;
-use App\Services\Servers\ServerCreationService;
-use App\Transformers\Api\Client\ServerTransformer;
+use Pterodactyl\Models\Egg;
+use Pterodactyl\Models\Nest;
+use Pterodactyl\Models\Server;
+use Pterodactyl\Models\Allocation;
+use Pterodactyl\Models\DedicatedServerAllocation;
+use Pterodactyl\Services\Servers\ServerCreationService;
+use Pterodactyl\Transformers\Api\Client\ServerTransformer;
 use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
 use Illuminate\View\View;
 use Illuminate\Support\Str;
-use App\Http\Controllers\Controller;
+use Pterodactyl\Http\Controllers\Controller;
 
 class DedicatedServerController extends Controller
 {
