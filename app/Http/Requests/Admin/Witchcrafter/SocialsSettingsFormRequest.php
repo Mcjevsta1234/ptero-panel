@@ -12,19 +12,20 @@ class SocialsSettingsFormRequest extends AdminFormRequest
     public function rules(): array
     {
         return [
-            'witchcrafter:socialBilling' => 'nullable|string',
-            'witchcrafter:socialStatus' => 'nullable|string',
-            'witchcrafter:socialDiscord' => 'nullable|string',
-            'witchcrafter:socialWebsite' => 'nullable|string',
-            'witchcrafter:socialKnowledgebase' => 'nullable|string',
-            'witchcrafter:socialCustomTitle' => 'nullable|string',
-            'witchcrafter:socialCustomUrl' => 'nullable|string',
-            'witchcrafter:socialCustom2Title' => 'nullable|string',
-            'witchcrafter:socialCustom2Url' => 'nullable|string',
-            'witchcrafter:socialCustom3Title' => 'nullable|string',
-            'witchcrafter:socialCustom3Url' => 'nullable|string',
-            'witchcrafter:socialCustom4Title' => 'nullable|string',
-            'witchcrafter:socialCustom4Url' => 'nullable|string',
+            'witchcrafter:socialBilling' => 'required|string',
+            'witchcrafter:socialStatus' => 'required|string',
+            'witchcrafter:socialDiscord' => 'required|string',
+            'witchcrafter:socialWebsite' => 'required|string',
+            'witchcrafter:socialKnowledgebase' => 'required|string',
+            'witchcrafter:socialCustomTitle' => 'required|string',
+            'witchcrafter:socialCustomUrl' => 'required|string',
+            'witchcrafter:socialCustom2Title' => 'required|string',
+            'witchcrafter:socialCustom2Url' => 'required|string',
+            'witchcrafter:socialCustom3Title' => 'required|string',
+            'witchcrafter:socialCustom3Url' => 'required|string',
+            'witchcrafter:socialCustom4Title' => 'required|string',
+            'witchcrafter:socialCustom4Url' => 'required|string',
+            'witchcrafter:socialTrials' => 'required|string',
         ];
     }
 
@@ -44,6 +45,7 @@ class SocialsSettingsFormRequest extends AdminFormRequest
             'witchcrafter:socialCustom3Url' => 'Custom Link 3 URL',
             'witchcrafter:socialCustom4Title' => 'Custom Link 4 Title',
             'witchcrafter:socialCustom4Url' => 'Custom Link 4 URL',
+            'witchcrafter:socialTrials' => 'Trials URL',
         ];
     }
 }
