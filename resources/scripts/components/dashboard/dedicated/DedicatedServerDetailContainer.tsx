@@ -365,7 +365,6 @@ export default function DedicatedServerDetailContainer() {
                                 <ProgressBar>
                                     <ProgressFill percent={metric.percent} color={metric.color} />
                                 </ProgressBar>
-                                <MetricDetail>Available: {metric.available}</MetricDetail>
                             </MetricCard>
                         ))}
                     </MetricGrid>
