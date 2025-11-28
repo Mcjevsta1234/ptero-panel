@@ -185,7 +185,11 @@ export default function DedicatedServerDetailContainer() {
         setLoading(true);
         clearFlashes('dedicated:detail');
         getAllocationStats(allocationId)
-            .then((data) => setStats(data))
+            .then((data) => {
+                console.log('Stats data:', data);
+                console.log('Servers:', data.servers);
+                setStats(data);
+            })
             .catch((error) => clearAndAddHttpError({ key: 'dedicated:detail', error }))
             .finally(() => setLoading(false));
     };
@@ -216,10 +220,12 @@ export default function DedicatedServerDetailContainer() {
     const { allocation, servers } = stats;
 
     const handleDeleteClick = (serverName: string, serverUuid: string) => {
+        console.log('Delete clicked - Server:', serverName, 'UUID:', serverUuid);
         setDeleteModal({ visible: true, serverName, serverUuid });
     };
 
     const handleDeleteConfirm = async () => {
+        console.log('Delete confirm - UUID:', deleteModal.serverUuid);
         clearFlashes('dedicated:detail');
         try {
             await deleteDedicatedServer(deleteModal.serverUuid);
