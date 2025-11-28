@@ -272,7 +272,7 @@ export default function CreateDedicatedServerContainer() {
             });
 
             addFlash({ key: 'dedicated:create', type: 'success', message: 'Server created successfully.' });
-            history.push(`/dedicated/${allocationId}`);
+            history.push(`/account/dedicated/${allocationId}`);
         } catch (error) {
             clearAndAddHttpError({ key: 'dedicated:create', error });
         } finally {
@@ -500,7 +500,7 @@ export default function CreateDedicatedServerContainer() {
                                     </TitledGreyBox>
 
                                     <div css={tw`mt-6 flex gap-3`}>
-                                        <Button.Text onClick={() => history.push(`/dedicated/${allocationId}`)} css={tw`flex-1`}>
+                                        <Button.Text onClick={() => history.push(`/account/dedicated/${allocationId}`)} css={tw`flex-1`}>
                                             Cancel
                                         </Button.Text>
                                         <Button.Success type={'submit'} disabled={isSubmitting} css={tw`flex-1`}>
