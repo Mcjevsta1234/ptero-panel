@@ -12,7 +12,6 @@ import Label from '@/components/elements/Label';
 import Select from '@/components/elements/Select';
 import Spinner from '@/components/elements/Spinner';
 import useFlash from '@/plugins/useFlash';
-import { useHistory } from 'react-router-dom';
 
 interface Props {
     visible: boolean;
@@ -24,6 +23,7 @@ interface FormValues {
     name: string;
     nest_id: number | '';
     egg_id: number | '';
+    docker_image: string;
     cpu: number;
     memory: number;
     disk: number;
@@ -32,8 +32,7 @@ interface FormValues {
 }
 
 export default ({ visible, allocation, onDismissed }: Props) => {
-    const history = useHistory();
-    const { clearFlashes, clearAndAddHttpError } = useFlash();
+    const { clearFlashes, clearAndAddHttpError, addFlash } = useFlash();
     const [loading, setLoading] = useState(true);
     const [nests, setNests] = useState<any[]>([]);
     const [eggs, setEggs] = useState<any[]>([]);
@@ -44,6 +43,7 @@ export default ({ visible, allocation, onDismissed }: Props) => {
         name: '',
         nest_id: '',
         egg_id: '',
+        docker_image: '',
         cpu: Math.min(100, allocation.available_resources.cpu * 100),
         memory: Math.min(1024, allocation.available_resources.memory),
         disk: Math.min(5120, allocation.available_resources.disk),
@@ -109,6 +109,12 @@ export default ({ visible, allocation, onDismissed }: Props) => {
             const eggDetails = await getEggDetails(eggId);
             setSelectedEgg(eggDetails);
             
+            // Set default docker image
+            if (eggDetails.docker_images && Object.keys(eggDetails.docker_images).length > 0) {
+                const firstImage = Object.values(eggDetails.docker_images)[0];
+                setFieldValue('docker_image', firstImage);
+            }
+            
             // Initialize environment with default values
             const envDefaults: Record<string, string> = {};
             eggDetails.variables.forEach((variable) => {
@@ -127,6 +133,7 @@ export default ({ visible, allocation, onDismissed }: Props) => {
             allocation_id: allocation.id,
             name: values.name,
             egg_id: values.egg_id as number,
+            docker_image: values.docker_image || undefined,
             cpu: values.cpu,
             memory: values.memory,
             disk: values.disk,
@@ -139,8 +146,12 @@ export default ({ visible, allocation, onDismissed }: Props) => {
 
         try {
             await createDedicatedServer(request);
+            addFlash({
+                key: 'dedicated:detail',
+                type: 'success',
+                message: 'Server created successfully! It may take a few moments to install.',
+            });
             onDismissed();
-            history.push('/');
         } catch (error) {
             clearAndAddHttpError({ key: 'dedicated:create', error });
         } finally {
@@ -198,6 +209,23 @@ export default ({ visible, allocation, onDismissed }: Props) => {
                                             {filteredEggs.map((egg) => (
                                                 <option key={egg.id} value={egg.id}>
                                                     {egg.name}
+                                                </option>
+                                            ))}
+                                        </Select>
+                                    </div>
+                                )}
+
+                                {/* Docker Image Selection */}
+                                {selectedEgg && selectedEgg.docker_images && Object.keys(selectedEgg.docker_images).length > 0 && (
+                                    <div>
+                                        <Label>Docker Image</Label>
+                                        <Select
+                                            value={values.docker_image}
+                                            onChange={(e) => setFieldValue('docker_image', e.target.value)}
+                                        >
+                                            {Object.entries(selectedEgg.docker_images).map(([label, image]) => (
+                                                <option key={image} value={image}>
+                                                    {label}
                                                 </option>
                                             ))}
                                         </Select>

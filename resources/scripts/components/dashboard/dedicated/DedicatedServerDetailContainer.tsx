@@ -9,6 +9,7 @@ import useFlash from '@/plugins/useFlash';
 import { Button } from '@/components/elements/button';
 import styled from 'styled-components/macro';
 import DeleteConfirmModal from './DeleteConfirmModal';
+import CreateServerModal from './CreateServerModal';
 
 const InfoCard = styled.div`
     ${tw`bg-neutral-700 rounded p-3 flex justify-between items-center`}
@@ -95,6 +96,7 @@ export default function DedicatedServerDetailContainer() {
         serverName: '',
         serverUuid: '',
     });
+    const [createModalVisible, setCreateModalVisible] = useState(false);
 
     const fetchStats = () => {
         setLoading(true);
@@ -157,7 +159,12 @@ export default function DedicatedServerDetailContainer() {
                 <Link to={'/account/dedicated'}>
                     <Button.Text>&larr; Back to Allocations</Button.Text>
                 </Link>
-                <p css={tw`text-xs text-neutral-400`}>Auto-refreshes every 30 seconds</p>
+                <div css={tw`flex items-center gap-3`}>
+                    <p css={tw`text-xs text-neutral-400`}>Auto-refreshes every 30 seconds</p>
+                    <Button onClick={() => setCreateModalVisible(true)} css={tw`px-4 py-2`}>
+                        Create Server
+                    </Button>
+                </div>
             </div>
 
             {/* Top Row: Server Plan Info & Server List */}
@@ -194,9 +201,9 @@ export default function DedicatedServerDetailContainer() {
 
                 {/* Right: Server List */}
                 <TitledGreyBox title={'Servers'}>
-                    <div css={tw`space-y-3 min-h-[300px]`}>
+                    <div css={tw`space-y-3 max-h-[400px] overflow-y-auto`}>
                         {servers.length === 0 ? (
-                            <div css={tw`flex items-center justify-center h-full`}>
+                            <div css={tw`flex items-center justify-center h-full min-h-[300px]`}>
                                 <p css={tw`text-neutral-400 text-sm`}>No servers created yet</p>
                             </div>
                         ) : (
@@ -308,10 +315,38 @@ export default function DedicatedServerDetailContainer() {
                 </div>
             </TitledGreyBox>
 
-            {deleteModal.visible && (
-                <DeleteConfirmModal
-                    serverName={deleteModal.serverName}
-                    onConfirm={handleDeleteConfirm}
+            <DeleteConfirmModal
+                visible={deleteModal.visible}
+                serverName={deleteModal.serverName}
+                onConfirm={handleDeleteConfirm}
+                onModalDismissed={() => setDeleteModal({ visible: false, serverName: '', serverUuid: '' })}
+            />
+
+            {stats && (
+                <CreateServerModal
+                    visible={createModalVisible}
+                    allocation={{
+                        id: allocation.id,
+                        name: allocation.name,
+                        node: allocation.node,
+                        cpu: allocation.limits.cpu,
+                        memory: allocation.limits.memory,
+                        disk: allocation.limits.disk,
+                        database_limit: allocation.limits.databases,
+                        allocation_limit: allocation.limits.allocations,
+                        backup_limit: allocation.limits.backups,
+                        port_range_start: null,
+                        port_range_end: null,
+                        used_resources: allocation.used,
+                        available_resources: allocation.available,
+                        allow_memory_overallocation: allocation.overallocation.memory,
+                        allow_disk_overallocation: allocation.overallocation.disk,
+                        servers_count: servers.length,
+                    }}
+                    onDismissed={() => {
+                        setCreateModalVisible(false);
+                        fetchStats();
+                    }}
                 />
             )}
         </PageContentBlock>
