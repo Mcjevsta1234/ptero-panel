@@ -26,6 +26,7 @@ interface Props {
     limits: ResourceTotals;
     used: ResourceTotals;
     onCreated: () => void;
+    titleOverride?: React.ReactNode;
 }
 
 interface FormValues {
@@ -89,7 +90,7 @@ const createValidationSchema = (portRequired: boolean) =>
         ),
     });
 
-const CreateServerInlineForm: React.FC<Props> = ({ allocationId, limits, used, onCreated }) => {
+const CreateServerInlineForm: React.FC<Props> = ({ allocationId, limits, used, onCreated, titleOverride }) => {
     const { clearFlashes, clearAndAddHttpError, addFlash } = useFlash();
 
     const [loading, setLoading] = useState(true);
@@ -228,8 +229,14 @@ const CreateServerInlineForm: React.FC<Props> = ({ allocationId, limits, used, o
         }
     };
 
+    const defaultTitle = (
+        <div css={tw`text-center font-semibold text-base text-neutral-100`}>
+            Create Server
+        </div>
+    );
+
     return (
-        <TitledGreyBox title={'Create Server'}>
+        <TitledGreyBox title={titleOverride || defaultTitle}>
             {loading ? (
                 <div css={tw`py-6`}>
                     <Spinner centered />

@@ -33,6 +33,10 @@ const ProgressFill = styled.div<{ percent: number; color: string }>`
     background-color: ${({ color }) => color};
 `;
 
+const TitleText = styled.div`
+    ${tw`text-center font-semibold text-base text-neutral-100`}
+`;
+
 const ServerCard = styled.div`
     ${tw`bg-neutral-900 border border-neutral-800 rounded-lg p-4 flex flex-col gap-3 transition-colors duration-200 hover:border-primary-500`}
 `;
@@ -213,9 +217,15 @@ export default function DedicatedServerDetailContainer() {
     const remainingCpu = allocation.limits.cpu === 0 ? 'Unlimited' : `${Math.max(allocation.limits.cpu - allocation.used.cpu, 0)}%`;
     const remainingMemory = allocation.limits.memory === 0 ? 'Unlimited' : formatGb(Math.max(allocation.limits.memory - allocation.used.memory, 0));
     const remainingDisk = allocation.limits.disk === 0 ? 'Unlimited' : formatGb(Math.max(allocation.limits.disk - allocation.used.disk, 0));
+    const remainingDatabases = allocation.limits.databases === 0 ? 'Unlimited' : `${Math.max(allocation.limits.databases - allocation.used.databases, 0)}`;
+    const remainingAllocations = allocation.limits.allocations === 0 ? 'Unlimited' : `${Math.max(allocation.limits.allocations - allocation.used.allocations, 0)}`;
+    const remainingBackups = allocation.limits.backups === 0 ? 'Unlimited' : `${Math.max(allocation.limits.backups - allocation.used.backups, 0)}`;
     const cpuPercent = allocation.limits.cpu === 0 ? 0 : (allocation.used.cpu / allocation.limits.cpu) * 100;
     const memoryPercent = allocation.limits.memory === 0 ? 0 : (allocation.used.memory / allocation.limits.memory) * 100;
     const diskPercent = allocation.limits.disk === 0 ? 0 : (allocation.used.disk / allocation.limits.disk) * 100;
+    const databasePercent = allocation.limits.databases === 0 ? 0 : (allocation.used.databases / allocation.limits.databases) * 100;
+    const allocationsPercent = allocation.limits.allocations === 0 ? 0 : (allocation.used.allocations / allocation.limits.allocations) * 100;
+    const backupsPercent = allocation.limits.backups === 0 ? 0 : (allocation.used.backups / allocation.limits.backups) * 100;
     const nodeLocation = allocation.node.location || 'Unknown';
 
     const humanizeStatus = (value: string) =>
@@ -223,6 +233,67 @@ export default function DedicatedServerDetailContainer() {
             .replace(/_/g, ' ')
             .toLowerCase()
             .replace(/\b\w/g, (char) => char.toUpperCase());
+
+    const countDisplay = (usedCount: number, limitCount: number) => `${usedCount} / ${limitCount === 0 ? '∞' : limitCount}`;
+
+    const renderTitle = (text: string) => <TitleText>{text}</TitleText>;
+
+    const usageMetrics = [
+        {
+            key: 'cpu',
+            label: 'CPU Usage',
+            used: `${allocation.used.cpu}%`,
+            total: formatLimit(allocation.limits.cpu, '%'),
+            available: remainingCpu,
+            percent: cpuPercent,
+            color: 'rgb(59,130,246)',
+        },
+        {
+            key: 'memory',
+            label: 'Memory Usage',
+            used: formatGb(allocation.used.memory),
+            total: formatLimitGb(allocation.limits.memory),
+            available: remainingMemory,
+            percent: memoryPercent,
+            color: 'rgb(16,185,129)',
+        },
+        {
+            key: 'disk',
+            label: 'Disk Usage',
+            used: formatGb(allocation.used.disk),
+            total: formatLimitGb(allocation.limits.disk),
+            available: remainingDisk,
+            percent: diskPercent,
+            color: 'rgb(250,204,21)',
+        },
+        {
+            key: 'databases',
+            label: 'Databases',
+            used: countDisplay(allocation.used.databases, allocation.limits.databases),
+            total: '',
+            available: remainingDatabases,
+            percent: databasePercent,
+            color: 'rgb(147,197,253)',
+        },
+        {
+            key: 'allocations',
+            label: 'Allocations',
+            used: countDisplay(allocation.used.allocations, allocation.limits.allocations),
+            total: '',
+            available: remainingAllocations,
+            percent: allocationsPercent,
+            color: 'rgb(129,140,248)',
+        },
+        {
+            key: 'backups',
+            label: 'Backups',
+            used: countDisplay(allocation.used.backups, allocation.limits.backups),
+            total: '',
+            available: remainingBackups,
+            percent: backupsPercent,
+            color: 'rgb(248,113,113)',
+        },
+    ];
 
     const resolveServerStatus = (server: AllocationStats['servers'][number]): { label: string; intent: StatusIntent } => {
         if (server.suspended) {
@@ -255,77 +326,34 @@ export default function DedicatedServerDetailContainer() {
     return (
         <PageContentBlock title={allocation.name || 'Dedicated Server'}>
             <div css={tw`grid grid-cols-1 xl:grid-cols-2 gap-6 mb-8`}>
-                <TitledGreyBox title={'Allocation Overview'}>
+                <TitledGreyBox title={renderTitle(allocation.node.name || 'Allocation Overview')}>
                     <div css={tw`space-y-6`}>
-                        <div css={tw`grid grid-cols-1 lg:grid-cols-3 gap-4`}>
-                            <div>
-                                <div css={tw`flex justify-between text-xs uppercase tracking-wide text-neutral-400`}>
-                                    <span>CPU Usage</span>
-                                    <span>{allocation.used.cpu}% / {formatLimit(allocation.limits.cpu, '%')}</span>
+                        <div css={tw`space-y-5`}>
+                            {usageMetrics.map((metric) => (
+                                <div key={metric.key}>
+                                    <div css={tw`flex justify-between text-xs uppercase tracking-wide text-neutral-400`}>
+                                        <span>{metric.label}</span>
+                                        <span>
+                                            {metric.key === 'cpu' || metric.key === 'memory' || metric.key === 'disk'
+                                                ? `${metric.used} / ${metric.total}`
+                                                : metric.used}
+                                        </span>
+                                    </div>
+                                    <ProgressTrack>
+                                        <ProgressFill percent={metric.percent} color={metric.color} />
+                                    </ProgressTrack>
+                                    <p css={tw`text-xs text-neutral-300 mt-1`}>
+                                        Available: {metric.available}
+                                    </p>
                                 </div>
-                                <ProgressTrack>
-                                    <ProgressFill percent={cpuPercent} color={'rgb(59,130,246)'} />
-                                </ProgressTrack>
-                                <p css={tw`text-xs text-neutral-300 mt-1`}>Available: {remainingCpu}</p>
-                            </div>
-
-                            <div>
-                                <div css={tw`flex justify-between text-xs uppercase tracking-wide text-neutral-400`}>
-                                    <span>Memory Usage</span>
-                                    <span>
-                                        {formatGb(allocation.used.memory)} / {formatLimitGb(allocation.limits.memory)}
-                                    </span>
-                                </div>
-                                <ProgressTrack>
-                                    <ProgressFill percent={memoryPercent} color={'rgb(16,185,129)'} />
-                                </ProgressTrack>
-                                <p css={tw`text-xs text-neutral-300 mt-1`}>Available: {remainingMemory}</p>
-                            </div>
-
-                            <div>
-                                <div css={tw`flex justify-between text-xs uppercase tracking-wide text-neutral-400`}>
-                                    <span>Disk Usage</span>
-                                    <span>
-                                        {formatGb(allocation.used.disk)} / {formatLimitGb(allocation.limits.disk)}
-                                    </span>
-                                </div>
-                                <ProgressTrack>
-                                    <ProgressFill percent={diskPercent} color={'rgb(250,204,21)'} />
-                                </ProgressTrack>
-                                <p css={tw`text-xs text-neutral-300 mt-1`}>Available: {remainingDisk}</p>
-                            </div>
+                            ))}
                         </div>
 
-                        <div css={tw`grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-3`}>
-                            <InfoCard>
-                                <InfoLabel>Databases</InfoLabel>
-                                <InfoValue>
-                                    {allocation.used.databases} / {allocation.limits.databases === 0 ? '∞' : allocation.limits.databases}
-                                </InfoValue>
-                            </InfoCard>
-                            <InfoCard>
-                                <InfoLabel>Allocations</InfoLabel>
-                                <InfoValue>
-                                    {allocation.used.allocations} / {allocation.limits.allocations === 0 ? '∞' : allocation.limits.allocations}
-                                </InfoValue>
-                            </InfoCard>
-                            <InfoCard>
-                                <InfoLabel>Backups</InfoLabel>
-                                <InfoValue>
-                                    {allocation.used.backups} / {allocation.limits.backups === 0 ? '∞' : allocation.limits.backups}
-                                </InfoValue>
-                            </InfoCard>
+                        <div css={tw`grid grid-cols-1 sm:grid-cols-2 gap-3`}>
                             <InfoCard>
                                 <div>
-                                    <InfoLabel>Node</InfoLabel>
-                                    <InfoValue>{allocation.node.name}</InfoValue>
-                                </div>
-                                <span css={tw`text-xs text-neutral-400`}>{nodeLocation}</span>
-                            </InfoCard>
-                            <InfoCard>
-                                <div>
-                                    <InfoLabel>Main IP</InfoLabel>
-                                    <InfoValue css={tw`text-xs sm:text-sm break-all`}>{allocation.node.fqdn}</InfoValue>
+                                    <InfoLabel>Node Location</InfoLabel>
+                                    <InfoValue>{nodeLocation}</InfoValue>
                                 </div>
                             </InfoCard>
                             <InfoCard>
@@ -341,10 +369,11 @@ export default function DedicatedServerDetailContainer() {
                     limits={allocation.limits}
                     used={allocation.used}
                     onCreated={() => fetchStats()}
+                    titleOverride={renderTitle('Create Server')}
                 />
             </div>
 
-            <TitledGreyBox title={'Servers'}>
+            <TitledGreyBox title={renderTitle('Servers')}>
                 {servers.length === 0 ? (
                     <div css={tw`py-12 text-center text-neutral-400`}>No servers created yet.</div>
                 ) : (
