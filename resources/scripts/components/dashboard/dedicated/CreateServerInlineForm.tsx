@@ -13,7 +13,22 @@ import TitledGreyBox from '@/components/elements/TitledGreyBox';
 
 interface Props {
     allocationId: number;
-    available: { cpu: number; memory: number; disk: number };
+    limits: {
+        cpu: number;
+        memory: number;
+        disk: number;
+        databases: number;
+        allocations: number;
+        backups: number;
+    };
+    used: {
+        cpu: number;
+        memory: number;
+        disk: number;
+        databases: number;
+        allocations: number;
+        backups: number;
+    };
     onCreated: () => void;
 }
 
@@ -25,34 +40,104 @@ interface FormValues {
     cpu: number;
     memory: number;
     disk: number;
+    databases: number;
+    allocations: number;
+    backups: number;
     environment: Record<string, string>;
 }
 
-const CreateServerInlineForm = ({ allocationId, available, onCreated }: Props) => {
+const getAvailable = (limit: number, used: number): number | null => {
+    if (limit === 0) return null;
+    return Math.max(limit - used, 0);
+};
+
+const formatAvailable = (value: number | null, suffix = '') => (value === null ? 'Unlimited' : `${value}${suffix}`);
+
+const clampInitial = (available: number | null, fallback: number) => {
+    if (available === null) return fallback;
+    if (available <= 0) return 0;
+    return Math.min(fallback, available);
+};
+
+const CreateServerInlineForm = ({ allocationId, limits, used, onCreated }: Props) => {
     const { clearFlashes, clearAndAddHttpError, addFlash } = useFlash();
     const [loading, setLoading] = useState(true);
     const [nests, setNests] = useState<any[]>([]);
     const [filteredEggs, setFilteredEggs] = useState<any[]>([]);
     const [selectedEgg, setSelectedEgg] = useState<any | null>(null);
 
+    const availableCpu = getAvailable(limits.cpu, used.cpu);
+    const availableMemory = getAvailable(limits.memory, used.memory);
+    const availableDisk = getAvailable(limits.disk, used.disk);
+    const availableDatabases = getAvailable(limits.databases, used.databases);
+    const availableAllocations = getAvailable(limits.allocations, used.allocations);
+    const availableBackups = getAvailable(limits.backups, used.backups);
+
     const initialValues: FormValues = {
         name: '',
         nest_id: '',
         egg_id: '',
         docker_image: '',
-        cpu: Math.min(100, available.cpu * 100),
-        memory: Math.min(1024, available.memory),
-        disk: Math.min(5120, available.disk),
+        cpu: clampInitial(availableCpu, 100),
+        memory: clampInitial(availableMemory, 1024),
+        disk: clampInitial(availableDisk, 5120),
+        databases: clampInitial(availableDatabases, 0),
+        allocations: clampInitial(availableAllocations, 1),
+        backups: clampInitial(availableBackups, 0),
         environment: {},
     };
+
+    const limitedNumber = (message: string, availableValue: number | null) =>
+        availableValue === null
+            ? Yup.number().required().min(0, 'Value must be positive')
+            : Yup.number().required().min(0, 'Value must be positive').max(availableValue, message.replace('{max}', String(availableValue)));
 
     const validationSchema = Yup.object().shape({
         name: Yup.string().required('Server name is required').min(3).max(191),
         nest_id: Yup.number().required('Please select a server category'),
         egg_id: Yup.number().required('Please select server software'),
-        cpu: Yup.number().required().min(1).max(available.cpu * 100),
-        memory: Yup.number().required().min(128).max(available.memory),
-        disk: Yup.number().required().min(512).max(available.disk),
+        cpu: Yup.number()
+            .required('CPU is required')
+            .min(1, 'Minimum 1% CPU')
+            .test('cpu-max', '', function (value) {
+                if (availableCpu === null || typeof value !== 'number') return true;
+                return value <= availableCpu || this.createError({ message: `Maximum ${availableCpu}% available` });
+            }),
+        memory: Yup.number()
+            .required('Memory is required')
+            .min(128, 'Minimum 128 MB')
+            .test('memory-max', '', function (value) {
+                if (availableMemory === null || typeof value !== 'number') return true;
+                return value <= availableMemory || this.createError({ message: `Maximum ${availableMemory} MB available` });
+            }),
+        disk: Yup.number()
+            .required('Disk is required')
+            .min(512, 'Minimum 512 MB')
+            .test('disk-max', '', function (value) {
+                if (availableDisk === null || typeof value !== 'number') return true;
+                return value <= availableDisk || this.createError({ message: `Maximum ${availableDisk} MB available` });
+            }),
+        databases: Yup.number()
+            .required('Databases is required')
+            .min(0, 'Cannot be negative')
+            .test('db-max', '', function (value) {
+                if (availableDatabases === null || typeof value !== 'number') return true;
+                return value <= availableDatabases || this.createError({ message: `Maximum ${availableDatabases} available` });
+            }),
+        allocations: Yup.number()
+            .required('Allocations is required')
+            .min(0, 'Cannot be negative')
+            .test('alloc-max', '', function (value) {
+                if (availableAllocations === null || typeof value !== 'number') return true;
+                return value <= availableAllocations || this.createError({ message: `Maximum ${availableAllocations} available` });
+            }),
+        backups: Yup.number()
+            .required('Backups is required')
+            .min(0, 'Cannot be negative')
+            .test('backup-max', '', function (value) {
+                if (availableBackups === null || typeof value !== 'number') return true;
+                return value <= availableBackups || this.createError({ message: `Maximum ${availableBackups} available` });
+            }),
     });
 
     useEffect(() => {
@@ -91,7 +176,7 @@ const CreateServerInlineForm = ({ allocationId, available, onCreated }: Props) =
         }
     };
 
-    const submit = async (values: FormValues, { setSubmitting, resetForm }: FormikHelpers<FormValues>) => {
+        const submit = async (values: FormValues, { setSubmitting, resetForm }: FormikHelpers<FormValues>) => {
         clearFlashes('dedicated:create');
         try {
             await createDedicatedServer({
@@ -102,9 +187,9 @@ const CreateServerInlineForm = ({ allocationId, available, onCreated }: Props) =
                 cpu: values.cpu,
                 memory: values.memory,
                 disk: values.disk,
-                databases: 0,
-                allocations: 1,
-                backups: 0,
+                    databases: values.databases,
+                    allocations: values.allocations,
+                    backups: values.backups,
                 swap: 1024,
                 io: 500,
             });
@@ -174,18 +259,39 @@ const CreateServerInlineForm = ({ allocationId, available, onCreated }: Props) =
                                     </div>
                                 )}
 
-                                <div css={tw`grid grid-cols-3 gap-4`}>
+                                <div css={tw`grid grid-cols-1 md:grid-cols-3 gap-4`}>
                                     <div>
                                         <Label>CPU (%)</Label>
-                                        <Field as={Input} type={'number'} name={'cpu'} min={1} max={available.cpu * 100} />
+                                        <Field as={Input} type={'number'} name={'cpu'} min={1} />
+                                        <p css={tw`text-xs text-neutral-500 mt-1`}>Available: {formatAvailable(availableCpu, '%')}</p>
                                     </div>
                                     <div>
                                         <Label>Memory (MB)</Label>
-                                        <Field as={Input} type={'number'} name={'memory'} min={128} step={128} max={available.memory} />
+                                        <Field as={Input} type={'number'} name={'memory'} min={128} step={128} />
+                                        <p css={tw`text-xs text-neutral-500 mt-1`}>Available: {formatAvailable(availableMemory, ' MB')}</p>
                                     </div>
                                     <div>
                                         <Label>Disk (MB)</Label>
-                                        <Field as={Input} type={'number'} name={'disk'} min={512} step={512} max={available.disk} />
+                                        <Field as={Input} type={'number'} name={'disk'} min={512} step={512} />
+                                        <p css={tw`text-xs text-neutral-500 mt-1`}>Available: {formatAvailable(availableDisk, ' MB')}</p>
+                                    </div>
+                                </div>
+
+                                <div css={tw`grid grid-cols-1 md:grid-cols-3 gap-4`}>
+                                    <div>
+                                        <Label>Databases</Label>
+                                        <Field as={Input} type={'number'} name={'databases'} min={0} />
+                                        <p css={tw`text-xs text-neutral-500 mt-1`}>Available: {formatAvailable(availableDatabases)}</p>
+                                    </div>
+                                    <div>
+                                        <Label>Allocations</Label>
+                                        <Field as={Input} type={'number'} name={'allocations'} min={0} />
+                                        <p css={tw`text-xs text-neutral-500 mt-1`}>Available: {formatAvailable(availableAllocations)}</p>
+                                    </div>
+                                    <div>
+                                        <Label>Backups</Label>
+                                        <Field as={Input} type={'number'} name={'backups'} min={0} />
+                                        <p css={tw`text-xs text-neutral-500 mt-1`}>Available: {formatAvailable(availableBackups)}</p>
                                     </div>
                                 </div>
 
