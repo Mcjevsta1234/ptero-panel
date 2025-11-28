@@ -11,6 +11,17 @@ import styled, { css } from 'styled-components/macro';
 import DeleteConfirmModal from './DeleteConfirmModal';
 import CreateServerInlineForm from './CreateServerInlineForm';
 
+const TitleText = styled.div`
+    ${tw`text-center font-semibold text-base text-neutral-100`}
+`;
+
+const CIRCLE_RADIUS = 50;
+const CIRCLE_CIRCUMFERENCE = 2 * Math.PI * CIRCLE_RADIUS;
+
+const CircleGrid = styled.div`
+    ${tw`grid gap-4 justify-items-center`}
+    grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+`;
 
 const CircleCard = styled.div`
     ${tw`bg-neutral-700 rounded-lg p-4 flex flex-col items-center text-center gap-2`}
