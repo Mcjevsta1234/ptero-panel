@@ -431,16 +431,11 @@ export default function CreateDedicatedServerContainer() {
                                                                             {variable.description}
                                                                         </p>
                                                                     )}
-                                                                    <Input
+                                                                    <Field
+                                                                        as={Input}
                                                                         type={'text'}
-                                                                        value={values.environment[variable.env_variable] || ''}
+                                                                        name={`environment.${variable.env_variable}`}
                                                                         disabled={!variable.user_editable}
-                                                                        onChange={(e) =>
-                                                                            setFieldValue(
-                                                                                `environment.${variable.env_variable}`,
-                                                                                e.target.value
-                                                                            )
-                                                                        }
                                                                     />
                                                                     {errors.environment && (errors.environment as any)[variable.env_variable] && (
                                                                         <p css={tw`text-xs text-red-400 mt-1`}>
