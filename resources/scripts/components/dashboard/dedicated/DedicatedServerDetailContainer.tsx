@@ -7,7 +7,7 @@ import Spinner from '@/components/elements/Spinner';
 import TitledGreyBox from '@/components/elements/TitledGreyBox';
 import useFlash from '@/plugins/useFlash';
 import { Button } from '@/components/elements/button';
-import styled from 'styled-components/macro';
+import styled, { css } from 'styled-components/macro';
 import DeleteConfirmModal from './DeleteConfirmModal';
 import CreateServerInlineForm from './CreateServerInlineForm';
 
@@ -43,16 +43,39 @@ const ServerMeta = styled.div`
 
 type StatusIntent = 'online' | 'offline' | 'installing' | 'suspended';
 
-const statusVariants: Record<StatusIntent, ReturnType<typeof tw>> = {
-    online: tw`bg-emerald-500/20 text-emerald-200 border border-emerald-500/30`,
-    offline: tw`bg-neutral-800 text-neutral-200 border border-neutral-700`,
-    installing: tw`bg-amber-500/20 text-amber-200 border border-amber-500/30`,
-    suspended: tw`bg-red-500/20 text-red-200 border border-red-500/30`,
+const statusPalette: Record<StatusIntent, { bg: string; border: string; color: string }> = {
+    online: {
+        bg: 'rgba(16, 185, 129, 0.15)',
+        border: 'rgba(16, 185, 129, 0.4)',
+        color: 'rgb(110, 231, 183)',
+    },
+    offline: {
+        bg: 'rgba(38, 38, 38, 1)',
+        border: 'rgba(82, 82, 82, 1)',
+        color: 'rgb(212, 212, 212)',
+    },
+    installing: {
+        bg: 'rgba(245, 158, 11, 0.15)',
+        border: 'rgba(245, 158, 11, 0.4)',
+        color: 'rgb(251, 191, 36)',
+    },
+    suspended: {
+        bg: 'rgba(248, 113, 113, 0.2)',
+        border: 'rgba(248, 113, 113, 0.5)',
+        color: 'rgb(252, 165, 165)',
+    },
 };
 
-const StatusBadge = styled.span<{ intent: StatusIntent }>`
-    ${tw`text-[10px] tracking-wide uppercase px-2 py-0.5 rounded-full border`}
-    ${({ intent }) => statusVariants[intent] || statusVariants.offline}
+const StatusBadge = styled.span<{ $intent: StatusIntent }>`
+    ${tw`text-[10px] tracking-wide uppercase px-2 py-0.5 rounded-full border font-semibold`}
+    ${({ $intent }) => {
+        const palette = statusPalette[$intent] || statusPalette.offline;
+        return css`
+            background-color: ${palette.bg};
+            border-color: ${palette.border};
+            color: ${palette.color};
+        `;
+    }}
 `;
 
 interface AllocationStats {
@@ -336,7 +359,7 @@ export default function DedicatedServerDetailContainer() {
                                             <p css={tw`text-sm font-semibold text-neutral-100 leading-tight`}>{s.name}</p>
                                             <p css={tw`text-[11px] text-neutral-500`}>{s.address ?? s.identifier}</p>
                                         </div>
-                                        <StatusBadge intent={statusInfo.intent}>{statusInfo.label}</StatusBadge>
+                                        <StatusBadge $intent={statusInfo.intent}>{statusInfo.label}</StatusBadge>
                                     </div>
                                     <ServerMeta>
                                         <span>CPU {s.cpu}%</span>

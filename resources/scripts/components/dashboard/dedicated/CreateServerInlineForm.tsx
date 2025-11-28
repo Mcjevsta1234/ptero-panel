@@ -247,60 +247,60 @@ interface Props {
                         return (
                             <Form>
                                 <div css={tw`space-y-4`}>
-                                <div>
-                                    <Label>Server Name</Label>
-                                    <Field as={Input} name={'name'} />
-                                </div>
+                                    <div>
+                                        <Label>Server Name</Label>
+                                        <Field as={Input} name={'name'} />
+                                    </div>
 
-                                <div>
-                                    <Label>Category</Label>
-                                    <Select
-                                        value={values.nest_id}
-                                        onChange={(e) => handleNestChange(Number(e.target.value), setFieldValue)}
-                                    >
-                                        <option value="">-- Select Category --</option>
-                                        {nests.map((nest) => (
-                                            <option key={nest.id} value={nest.id}>{nest.name}</option>
-                                        ))}
-                                    </Select>
-                                </div>
+                                    <div>
+                                        <Label>Category</Label>
+                                        <Select
+                                            value={values.nest_id}
+                                            onChange={(e) => handleNestChange(Number(e.target.value), setFieldValue)}
+                                        >
+                                            <option value="">-- Select Category --</option>
+                                            {nests.map((nest) => (
+                                                <option key={nest.id} value={nest.id}>{nest.name}</option>
+                                            ))}
+                                        </Select>
+                                    </div>
 
-                                <div>
-                                    <Label>Game Version</Label>
-                                    <Select
-                                        value={values.egg_id}
-                                        disabled={eggSelectDisabled}
-                                        onChange={(e) => handleEggChange(Number(e.target.value), setFieldValue, values)}
-                                    >
-                                        <option value="">{eggSelectDisabled ? 'Select a category first' : '-- Select Game Version --'}</option>
-                                        {eggsForSelect.map((egg) => (
-                                            <option key={egg.id} value={egg.id}>{egg.name}</option>
-                                        ))}
-                                    </Select>
-                                </div>
+                                    <div>
+                                        <Label>Game Version</Label>
+                                        <Select
+                                            value={values.egg_id}
+                                            disabled={eggSelectDisabled}
+                                            onChange={(e) => handleEggChange(Number(e.target.value), setFieldValue, values)}
+                                        >
+                                            <option value="">{eggSelectDisabled ? 'Select a category first' : '-- Select Game Version --'}</option>
+                                            {eggsForSelect.map((egg) => (
+                                                <option key={egg.id} value={egg.id}>{egg.name}</option>
+                                            ))}
+                                        </Select>
+                                    </div>
 
-                                <div>
-                                    <Label>Primary Port</Label>
-                                    <Select
-                                        value={values.allocation_port_id === '' ? '' : String(values.allocation_port_id)}
-                                        disabled={portUnavailable}
-                                        onChange={(e) => {
-                                            const val = e.target.value;
-                                            setFieldValue('allocation_port_id', val ? Number(val) : '');
-                                        }}
-                                    >
-                                        {portUnavailable ? (
-                                            <option value="">No ports available</option>
-                                        ) : (
-                                            ports.map((port) => (
-                                                <option key={port.id} value={port.id}>{port.display}</option>
-                                            ))
-                                        )}
-                                    </Select>
-                                    <p css={tw`text-xs text-neutral-500 mt-1`}>
-                                        {portUnavailable ? 'No free ports remain on this allocation.' : 'Only ports assigned to you on this node are shown.'}
-                                    </p>
-                                </div>
+                                    <div>
+                                        <Label>Primary Port</Label>
+                                        <Select
+                                            value={values.allocation_port_id === '' ? '' : String(values.allocation_port_id)}
+                                            disabled={portUnavailable}
+                                            onChange={(e) => {
+                                                const val = e.target.value;
+                                                setFieldValue('allocation_port_id', val ? Number(val) : '');
+                                            }}
+                                        >
+                                            {portUnavailable ? (
+                                                <option value="">No ports available</option>
+                                            ) : (
+                                                ports.map((port) => (
+                                                    <option key={port.id} value={port.id}>{port.display}</option>
+                                                ))
+                                            )}
+                                        </Select>
+                                        <p css={tw`text-xs text-neutral-500 mt-1`}>
+                                            {portUnavailable ? 'No free ports remain on this allocation.' : 'Only ports assigned to you on this node are shown.'}
+                                        </p>
+                                    </div>
 
                                     {selectedEgg && selectedEgg.docker_images && Object.keys(selectedEgg.docker_images).length > 0 && (
                                         <div>
@@ -352,7 +352,6 @@ interface Props {
                                         </div>
                                     </div>
 
-                                    {/* Environment variables */}
                                     {selectedEgg && selectedEgg.variables && selectedEgg.variables.length > 0 && (
                                         <div css={tw`border-t border-neutral-700 pt-4 mt-4`}>
                                             <h3 css={tw`text-lg mb-3`}>Environment Configuration</h3>
@@ -379,9 +378,8 @@ interface Props {
                                         <Button.Success type={'submit'} disabled={isSubmitting || portUnavailable}>Create Server</Button.Success>
                                     </div>
                                 </div>
-                            </div>
-                        </Form>
-                    );
+                            </Form>
+                        );
                     }
                 </Formik>
             )}
