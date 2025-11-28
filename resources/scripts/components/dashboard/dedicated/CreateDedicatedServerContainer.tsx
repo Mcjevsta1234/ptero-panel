@@ -295,7 +295,7 @@ export default function CreateDedicatedServerContainer() {
             <FlashMessageRender byKey={'dedicated:create'} css={tw`mb-4`} />
             
             <Formik initialValues={initialValues} validationSchema={validationSchema} onSubmit={submit} enableReinitialize>
-                {({ isSubmitting, values, setFieldValue, errors }) => {
+                {({ isSubmitting, values, setFieldValue, errors, submitForm }) => {
                     const eggSelectDisabled = !values.nest_id;
                     const eggsForSelect = eggSelectDisabled ? [] : filteredEggs;
                     const portUnavailable = ports.length === 0;
@@ -503,7 +503,7 @@ export default function CreateDedicatedServerContainer() {
                                         <Button.Text onClick={() => history.push(`/account/dedicated/${allocationId}`)} css={tw`flex-1`}>
                                             Cancel
                                         </Button.Text>
-                                        <Button.Success type={'submit'} disabled={isSubmitting} css={tw`flex-1`}>
+                                        <Button.Success type={'button'} disabled={isSubmitting} onClick={submitForm} css={tw`flex-1`}>
                                             {isSubmitting ? 'Creating...' : 'Create Server'}
                                         </Button.Success>
                                     </div>
