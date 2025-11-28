@@ -19,32 +19,43 @@ const CIRCLE_RADIUS = 50;
 const CIRCLE_CIRCUMFERENCE = 2 * Math.PI * CIRCLE_RADIUS;
 
 const MetricsPanel = styled.div`
-    ${tw`bg-neutral-900 border border-neutral-800 rounded-2xl p-8`}
-    width: min(600px, 100%);
-    min-width: min(600px, 100%);
-    max-width: 600px;
-    min-height: 640px;
-    max-height: 1100px;
-    height: 100%;
+    ${tw`bg-neutral-900 border border-neutral-800 rounded-2xl p-6 lg:p-8`}
+    width: 100%;
+    min-height: 100%;
     display: flex;
     flex-direction: column;
 `;
 
 const CircleGrid = styled.div`
-    ${tw`grid gap-6 justify-items-center w-full`}
-    grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
-    flex: 1;
+    ${tw`grid gap-6 w-full`}
+    --circle-size: clamp(150px, 22vw, 280px);
+    grid-auto-rows: minmax(260px, 1fr);
+    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+    align-items: stretch;
+
+    @media (max-width: 1024px) {
+        --circle-size: clamp(150px, 32vw, 240px);
+        grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    }
+
+    @media (max-width: 640px) {
+        --circle-size: clamp(140px, 60vw, 220px);
+        grid-auto-rows: minmax(240px, 1fr);
+        grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    }
 `;
 
 const CircleCard = styled.div`
-    ${tw`bg-neutral-700 rounded-lg p-4 flex flex-col items-center text-center gap-2`}
-    max-width: 200px;
+    ${tw`bg-neutral-800 rounded-2xl p-5 lg:p-6 flex flex-col items-center text-center gap-3`}
     width: 100%;
+    min-height: 100%;
+    justify-content: center;
 `;
 
 const CircleSvg = styled.svg`
-    width: 120px;
-    height: 120px;
+    width: var(--circle-size);
+    height: var(--circle-size);
+    max-width: 100%;
 `;
 
 const CircleTrack = styled.circle`
