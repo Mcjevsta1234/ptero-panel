@@ -156,15 +156,47 @@ fi
 print_step "Enabling maintenance mode"
 php artisan down || print_warning "Could not enable maintenance mode"
 
-# Pull latest changes from experimental branch
-print_step "Pulling latest changes from experimental branch"
-if [ -d ".git" ]; then
-    git fetch origin experimental
-    git checkout experimental
-    git pull origin experimental
-    print_success "Code updated from experimental branch"
+# Pull latest changes from experimental branch (bootstrap git if needed)
+print_step "Syncing code from experimental branch"
+if ! command -v git &> /dev/null; then
+    print_error "Git is not installed. Please install git and re-run."
+fi
+
+# Mark directory safe for root if needed
+git config --global --add safe.directory "$PANEL_DIR" 2>/dev/null || true
+
+if [ ! -d ".git" ]; then
+    print_warning "Git not initialized in $PANEL_DIR. Initialize now? (y/n)"
+    read -r init_git
+    if [[ "$init_git" =~ ^[Yy]$ ]]; then
+        DEFAULT_REPO="https://github.com/Mcjevsta1234/ptero-panel.git"
+        read -p "Remote repository URL [$DEFAULT_REPO]: " REPO_URL
+        REPO_URL=${REPO_URL:-$DEFAULT_REPO}
+        git init
+        git remote add origin "$REPO_URL" || print_warning "Origin already exists"
+        print_step "Fetching experimental from origin"
+        git fetch origin experimental || print_error "Failed to fetch 'experimental' from origin"
+        git checkout -B experimental origin/experimental || print_error "Failed to checkout experimental"
+        print_success "Repository initialized and experimental branch checked out"
+    else
+        print_error "Cannot proceed without git repository setup"
+    fi
 else
-    print_error "Not a git repository. Please ensure you're using git to manage your panel."
+    # Ensure origin exists
+    if ! git remote get-url origin >/dev/null 2>&1; then
+        DEFAULT_REPO="https://github.com/Mcjevsta1234/ptero-panel.git"
+        read -p "No 'origin' remote found. Enter URL [$DEFAULT_REPO]: " REPO_URL
+        REPO_URL=${REPO_URL:-$DEFAULT_REPO}
+        git remote add origin "$REPO_URL"
+    fi
+    git fetch origin experimental || print_error "Failed to fetch experimental"
+    # Checkout experimental if not current
+    CURRENT_BRANCH=$(git rev-parse --abbrev-ref HEAD 2>/dev/null || echo "")
+    if [ "$CURRENT_BRANCH" != "experimental" ]; then
+        git checkout -B experimental || print_error "Failed to switch to experimental"
+    fi
+    git reset --hard origin/experimental || print_error "Failed to sync to origin/experimental"
+    print_success "Code synced to origin/experimental"
 fi
 
 # Install/update composer dependencies
