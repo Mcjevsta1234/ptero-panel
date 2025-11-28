@@ -328,15 +328,26 @@ export default function DedicatedServerDetailContainer() {
                     allocation={{
                         id: allocation.id,
                         name: allocation.name,
+                        user_id: 0, // Not needed for modal
+                        node_id: allocation.node.id,
                         node: allocation.node,
                         cpu: allocation.limits.cpu,
                         memory: allocation.limits.memory,
                         disk: allocation.limits.disk,
+                        swap: 0,
+                        io: 0,
                         database_limit: allocation.limits.databases,
                         allocation_limit: allocation.limits.allocations,
                         backup_limit: allocation.limits.backups,
                         port_range_start: null,
                         port_range_end: null,
+                        allow_memory_overallocation: allocation.overallocation.memory,
+                        allow_disk_overallocation: allocation.overallocation.disk,
+                        allowed_nests: null,
+                        allowed_eggs: null,
+                        active: true,
+                        servers_count: servers.length,
+                        servers: [],
                         used_resources: {
                             cpu: allocation.used.cpu,
                             memory: allocation.used.memory,
@@ -354,9 +365,6 @@ export default function DedicatedServerDetailContainer() {
                             allocations: allocation.limits.allocations - allocation.used.allocations,
                             backups: allocation.limits.backups - allocation.used.backups,
                         },
-                        allow_memory_overallocation: allocation.overallocation.memory,
-                        allow_disk_overallocation: allocation.overallocation.disk,
-                        servers_count: servers.length,
                     }}
                     onDismissed={() => {
                         setCreateModalVisible(false);
