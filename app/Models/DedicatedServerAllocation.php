@@ -137,7 +137,8 @@ class DedicatedServerAllocation extends Model
         return [
             'memory' => $this->allow_memory_overallocation ? -1 : ($this->memory - $used['memory']),
             'disk' => $this->allow_disk_overallocation ? -1 : ($this->disk - $used['disk']),
-            'cpu' => $this->cpu - $used['cpu'],
+            // CPU: treat 0 as unlimited
+            'cpu' => $this->cpu === 0 ? -1 : ($this->cpu - $used['cpu']),
             'databases' => $this->database_limit === -1 ? -1 : ($this->database_limit - $used['databases']),
             'allocations' => $this->allocation_limit === -1 ? -1 : ($this->allocation_limit - $used['allocations']),
             'backups' => $this->backup_limit === -1 ? -1 : ($this->backup_limit - $used['backups']),
@@ -165,8 +166,8 @@ class DedicatedServerAllocation extends Model
             return false;
         }
 
-        // Check CPU
-        if ($available['cpu'] < $cpu) {
+        // Check CPU (unlimited when -1)
+        if ($available['cpu'] !== -1 && $available['cpu'] < $cpu) {
             return false;
         }
 

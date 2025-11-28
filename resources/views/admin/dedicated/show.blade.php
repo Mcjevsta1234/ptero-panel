@@ -15,8 +15,8 @@
 
 @section('content')
     @php
-        $used = $allocation->used_resources();
-        $available = $allocation->available_resources();
+        $used = $allocation->used_resources;
+        $available = $allocation->available_resources;
     @endphp
 
     <div class="row">
@@ -61,21 +61,21 @@
                     <div class="row">
                         <div class="col-xs-6 text-center">
                             <p class="text-muted">CPU</p>
-                            <h3>{{ $used['cpu'] }} / {{ $allocation->cpu_limit }}</h3>
-                            <p class="small">{{ $available['cpu'] }} cores available</p>
+                            <h3>{{ $used['cpu'] }} / {{ $allocation->cpu === 0 ? 'Unlimited' : $allocation->cpu }}</h3>
+                            <p class="small">{{ ($allocation->cpu === 0 || $available['cpu'] === -1) ? 'Unlimited' : $available['cpu'] }} cores available</p>
                         </div>
                         <div class="col-xs-6 text-center">
                             <p class="text-muted">Memory</p>
-                            <h3>{{ $used['memory'] }} / {{ $allocation->memory_limit }} MB</h3>
-                            <p class="small">{{ $available['memory'] }} MB available</p>
+                            <h3>{{ $used['memory'] }} / {{ $allocation->allow_memory_overallocation ? 'Unlimited' : ($allocation->memory . ' MB') }}</h3>
+                            <p class="small">{{ $available['memory'] === -1 ? 'Unlimited' : ($available['memory'] . ' MB') }} available</p>
                         </div>
                     </div>
                     <hr>
                     <div class="row">
                         <div class="col-xs-6 text-center">
                             <p class="text-muted">Disk</p>
-                            <h3>{{ $used['disk'] }} / {{ $allocation->disk_limit }} MB</h3>
-                            <p class="small">{{ $available['disk'] }} MB available</p>
+                            <h3>{{ $used['disk'] }} / {{ $allocation->allow_disk_overallocation ? 'Unlimited' : ($allocation->disk . ' MB') }}</h3>
+                            <p class="small">{{ $available['disk'] === -1 ? 'Unlimited' : ($available['disk'] . ' MB') }} available</p>
                         </div>
                         <div class="col-xs-6 text-center">
                             <p class="text-muted">Servers</p>
@@ -97,7 +97,7 @@
                         <tbody>
                             <tr>
                                 <td>CPU Cores</td>
-                                <td>{{ $allocation->cpu_limit }}</td>
+                                <td>{{ $allocation->cpu === 0 ? 'Unlimited' : $allocation->cpu }}</td>
                                 <td>
                                     @if($allocation->allow_cpu_overallocation)
                                         <span class="label label-info">Overallocation Allowed</span>
@@ -106,7 +106,7 @@
                             </tr>
                             <tr>
                                 <td>Memory</td>
-                                <td>{{ $allocation->memory_limit }} MB</td>
+                                <td>{{ $allocation->allow_memory_overallocation ? 'Unlimited' : ($allocation->memory . ' MB') }}</td>
                                 <td>
                                     @if($allocation->allow_memory_overallocation)
                                         <span class="label label-info">Overallocation Allowed</span>
@@ -115,7 +115,7 @@
                             </tr>
                             <tr>
                                 <td>Disk</td>
-                                <td>{{ $allocation->disk_limit }} MB</td>
+                                <td>{{ $allocation->allow_disk_overallocation ? 'Unlimited' : ($allocation->disk . ' MB') }}</td>
                                 <td>
                                     @if($allocation->allow_disk_overallocation)
                                         <span class="label label-info">Overallocation Allowed</span>
