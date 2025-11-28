@@ -23,18 +23,57 @@ const InfoValue = styled.span`
     ${tw`font-semibold text-neutral-100 break-words`}
 `;
 
-const ProgressTrack = styled.div`
-    ${tw`w-full h-2 rounded-full bg-neutral-800 overflow-hidden`}
-`;
-
-const ProgressFill = styled.div<{ percent: number; color: string }>`
-    ${tw`h-full rounded-full transition-all duration-300`}
-    width: ${({ percent }) => Math.min(percent, 100)}%;
-    background-color: ${({ color }) => color};
-`;
-
 const TitleText = styled.div`
     ${tw`text-center font-semibold text-base text-neutral-100`}
+`;
+
+const CIRCLE_RADIUS = 50;
+const CIRCLE_CIRCUMFERENCE = 2 * Math.PI * CIRCLE_RADIUS;
+
+const CircleGrid = styled.div`
+    ${tw`grid gap-4 justify-items-center`}
+    grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+`;
+
+const CircleCard = styled.div`
+    ${tw`bg-neutral-800 rounded-lg p-4 flex flex-col items-center text-center gap-2`}
+    max-width: 200px;
+    width: 100%;
+`;
+
+const CircleSvg = styled.svg`
+    width: 120px;
+    height: 120px;
+`;
+
+const CircleTrack = styled.circle`
+    stroke: rgba(255, 255, 255, 0.08);
+    stroke-width: 10;
+    fill: none;
+`;
+
+const CircleProgress = styled.circle<{ color: string; dashoffset: number }>`
+    stroke: ${({ color }) => color};
+    stroke-width: 10;
+    fill: none;
+    stroke-linecap: round;
+    transform: rotate(-90deg);
+    transform-origin: 60px 60px;
+    stroke-dasharray: ${CIRCLE_CIRCUMFERENCE};
+    stroke-dashoffset: ${({ dashoffset }) => dashoffset};
+    transition: stroke-dashoffset 0.4s ease;
+`;
+
+const CircleLabel = styled.span`
+    ${tw`text-xs uppercase tracking-wide text-neutral-400`}
+`;
+
+const CircleValue = styled.span`
+    ${tw`text-lg font-semibold text-neutral-50`}
+`;
+
+const CircleDetail = styled.span`
+    ${tw`text-xs text-neutral-300`}
 `;
 
 const ServerCard = styled.div`
@@ -226,7 +265,6 @@ export default function DedicatedServerDetailContainer() {
     const databasePercent = allocation.limits.databases === 0 ? 0 : (allocation.used.databases / allocation.limits.databases) * 100;
     const allocationsPercent = allocation.limits.allocations === 0 ? 0 : (allocation.used.allocations / allocation.limits.allocations) * 100;
     const backupsPercent = allocation.limits.backups === 0 ? 0 : (allocation.used.backups / allocation.limits.backups) * 100;
-    const nodeLocation = allocation.node.location || 'Unknown';
 
     const humanizeStatus = (value: string) =>
         value
@@ -295,6 +333,15 @@ export default function DedicatedServerDetailContainer() {
         },
     ];
 
+    const circleMetrics = usageMetrics.map((metric) => ({
+        ...metric,
+        dashOffset: CIRCLE_CIRCUMFERENCE - (Math.min(metric.percent, 100) / 100) * CIRCLE_CIRCUMFERENCE,
+        detail:
+            metric.key === 'cpu' || metric.key === 'memory' || metric.key === 'disk'
+                ? `${metric.used} / ${metric.total}`
+                : metric.used,
+    }));
+
     const resolveServerStatus = (server: AllocationStats['servers'][number]): { label: string; intent: StatusIntent } => {
         if (server.suspended) {
             return { label: 'Suspended', intent: 'suspended' };
@@ -328,34 +375,27 @@ export default function DedicatedServerDetailContainer() {
             <div css={tw`grid grid-cols-1 xl:grid-cols-2 gap-6 mb-8`}>
                 <TitledGreyBox title={renderTitle(allocation.node.name || 'Allocation Overview')}>
                     <div css={tw`space-y-6`}>
-                        <div css={tw`space-y-5`}>
-                            {usageMetrics.map((metric) => (
-                                <div key={metric.key}>
-                                    <div css={tw`flex justify-between text-xs uppercase tracking-wide text-neutral-400`}>
-                                        <span>{metric.label}</span>
-                                        <span>
-                                            {metric.key === 'cpu' || metric.key === 'memory' || metric.key === 'disk'
-                                                ? `${metric.used} / ${metric.total}`
-                                                : metric.used}
-                                        </span>
-                                    </div>
-                                    <ProgressTrack>
-                                        <ProgressFill percent={metric.percent} color={metric.color} />
-                                    </ProgressTrack>
-                                    <p css={tw`text-xs text-neutral-300 mt-1`}>
-                                        Available: {metric.available}
-                                    </p>
-                                </div>
+                        <CircleGrid>
+                            {circleMetrics.map((metric) => (
+                                <CircleCard key={metric.key}>
+                                    <CircleLabel>{metric.label}</CircleLabel>
+                                    <CircleSvg viewBox="0 0 120 120">
+                                        <CircleTrack cx={60} cy={60} r={CIRCLE_RADIUS} />
+                                        <CircleProgress
+                                            cx={60}
+                                            cy={60}
+                                            r={CIRCLE_RADIUS}
+                                            color={metric.color}
+                                            dashoffset={metric.dashOffset}
+                                        />
+                                    </CircleSvg>
+                                    <CircleValue>{metric.detail}</CircleValue>
+                                    <CircleDetail>Available: {metric.available}</CircleDetail>
+                                </CircleCard>
                             ))}
-                        </div>
+                        </CircleGrid>
 
                         <div css={tw`grid grid-cols-1 sm:grid-cols-2 gap-3`}>
-                            <InfoCard>
-                                <div>
-                                    <InfoLabel>Node Location</InfoLabel>
-                                    <InfoValue>{nodeLocation}</InfoValue>
-                                </div>
-                            </InfoCard>
                             <InfoCard>
                                 <InfoLabel>Servers Deployed</InfoLabel>
                                 <InfoValue>{servers.length}</InfoValue>
