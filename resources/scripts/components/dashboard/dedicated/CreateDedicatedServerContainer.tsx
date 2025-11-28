@@ -226,6 +226,8 @@ export default function CreateDedicatedServerContainer() {
 
         try {
             const eggDetails = await getEggDetails(eggId);
+            console.log('Egg details loaded:', eggDetails);
+            console.log('Egg variables:', eggDetails.variables);
             setSelectedEgg(eggDetails);
 
             // Set default docker image
@@ -239,6 +241,7 @@ export default function CreateDedicatedServerContainer() {
 
             // Set default environment variables - set each field individually for Formik validation
             eggDetails.variables.forEach((variable) => {
+                console.log(`Setting ${variable.env_variable} = ${variable.default_value}`);
                 setFieldValue(`environment.${variable.env_variable}`, variable.default_value || '', false);
             });
         } catch (error) {
@@ -510,8 +513,9 @@ export default function CreateDedicatedServerContainer() {
                                             type={'button'} 
                                             disabled={isSubmitting} 
                                             onClick={() => {
-                                                console.log('Create button clicked');
+                                                    console.log('Create button clicked');
                                                 console.log('Current form values:', values);
+                                                console.log('Environment object:', values.environment);
                                                 console.log('Current form errors:', errors);
                                                 console.log('Is form valid:', isValid);
                                                 submitForm();
