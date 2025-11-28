@@ -11,17 +11,6 @@ import styled, { css } from 'styled-components/macro';
 import DeleteConfirmModal from './DeleteConfirmModal';
 import CreateServerInlineForm from './CreateServerInlineForm';
 
-const TitleText = styled.div`
-    ${tw`text-center font-semibold text-base text-neutral-100`}
-`;
-
-const CIRCLE_RADIUS = 50;
-const CIRCLE_CIRCUMFERENCE = 2 * Math.PI * CIRCLE_RADIUS;
-
-const CircleGrid = styled.div`
-    ${tw`grid gap-4 justify-items-center`}
-    grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
-`;
 
 const CircleCard = styled.div`
     ${tw`bg-neutral-700 rounded-lg p-4 flex flex-col items-center text-center gap-2`}
@@ -361,7 +350,7 @@ export default function DedicatedServerDetailContainer() {
     return (
         <PageContentBlock title={allocation.name || 'Dedicated Server'}>
             <div css={tw`grid grid-cols-1 xl:grid-cols-2 gap-6 mb-8`}>
-                <TitledGreyBox title={renderTitle(allocation.node.name || 'Allocation Overview')}>
+                <div css={tw`h-full`}>
                     <div css={tw`space-y-6`}>
                         <CircleGrid>
                             {circleMetrics.map((metric) => (
@@ -383,7 +372,7 @@ export default function DedicatedServerDetailContainer() {
                             ))}
                         </CircleGrid>
                     </div>
-                </TitledGreyBox>
+                </div>
 
                 <CreateServerInlineForm
                     allocationId={allocation.id}
