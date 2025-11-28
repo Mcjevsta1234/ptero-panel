@@ -345,7 +345,7 @@ export default () => {
                                         errors.cpu = `Only ${allocation.available.cpu}% available`;
                                     }
 
-                                    if (values.allocations_count < 1) {
+                                    if (values.allocations < 1) {
                                         errors.allocations = 'At least 1 allocation required';
                                     }
                                     
