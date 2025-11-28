@@ -319,15 +319,6 @@ export default function DedicatedServerDetailContainer() {
         },
     ];
 
-    const circleMetrics = usageMetrics.map((metric) => ({
-        ...metric,
-        dashOffset: CIRCLE_CIRCUMFERENCE - (Math.min(metric.percent, 100) / 100) * CIRCLE_CIRCUMFERENCE,
-        detail:
-            metric.key === 'cpu' || metric.key === 'memory' || metric.key === 'disk'
-                ? `${metric.used} / ${metric.total}`
-                : metric.used,
-    }));
-
     const resolveServerStatus = (server: AllocationStats['servers'][number]): { label: string; intent: StatusIntent } => {
         if (server.suspended) {
             return { label: 'Suspended', intent: 'suspended' };
