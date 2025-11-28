@@ -397,23 +397,39 @@ class DedicatedController extends ClientApiController
      */
     public function destroy(Request $request, string $server): JsonResponse
     {
-        // Find the server by UUID
+        // Find the server by UUID or short UUID
         $serverModel = Server::query()
-            ->where('uuid', $server)
-            ->orWhere('uuidShort', $server)
-            ->firstOrFail();
+            ->where(function ($query) use ($server) {
+                $query->where('uuid', $server)
+                    ->orWhere('uuidShort', $server);
+            })
+            ->first();
 
-        // Ensure the server belongs to the user and is tied to a dedicated allocation
-        if ($serverModel->owner_id !== $request->user()->id || !$serverModel->dedicated_allocation_id) {
-            return response()->json(['error' => 'Access denied.'], 403);
+        if (!$serverModel) {
+            return response()->json(['error' => 'Server not found.'], 404);
+        }
+
+        // Ensure the server belongs to the user
+        if ($serverModel->owner_id !== $request->user()->id) {
+            return response()->json(['error' => 'You do not have permission to delete this server.'], 403);
+        }
+
+        // Ensure it's a dedicated server
+        if (!$serverModel->dedicated_allocation_id) {
+            return response()->json(['error' => 'This is not a dedicated server.'], 403);
         }
 
         try {
             $this->serverDeletionService->handle($serverModel);
         } catch (\Throwable $ex) {
+            \Log::error('Failed to delete dedicated server', [
+                'server_uuid' => $serverModel->uuid,
+                'user_id' => $request->user()->id,
+                'error' => $ex->getMessage(),
+            ]);
             return response()->json(['error' => 'Failed to delete server: ' . $ex->getMessage()], 500);
         }
 
-        return response()->json([ 'deleted' => true ]);
+        return response()->json(['deleted' => true]);
     }
 }
