@@ -86,6 +86,14 @@ class DedicatedServerAllocation extends Model
     ];
 
     /**
+     * The accessors to append to the model's array form.
+     */
+    protected $appends = [
+        'used_resources',
+        'available_resources',
+    ];
+
+    /**
      * Get the user that owns this allocation.
      */
     public function user(): BelongsTo
