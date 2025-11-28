@@ -80,7 +80,7 @@ const createValidationSchema = (portRequired: boolean, selectedEgg: Egg | null) 
         name: Yup.string().required('A server name is required.'),
         description: Yup.string().max(191),
         nest_id: Yup.number().typeError('Select a category.').required('Select a category.'),
-        egg_id: Yup.number().typeError('Select a game version.').required('Select a game version.'),
+        egg_id: Yup.number().typeError('Select a version.').required('Select a version.'),
         cpu: Yup.number().required().min(1, 'Minimum 1 core'),
         memory: Yup.number().required().min(1, 'Minimum 1 GB'),
         disk: Yup.number().required().min(1, 'Minimum 1 GB'),
@@ -159,9 +159,9 @@ export default function CreateDedicatedServerContainer() {
         allocations: 1,
         backups: 0,
         allocation_port_id: defaultPort,
-        startup: selectedEgg?.startup || '',
+        startup: '',
         environment: {},
-    }), [defaultPort, allocation, selectedEgg]);
+    }), [defaultPort, allocation]);
 
     const validationSchema = useMemo(() => createValidationSchema(ports.length > 0, selectedEgg), [ports.length, selectedEgg]);
 
@@ -337,13 +337,13 @@ export default function CreateDedicatedServerContainer() {
                                             </div>
 
                                             <div>
-                                                <Label>Game Version</Label>
+                                                <Label>Version</Label>
                                                 <Select
                                                     value={values.egg_id === '' ? '' : String(values.egg_id)}
                                                     disabled={eggSelectDisabled}
                                                     onChange={(e) => handleEggChange(e.target.value, setFieldValue)}
                                                 >
-                                                    <option value="">{eggSelectDisabled ? 'Select a category first' : '-- Select Game Version --'}</option>
+                                                    <option value="">{eggSelectDisabled ? 'Select a category first' : '-- Select Version --'}</option>
                                                     {eggsForSelect.map((egg) => (
                                                         <option key={egg.id} value={egg.id}>
                                                             {egg.name}
