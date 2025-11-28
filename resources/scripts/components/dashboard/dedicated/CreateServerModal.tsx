@@ -130,8 +130,9 @@ export default ({ visible, allocation, onDismissed }: Props) => {
             cpu: values.cpu,
             memory: values.memory,
             disk: values.disk,
-            port: values.port,
-            environment: values.environment,
+            databases: 0,
+            allocations: 1,
+            backups: 0,
         };
 
         try {

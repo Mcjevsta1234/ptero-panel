@@ -234,16 +234,32 @@ chmod -R 755 storage/* bootstrap/cache/
 chown -R www-data:www-data "$PANEL_DIR"/*
 print_success "Permissions updated"
 
+# Update browserslist database to suppress warnings
+print_step "Updating browserslist database"
+if command -v npx &> /dev/null; then
+    npx --yes update-browserslist-db@latest 2>/dev/null || print_warning "Could not update browserslist"
+fi
+
 # Install npm dependencies and build assets (if needed)
 print_step "Building frontend assets"
 if [ -f "package.json" ]; then
     if command -v yarn &> /dev/null; then
-        yarn install
-        yarn build:production
+        # Suppress deprecation warnings and browserslist messages
+        export NODE_OPTIONS="--no-deprecation"
+        export BROWSERSLIST_IGNORE_OLD_DATA=1
+        yarn install --silent 2>&1 | grep -v "caniuse-lite" | grep -v "Browserslist" || true
+        yarn build:production 2>&1 | grep -v "caniuse-lite" | grep -v "Browserslist" | grep -v "DeprecationWarning" || true
+        unset NODE_OPTIONS
+        unset BROWSERSLIST_IGNORE_OLD_DATA
         print_success "Frontend assets built with yarn"
     elif command -v npm &> /dev/null; then
-        npm install
-        npm run build
+        # Suppress deprecation warnings and browserslist messages
+        export NODE_OPTIONS="--no-deprecation"
+        export BROWSERSLIST_IGNORE_OLD_DATA=1
+        npm install --silent 2>&1 | grep -v "caniuse-lite" | grep -v "Browserslist" || true
+        npm run build 2>&1 | grep -v "caniuse-lite" | grep -v "Browserslist" | grep -v "DeprecationWarning" || true
+        unset NODE_OPTIONS
+        unset BROWSERSLIST_IGNORE_OLD_DATA
         print_success "Frontend assets built with npm"
     else
         print_warning "Neither yarn nor npm found. Skipping asset build."
