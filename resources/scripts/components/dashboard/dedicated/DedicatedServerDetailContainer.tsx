@@ -10,8 +10,6 @@ import { Button } from '@/components/elements/button';
 import styled from 'styled-components/macro';
 import DeleteConfirmModal from './DeleteConfirmModal';
 import CreateServerInlineForm from './CreateServerInlineForm';
-import Card from '@/witchyworlds/ui/Card';
-import Title from '@/witchyworlds/ui/Title';
 
 const InfoCard = styled.div`
     ${tw`bg-neutral-700 rounded p-3 flex justify-between items-center`}
@@ -33,6 +31,18 @@ const ProgressFill = styled.div<{ percent: number; color: string }>`
     ${tw`h-full rounded-full transition-all duration-300`}
     width: ${({ percent }) => Math.min(percent, 100)}%;
     background-color: ${({ color }) => color};
+`;
+
+const ServerCard = styled.div`
+    ${tw`bg-neutral-900 border border-neutral-800 rounded-lg p-4 flex flex-col gap-3 transition-colors duration-200 hover:border-primary-500`}
+`;
+
+const ServerMeta = styled.div`
+    ${tw`text-xs text-neutral-400 flex flex-wrap gap-x-4 gap-y-1`}
+`;
+
+const StatusBadge = styled.span`
+    ${tw`text-[10px] tracking-wide uppercase px-2 py-0.5 rounded-full bg-neutral-800 text-neutral-100`}
 `;
 
 interface AllocationStats {
@@ -182,123 +192,47 @@ export default function DedicatedServerDetailContainer() {
                 <span css={tw`block`}>Address: {allocation.node.fqdn}</span>
             </div>
 
-            <div css={tw`grid grid-cols-1 xl:grid-cols-[minmax(0,2fr)_minmax(320px,1fr)] gap-6`}>
-                {/* Left column: server list */}
-                <div css={tw`space-y-6`}>
-                    <TitledGreyBox title={'Servers'}>
-                        {servers.length === 0 ? (
-                            <div css={tw`py-12 text-center text-neutral-400`}>No servers created yet.</div>
-                        ) : (
-                            <div css={tw`grid grid-cols-1 lg:grid-cols-2 gap-5`}>
-                                {servers.map((s) => (
-                                    <Card key={s.id} css={tw`!p-0 overflow-hidden relative`}>
-                                        <div
-                                            css={tw`relative p-5`}
-                                            style={{
-                                                backgroundImage: 'linear-gradient(135deg, rgba(76, 0, 255, 0.1), rgba(0, 200, 255, 0.05))',
-                                            }}
-                                        >
-                                            <div css={tw`flex items-start justify-between`}>
-                                                <div>
-                                                    <Title css={tw`text-xl mb-1`}>{s.name}</Title>
-                                                    <p css={tw`text-sm text-neutral-400`}>{s.address ?? s.identifier}</p>
-                                                </div>
-                                                <span css={tw`text-xs px-3 py-1 rounded-full bg-neutral-800 text-neutral-200`}>
-                                                    {s.status ?? 'Unknown'}
-                                                </span>
-                                            </div>
-                                            <div css={tw`grid grid-cols-2 gap-3 mt-4 text-sm`}>
-                                                <InfoCard css={tw`bg-neutral-800 bg-opacity-60`}>
-                                                    <InfoLabel>CPU</InfoLabel>
-                                                    <InfoValue>{s.cpu}%</InfoValue>
-                                                </InfoCard>
-                                                <InfoCard css={tw`bg-neutral-800 bg-opacity-60`}>
-                                                    <InfoLabel>Memory</InfoLabel>
-                                                    <InfoValue>{(s.memory / 1024).toFixed(1)} GB</InfoValue>
-                                                </InfoCard>
-                                                <InfoCard css={tw`bg-neutral-800 bg-opacity-60`}>
-                                                    <InfoLabel>Disk</InfoLabel>
-                                                    <InfoValue>{(s.disk / 1024).toFixed(1)} GB</InfoValue>
-                                                </InfoCard>
-                                                <InfoCard css={tw`bg-neutral-800 bg-opacity-60`}>
-                                                    <InfoLabel>Egg</InfoLabel>
-                                                    <InfoValue css={tw`text-xs`}>{s.egg}</InfoValue>
-                                                </InfoCard>
-                                            </div>
-                                            <div css={tw`flex items-center gap-3 mt-5`}>
-                                                <Link to={`/server/${s.identifier}`}>
-                                                    <Button.Text css={tw`text-xs px-3 py-1`}>Manage</Button.Text>
-                                                </Link>
-                                                <Button.Danger
-                                                    css={tw`text-xs px-3 py-1`}
-                                                    onClick={(e) => {
-                                                        e.preventDefault();
-                                                        handleDeleteClick(s.name, s.identifier);
-                                                    }}
-                                                >
-                                                    Delete
-                                                </Button.Danger>
-                                            </div>
-                                        </div>
-                                    </Card>
-                                ))}
+            <div css={tw`grid grid-cols-1 xl:grid-cols-2 gap-6 mb-8`}>
+                <TitledGreyBox title={'Allocation Overview'}>
+                    <div css={tw`space-y-4`}>
+                        <div>
+                            <div css={tw`flex justify-between text-xs uppercase tracking-wide text-neutral-400`}>
+                                <span>CPU Usage</span>
+                                <span>{allocation.used.cpu}% / {formatLimit(allocation.limits.cpu, '%')}</span>
                             </div>
-                        )}
-                    </TitledGreyBox>
-                </div>
-
-                {/* Right column: stats + creation */}
-                <div css={tw`space-y-4`}>
-                    <TitledGreyBox title={'Allocation Overview'}>
-                        <div css={tw`space-y-4`}>
-                            <div>
-                                <div css={tw`flex justify-between text-xs uppercase tracking-wide text-neutral-400`}>
-                                    <span>CPU Usage</span>
-                                    <span>{allocation.used.cpu}% / {formatLimit(allocation.limits.cpu, '%')}</span>
-                                </div>
-                                <ProgressTrack>
-                                    <ProgressFill percent={cpuPercent} color={'rgb(59,130,246)'} />
-                                </ProgressTrack>
-                                <p css={tw`text-xs text-neutral-300 mt-1`}>Available: {remainingCpu}</p>
-                            </div>
-
-                            <div>
-                                <div css={tw`flex justify-between text-xs uppercase tracking-wide text-neutral-400`}>
-                                    <span>Memory Usage</span>
-                                    <span>
-                                        {formatGb(allocation.used.memory)} / {formatLimitGb(allocation.limits.memory)}
-                                    </span>
-                                </div>
-                                <ProgressTrack>
-                                    <ProgressFill percent={memoryPercent} color={'rgb(16,185,129)'} />
-                                </ProgressTrack>
-                                <p css={tw`text-xs text-neutral-300 mt-1`}>Available: {remainingMemory}</p>
-                            </div>
-
-                            <div>
-                                <div css={tw`flex justify-between text-xs uppercase tracking-wide text-neutral-400`}>
-                                    <span>Disk Usage</span>
-                                    <span>
-                                        {formatGb(allocation.used.disk)} / {formatLimitGb(allocation.limits.disk)}
-                                    </span>
-                                </div>
-                                <ProgressTrack>
-                                    <ProgressFill percent={diskPercent} color={'rgb(250,204,21)'} />
-                                </ProgressTrack>
-                                <p css={tw`text-xs text-neutral-300 mt-1`}>Available: {remainingDisk}</p>
-                            </div>
-
-                            <div css={tw`bg-neutral-900 rounded p-4 text-center border border-neutral-800`}>
-                                <p css={tw`text-xs uppercase tracking-wide text-neutral-500`}>Total Disk Consumed</p>
-                                <p css={tw`text-3xl font-semibold text-yellow-400 mt-2`}>
-                                    {(allocation.used.disk / 1024).toFixed(1)} GB
-                                </p>
-                            </div>
+                            <ProgressTrack>
+                                <ProgressFill percent={cpuPercent} color={'rgb(59,130,246)'} />
+                            </ProgressTrack>
+                            <p css={tw`text-xs text-neutral-300 mt-1`}>Available: {remainingCpu}</p>
                         </div>
-                    </TitledGreyBox>
 
-                    <TitledGreyBox title={'Resource Usage'}>
-                        <div css={tw`grid grid-cols-1 gap-3`}>
+                        <div>
+                            <div css={tw`flex justify-between text-xs uppercase tracking-wide text-neutral-400`}>
+                                <span>Memory Usage</span>
+                                <span>
+                                    {formatGb(allocation.used.memory)} / {formatLimitGb(allocation.limits.memory)}
+                                </span>
+                            </div>
+                            <ProgressTrack>
+                                <ProgressFill percent={memoryPercent} color={'rgb(16,185,129)'} />
+                            </ProgressTrack>
+                            <p css={tw`text-xs text-neutral-300 mt-1`}>Available: {remainingMemory}</p>
+                        </div>
+
+                        <div>
+                            <div css={tw`flex justify-between text-xs uppercase tracking-wide text-neutral-400`}>
+                                <span>Disk Usage</span>
+                                <span>
+                                    {formatGb(allocation.used.disk)} / {formatLimitGb(allocation.limits.disk)}
+                                </span>
+                            </div>
+                            <ProgressTrack>
+                                <ProgressFill percent={diskPercent} color={'rgb(250,204,21)'} />
+                            </ProgressTrack>
+                            <p css={tw`text-xs text-neutral-300 mt-1`}>Available: {remainingDisk}</p>
+                        </div>
+
+                        <div css={tw`grid grid-cols-1 sm:grid-cols-3 gap-3`}>
                             <InfoCard>
                                 <InfoLabel>Databases</InfoLabel>
                                 <InfoValue>
@@ -318,16 +252,56 @@ export default function DedicatedServerDetailContainer() {
                                 </InfoValue>
                             </InfoCard>
                         </div>
-                    </TitledGreyBox>
+                    </div>
+                </TitledGreyBox>
 
-                    <CreateServerInlineForm
-                        allocationId={allocation.id}
-                        limits={allocation.limits}
-                        used={allocation.used}
-                        onCreated={() => fetchStats()}
-                    />
-                </div>
+                <CreateServerInlineForm
+                    allocationId={allocation.id}
+                    limits={allocation.limits}
+                    used={allocation.used}
+                    onCreated={() => fetchStats()}
+                />
             </div>
+
+            <TitledGreyBox title={'Servers'}>
+                {servers.length === 0 ? (
+                    <div css={tw`py-12 text-center text-neutral-400`}>No servers created yet.</div>
+                ) : (
+                    <div css={tw`grid grid-cols-1 lg:grid-cols-2 gap-4`}>
+                        {servers.map((s) => (
+                            <ServerCard key={s.id}>
+                                <div css={tw`flex items-start justify-between gap-4`}>
+                                    <div>
+                                        <p css={tw`text-sm font-semibold text-neutral-100 leading-tight`}>{s.name}</p>
+                                        <p css={tw`text-[11px] text-neutral-500`}>{s.address ?? s.identifier}</p>
+                                    </div>
+                                    <StatusBadge>{s.status ?? 'Unknown'}</StatusBadge>
+                                </div>
+                                <ServerMeta>
+                                    <span>CPU {s.cpu}%</span>
+                                    <span>RAM {(s.memory / 1024).toFixed(1)} GB</span>
+                                    <span>Disk {(s.disk / 1024).toFixed(1)} GB</span>
+                                    <span>Egg {s.egg}</span>
+                                </ServerMeta>
+                                <div css={tw`flex flex-wrap gap-2`}>
+                                    <Link to={`/server/${s.identifier}`}>
+                                        <Button.Text css={tw`text-[11px] px-3 py-1`}>Manage</Button.Text>
+                                    </Link>
+                                    <Button.Danger
+                                        css={tw`text-[11px] px-3 py-1`}
+                                        onClick={(e) => {
+                                            e.preventDefault();
+                                            handleDeleteClick(s.name, s.identifier);
+                                        }}
+                                    >
+                                        Delete
+                                    </Button.Danger>
+                                </div>
+                            </ServerCard>
+                        ))}
+                    </div>
+                )}
+            </TitledGreyBox>
 
             <DeleteConfirmModal
                 visible={deleteModal.visible}
