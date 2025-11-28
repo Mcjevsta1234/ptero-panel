@@ -6,15 +6,14 @@ import Spinner from '@/components/elements/Spinner';
 import { getAllocations } from '@/api/dedicated';
 import { DedicatedAllocation } from '@/api/dedicated/types';
 import AllocationCard from './AllocationCard';
-import CreateServerModal from './CreateServerModal';
+// Removed modal-based creation: creation is handled on the stats page.
 import PageContentBlock from '@/components/elements/PageContentBlock';
 import useFlash from '@/plugins/useFlash';
 
 export default ({ location }: RouteComponentProps) => {
     const [loading, setLoading] = useState(true);
     const [allocations, setAllocations] = useState<DedicatedAllocation[]>([]);
-    const [selectedAllocation, setSelectedAllocation] = useState<DedicatedAllocation | null>(null);
-    const [showCreateModal, setShowCreateModal] = useState(false);
+    // Creation is no longer handled here; only list and link to detail.
     const { clearFlashes, clearAndAddHttpError } = useFlash();
 
     useEffect(() => {
@@ -26,10 +25,7 @@ export default ({ location }: RouteComponentProps) => {
             .finally(() => setLoading(false));
     }, []);
 
-    const openCreateModal = (allocation: DedicatedAllocation) => {
-        setSelectedAllocation(allocation);
-        setShowCreateModal(true);
-    };
+    // No-op: creation moved to detail page.
 
     if (loading) {
         return (
@@ -59,21 +55,12 @@ export default ({ location }: RouteComponentProps) => {
                         <AllocationCard
                             key={allocation.id}
                             allocation={allocation}
-                            onCreateServer={() => openCreateModal(allocation)}
+                            onCreateServer={undefined}
                         />
                     ))}
                 </div>
             </PageContentBlock>
-            {selectedAllocation && (
-                <CreateServerModal
-                    visible={showCreateModal}
-                    allocation={selectedAllocation}
-                    onDismissed={() => {
-                        setShowCreateModal(false);
-                        setSelectedAllocation(null);
-                    }}
-                />
-            )}
+            {/* CreateServerModal removed; creation is inline on the detail page. */}
         </>
     );
 };
