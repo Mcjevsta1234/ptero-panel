@@ -11,18 +11,6 @@ import styled, { css } from 'styled-components/macro';
 import DeleteConfirmModal from './DeleteConfirmModal';
 import CreateServerInlineForm from './CreateServerInlineForm';
 
-const InfoCard = styled.div`
-    ${tw`bg-neutral-700 rounded p-3 flex flex-col gap-1 sm:flex-row sm:items-center sm:justify-between`}
-`;
-
-const InfoLabel = styled.span`
-    ${tw`text-neutral-400 text-sm`}
-`;
-
-const InfoValue = styled.span`
-    ${tw`font-semibold text-neutral-100 break-words`}
-`;
-
 const TitleText = styled.div`
     ${tw`text-center font-semibold text-base text-neutral-100`}
 `;
@@ -36,7 +24,7 @@ const CircleGrid = styled.div`
 `;
 
 const CircleCard = styled.div`
-    ${tw`bg-neutral-800 rounded-lg p-4 flex flex-col items-center text-center gap-2`}
+    ${tw`bg-neutral-700 rounded-lg p-4 flex flex-col items-center text-center gap-2`}
     max-width: 200px;
     width: 100%;
 `;
@@ -394,13 +382,6 @@ export default function DedicatedServerDetailContainer() {
                                 </CircleCard>
                             ))}
                         </CircleGrid>
-
-                        <div css={tw`grid grid-cols-1 sm:grid-cols-2 gap-3`}>
-                            <InfoCard>
-                                <InfoLabel>Servers Deployed</InfoLabel>
-                                <InfoValue>{servers.length}</InfoValue>
-                            </InfoCard>
-                        </div>
                     </div>
                 </TitledGreyBox>
 
@@ -413,7 +394,7 @@ export default function DedicatedServerDetailContainer() {
                 />
             </div>
 
-            <TitledGreyBox title={renderTitle('Servers')}>
+            <TitledGreyBox title={renderTitle(`Servers (${servers.length})`)}>
                 {servers.length === 0 ? (
                     <div css={tw`py-12 text-center text-neutral-400`}>No servers created yet.</div>
                 ) : (
