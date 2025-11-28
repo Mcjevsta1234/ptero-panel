@@ -229,7 +229,7 @@ class DedicatedController extends ClientApiController
                 'backup_limit' => $validated['backups'],
                 'startup' => $validated['startup'] ?? $egg->startup,
                 'environment' => $environment,
-                'docker_image' => $validated['docker_image'] ?? array_key_first($egg->docker_images),
+                'image' => $validated['docker_image'] ?? array_key_first($egg->docker_images),
                 'start_on_completion' => true,
                 'dedicated_allocation_id' => $allocation->id,
             ]);
