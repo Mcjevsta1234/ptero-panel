@@ -65,7 +65,7 @@ export interface Egg {
     nest_id: number;
     name: string;
     description: string | null;
-    docker_image: string;
+    docker_images: Record<string, string>;
     startup: string;
     variables: EggVariable[];
 }
@@ -92,4 +92,5 @@ export interface CreateServerRequest {
     backups: number;
     swap: number;
     io: number;
+    docker_image?: string;
 }

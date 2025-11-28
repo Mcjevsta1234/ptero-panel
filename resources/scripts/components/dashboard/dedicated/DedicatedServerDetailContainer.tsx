@@ -26,12 +26,18 @@ interface AllocationStats {
             cpu: number;
             memory: number;
             disk: number;
+            databases: number;
+            allocations: number;
+            backups: number;
         };
         used: {
             cpu: number;
             memory: number;
             disk: number;
             servers: number;
+            databases: number;
+            allocations: number;
+            backups: number;
         };
         available: {
             cpu: number;
@@ -48,6 +54,7 @@ interface AllocationStats {
         uuid: string;
         name: string;
         identifier: string;
+        address?: string | null;
         egg: string;
         cpu: number;
         memory: number;
@@ -70,6 +77,7 @@ interface CreateServerFormValues {
     name: string;
     nest_id: number | null;
     egg_id: number | null;
+    docker_image: string | null;
     memory: number;
     disk: number;
     cpu: number;
@@ -143,6 +151,7 @@ export default () => {
                 backups: values.backups,
                 swap: 1024,
                 io: 500,
+                docker_image: values.docker_image || undefined,
             });
             addFlash({
                 key: 'dedicated:detail',
@@ -189,70 +198,63 @@ export default () => {
                 <p css={tw`text-sm text-neutral-400`}>Auto-refreshes every 30 seconds</p>
             </div>
 
+            {/* Limits summary strip */}
+            <div css={tw`w-full mt-2 mb-6`}>
+                <div css={tw`px-4 py-2 bg-neutral-800 rounded text-center`}>
+                    <span css={tw`mx-2`}>database {allocation.used.databases}/{allocation.limits.databases}</span>
+                    <span css={tw`mx-2`}>allocation {allocation.used.allocations}/{allocation.limits.allocations}</span>
+                    <span css={tw`mx-2`}>backups {allocation.used.backups}/{allocation.limits.backups}</span>
+                </div>
+            </div>
+
             {/* Overview Section */}
             <div css={tw`grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6`}>
-                <TitledGreyBox title={'Node'}>
-                    <div css={tw`text-center py-2`}>
+                {/* Left: Node summary styled like screenshot */}
+                <TitledGreyBox title={'Node Name'}>
+                    <div css={tw`py-2`}>
                         <p css={tw`text-lg font-semibold`}>{allocation.node.name}</p>
-                        <p css={tw`text-xs text-neutral-400`}>{allocation.node.location}</p>
                         <p css={tw`text-xs text-neutral-500 mt-1`}>{allocation.node.fqdn}</p>
-                    </div>
-                </TitledGreyBox>
-
-                <TitledGreyBox title={'Total Servers'}>
-                    <div css={tw`text-center py-2`}>
-                        <p css={tw`text-3xl font-bold text-cyan-400`}>{allocation.used.servers}</p>
-                        <p css={tw`text-xs text-neutral-400 mt-1`}>Active Servers</p>
-                    </div>
-                </TitledGreyBox>
-
-                <TitledGreyBox title={'CPU Usage'}>
-                    <div css={tw`text-center py-2`}>
-                        <p css={tw`text-3xl font-bold text-yellow-400`}>
-                            {allocation.used.cpu}%
-                        </p>
-                        <p css={tw`text-xs text-neutral-400 mt-1`}>
-                            of {allocation.limits.cpu === 0 ? 'Unlimited' : `${allocation.limits.cpu}%`}
-                        </p>
-                        {allocation.limits.cpu > 0 && (
-                            <div css={tw`w-full bg-neutral-700 rounded-full h-2 mt-2`}>
-                                <div
-                                    css={tw`bg-yellow-400 h-2 rounded-full transition-all duration-300`}
-                                    style={{ width: `${Math.min(cpuPercent, 100)}%` }}
-                                />
-                            </div>
-                        )}
-                    </div>
-                </TitledGreyBox>
-
-                <TitledGreyBox title={'Memory Usage'}>
-                    <div css={tw`text-center py-2`}>
-                        <p css={tw`text-3xl font-bold text-green-400`}>
-                            {(allocation.used.memory / 1024).toFixed(1)} GB
-                        </p>
-                        <p css={tw`text-xs text-neutral-400 mt-1`}>
-                            of {allocation.overallocation.memory ? 'Unlimited' : `${(allocation.limits.memory / 1024).toFixed(1)} GB`}
-                        </p>
-                        {!allocation.overallocation.memory && (
-                            <div css={tw`w-full bg-neutral-700 rounded-full h-2 mt-2`}>
-                                <div
-                                    css={tw`bg-green-400 h-2 rounded-full transition-all duration-300`}
-                                    style={{ width: `${Math.min(memoryPercent, 100)}%` }}
-                                />
-                            </div>
-                        )}
-                    </div>
-                </TitledGreyBox>
-
-                {node_usage && (
-                    <TitledGreyBox title={'Node Host Usage'}>
-                        <div css={tw`text-center py-2 space-y-1`}>
-                            <p css={tw`text-xs text-neutral-400`}>Memory: {(node_usage.memory_allocated / 1024).toFixed(1)} GB / {(node_usage.memory_capacity / 1024).toFixed(1)} GB</p>
-                            <p css={tw`text-xs text-neutral-400`}>Disk: {(node_usage.disk_allocated / 1024).toFixed(1)} GB / {(node_usage.disk_capacity / 1024).toFixed(1)} GB</p>
-                            <p css={tw`text-xs text-neutral-400`}>CPU Allocated: {node_usage.cpu_allocated}%</p>
+                        <div css={tw`mt-3 space-y-1 text-sm`}>
+                            <p>Node ram - allocated ram</p>
+                            <p>Node cpu - allocated cpu</p>
+                            <p>Node disk - allocated disk</p>
                         </div>
-                    </TitledGreyBox>
-                )}
+                    </div>
+                </TitledGreyBox>
+
+                {/* Right: Simple server list with address */}
+                <TitledGreyBox title={'Server list'}>
+                    <div css={tw`py-2 space-y-1 text-lg`}>
+                        {servers.length === 0 ? (
+                            <p css={tw`text-neutral-400 text-sm`}>No servers yet</p>
+                        ) : (
+                            servers
+                                .filter(s => s.address)
+                                .map(s => (
+                                    <p key={s.id}>{s.address}</p>
+                                ))
+                        )}
+                    </div>
+                </TitledGreyBox>
+
+                {/* Used resource tiles */}
+                <TitledGreyBox title={'used cpu'}>
+                    <div css={tw`py-2`}>
+                        <p css={tw`text-2xl`}>{allocation.used.cpu}%</p>
+                    </div>
+                </TitledGreyBox>
+
+                <TitledGreyBox title={'used ram'}>
+                    <div css={tw`py-2`}>
+                        <p css={tw`text-2xl`}>{(allocation.used.memory / 1024).toFixed(1)} GB</p>
+                    </div>
+                </TitledGreyBox>
+
+                <TitledGreyBox title={'used disk'}>
+                    <div css={tw`py-2`}>
+                        <p css={tw`text-2xl`}>{(allocation.used.disk / 1024).toFixed(1)} GB</p>
+                    </div>
+                </TitledGreyBox>
             </div>
 
             {/* Resource Details */}
@@ -337,6 +339,7 @@ export default () => {
                                     name: '',
                                     nest_id: null,
                                     egg_id: null,
+                                    docker_image: null,
                                     memory: 512,
                                     disk: 1024,
                                     cpu: 50,
@@ -416,6 +419,8 @@ export default () => {
                                                         const eggId = parseInt(e.target.value);
                                                         setFieldValue('egg_id', eggId);
                                                         handleEggSelect(eggId);
+                                                        // Reset image selection when egg changes
+                                                        setFieldValue('docker_image', null);
                                                     }}
                                                     css={tw`w-full px-3 py-2 border border-neutral-600 bg-neutral-700 rounded text-sm focus:border-cyan-400 focus:ring-1 focus:ring-cyan-400 disabled:opacity-50`}
                                                 >
@@ -480,10 +485,27 @@ export default () => {
                                         {selectedEgg && (
                                             <div css={tw`mb-4 p-4 bg-neutral-700 rounded border border-neutral-600`}>
                                                 <p css={tw`text-sm font-semibold mb-2`}>About {selectedEgg.name}</p>
-                                                <p css={tw`text-xs text-neutral-400 mb-2`}>{selectedEgg.description}</p>
-                                                <p css={tw`text-xs text-neutral-500`}>
-                                                    Docker Image: <code css={tw`bg-neutral-800 px-1 rounded`}>{selectedEgg.docker_image}</code>
-                                                </p>
+                                                {selectedEgg.description && (
+                                                    <p css={tw`text-xs text-neutral-400 mb-2`}>{selectedEgg.description}</p>
+                                                )}
+                                                {selectedEgg.docker_images && (
+                                                    <div>
+                                                        <label css={tw`block text-sm font-medium mb-2`}>Docker Image</label>
+                                                        <select
+                                                            value={values.docker_image || ''}
+                                                            onChange={(e) => setFieldValue('docker_image', e.target.value)}
+                                                            css={tw`w-full px-3 py-2 border border-neutral-600 bg-neutral-700 rounded text-sm focus:border-cyan-400 focus:ring-1 focus:ring-cyan-400`}
+                                                        >
+                                                            <option value="">Default (first)</option>
+                                                            {Object.entries(selectedEgg.docker_images).map(([label, image]) => (
+                                                                <option key={label} value={image}>
+                                                                    {label}
+                                                                </option>
+                                                            ))}
+                                                        </select>
+                                                        <p css={tw`text-xs text-neutral-500 mt-1`}>Sends the actual image reference to the server.</p>
+                                                    </div>
+                                                )}
                                             </div>
                                         )}
 

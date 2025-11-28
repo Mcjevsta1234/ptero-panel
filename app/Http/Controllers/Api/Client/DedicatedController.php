@@ -211,6 +211,23 @@ class DedicatedController extends ClientApiController
 
         // Create the server
         try {
+            // Resolve Docker image from request or egg defaults.
+            // Eggs store docker_images as a key=>value map. Depending on the
+            // panel version, the key can be a friendly label (e.g. "Java 21")
+            // and the value the actual image reference (e.g. "ghcr.io/pterodactyl/yolks:java_21").
+            $resolvedImage = $validated['docker_image'] ?? null;
+            if ($resolvedImage) {
+                // If a label was provided and exists as a key, map to the actual image.
+                if (is_array($egg->docker_images) && array_key_exists($resolvedImage, $egg->docker_images)) {
+                    $resolvedImage = $egg->docker_images[$resolvedImage];
+                }
+            }
+            // Fall back to the first available image value.
+            if (!$resolvedImage) {
+                $images = is_array($egg->docker_images) ? array_values($egg->docker_images) : [];
+                $resolvedImage = $images[0] ?? 'ghcr.io/pterodactyl/yolks:java_21';
+            }
+
             $server = $this->creationService->handle([
                 'name' => $validated['name'],
                 'description' => $validated['description'] ?? '',
@@ -229,7 +246,7 @@ class DedicatedController extends ClientApiController
                 'backup_limit' => $validated['backups'],
                 'startup' => $validated['startup'] ?? $egg->startup,
                 'environment' => $environment,
-                'image' => $validated['docker_image'] ?? array_key_first($egg->docker_images),
+                'image' => $resolvedImage,
                 'start_on_completion' => true,
                 'dedicated_allocation_id' => $allocation->id,
             ]);
@@ -254,7 +271,7 @@ class DedicatedController extends ClientApiController
             return response()->json(['error' => 'Access denied.'], 403);
         }
 
-        $servers = $allocation->servers()->with(['egg', 'node'])->get();
+        $servers = $allocation->servers()->with(['egg', 'node', 'allocation'])->get();
         
         // Calculate aggregated stats
         $totalMemoryUsed = $servers->sum('memory');
@@ -273,6 +290,7 @@ class DedicatedController extends ClientApiController
                 'disk' => $server->disk,
                 'status' => $server->status,
                 'suspended' => $server->suspended,
+                'address' => $server->allocation ? sprintf('%s:%s', $server->allocation->ip, $server->allocation->port) : null,
                 'created_at' => $server->created_at->toIso8601String(),
             ];
         });
@@ -296,12 +314,18 @@ class DedicatedController extends ClientApiController
                     'cpu' => $allocation->cpu,
                     'memory' => $allocation->memory,
                     'disk' => $allocation->disk,
+                    'databases' => $allocation->database_limit,
+                    'allocations' => $allocation->allocation_limit,
+                    'backups' => $allocation->backup_limit,
                 ],
                 'used' => [
                     'cpu' => $totalCpuUsed,
                     'memory' => $totalMemoryUsed,
                     'disk' => $totalDiskUsed,
                     'servers' => $servers->count(),
+                    'databases' => data_get($allocation->used_resources, 'databases', 0),
+                    'allocations' => data_get($allocation->used_resources, 'allocations', 0),
+                    'backups' => data_get($allocation->used_resources, 'backups', 0),
                 ],
                 'available' => $allocation->available_resources,
                 'overallocation' => [
