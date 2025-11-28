@@ -80,7 +80,7 @@ const createValidationSchema = (portRequired: boolean) =>
         memory: Yup.number().required().min(128),
         disk: Yup.number().required().min(512),
         databases: Yup.number().required().min(0),
-        allocations: Yup.number().required().min(0),
+        allocations: Yup.number().required().min(1),
         backups: Yup.number().required().min(0),
         docker_image: Yup.string().nullable(),
         allocation_port_id: Yup.mixed<number | ''>().test(
@@ -116,7 +116,7 @@ const CreateServerInlineForm: React.FC<Props> = ({ allocationId, limits, used, o
         memory: defaultResourceValue(limits.memory, used.memory, 1024),
         disk: defaultResourceValue(limits.disk, used.disk, 10240),
         databases: 0,
-        allocations: 0,
+        allocations: 1,
         backups: 0,
         allocation_port_id: defaultPort,
         environment: {},
@@ -332,24 +332,24 @@ const CreateServerInlineForm: React.FC<Props> = ({ allocationId, limits, used, o
 
                                     <div css={tw`grid grid-cols-1 md:grid-cols-3 gap-4`}>
                                         <div>
-                                            <Label>CPU (%)</Label>
-                                            <Field as={Input} type={'number'} name={'cpu'} min={1} />
+                                            <Label>CPU (Cores)</Label>
+                                            <Field as={Input} type={'number'} name={'cpu'} min={100} step={100} />
                                             <p css={tw`text-xs text-neutral-500 mt-1`}>
-                                                Available: {formatAvailable(availableCpu, '%')}
+                                                Available: {formatAvailable(availableCpu, '%')} (1 core = 100%)
                                             </p>
                                         </div>
                                         <div>
-                                            <Label>Memory (MB)</Label>
-                                            <Field as={Input} type={'number'} name={'memory'} min={128} step={128} />
+                                            <Label>Memory (GB)</Label>
+                                            <Field as={Input} type={'number'} name={'memory'} min={1024} step={1024} />
                                             <p css={tw`text-xs text-neutral-500 mt-1`}>
-                                                Available: {formatAvailable(availableMemory, ' MB')}
+                                                Available: {formatAvailable(availableMemory, ' MB')} ({availableMemory === 'Unlimited' ? 'Unlimited' : `${(availableMemory as number / 1024).toFixed(1)} GB`})
                                             </p>
                                         </div>
                                         <div>
-                                            <Label>Disk (MB)</Label>
-                                            <Field as={Input} type={'number'} name={'disk'} min={512} step={512} />
+                                            <Label>Disk (GB)</Label>
+                                            <Field as={Input} type={'number'} name={'disk'} min={1024} step={1024} />
                                             <p css={tw`text-xs text-neutral-500 mt-1`}>
-                                                Available: {formatAvailable(availableDisk, ' MB')}
+                                                Available: {formatAvailable(availableDisk, ' MB')} ({availableDisk === 'Unlimited' ? 'Unlimited' : `${(availableDisk as number / 1024).toFixed(1)} GB`})
                                             </p>
                                         </div>
                                     </div>
@@ -364,7 +364,7 @@ const CreateServerInlineForm: React.FC<Props> = ({ allocationId, limits, used, o
                                         </div>
                                         <div>
                                             <Label>Allocations</Label>
-                                            <Field as={Input} type={'number'} name={'allocations'} min={0} />
+                                            <Field as={Input} type={'number'} name={'allocations'} min={1} />
                                             <p css={tw`text-xs text-neutral-500 mt-1`}>
                                                 Available: {formatAvailable(availableAllocations)}
                                             </p>

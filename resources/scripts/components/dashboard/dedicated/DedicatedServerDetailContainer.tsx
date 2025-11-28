@@ -175,10 +175,10 @@ export default function DedicatedServerDetailContainer() {
 
     const [loading, setLoading] = useState(true);
     const [stats, setStats] = useState<AllocationStats | null>(null);
-    const [deleteModal, setDeleteModal] = useState<{ visible: boolean; serverName: string; serverIdentifier: string }>({
+    const [deleteModal, setDeleteModal] = useState<{ visible: boolean; serverName: string; serverUuid: string }>({
         visible: false,
         serverName: '',
-        serverIdentifier: '',
+        serverUuid: '',
     });
 
     const fetchStats = () => {
@@ -215,20 +215,20 @@ export default function DedicatedServerDetailContainer() {
 
     const { allocation, servers } = stats;
 
-    const handleDeleteClick = (serverName: string, serverIdentifier: string) => {
-        setDeleteModal({ visible: true, serverName, serverIdentifier });
+    const handleDeleteClick = (serverName: string, serverUuid: string) => {
+        setDeleteModal({ visible: true, serverName, serverUuid });
     };
 
     const handleDeleteConfirm = async () => {
         clearFlashes('dedicated:detail');
         try {
-            await deleteDedicatedServer(deleteModal.serverIdentifier);
+            await deleteDedicatedServer(deleteModal.serverUuid);
             addFlash({ 
                 key: 'dedicated:detail', 
                 type: 'success', 
                 message: 'Server deleted successfully.' 
             });
-            setDeleteModal({ visible: false, serverName: '', serverIdentifier: '' });
+            setDeleteModal({ visible: false, serverName: '', serverUuid: '' });
             fetchStats();
         } catch (error) {
             console.error('Delete error:', error);
@@ -410,7 +410,7 @@ export default function DedicatedServerDetailContainer() {
                                         css={tw`text-[11px] px-3 py-1`}
                                         onClick={(e) => {
                                             e.preventDefault();
-                                            handleDeleteClick(s.name, s.identifier);
+                                            handleDeleteClick(s.name, s.uuid);
                                         }}
                                     >
                                         Delete
@@ -427,7 +427,7 @@ export default function DedicatedServerDetailContainer() {
                 visible={deleteModal.visible}
                 serverName={deleteModal.serverName}
                 onConfirm={handleDeleteConfirm}
-                onModalDismissed={() => setDeleteModal({ visible: false, serverName: '', serverIdentifier: '' })}
+                onModalDismissed={() => setDeleteModal({ visible: false, serverName: '', serverUuid: '' })}
             />
         </PageContentBlock>
     );
