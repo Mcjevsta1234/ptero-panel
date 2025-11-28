@@ -56,7 +56,11 @@ Route::prefix('/dedicated')->group(function () {
     Route::get('/', [Client\DedicatedController::class, 'index']);
     Route::post('/', [Client\DedicatedController::class, 'store']);
     Route::delete('/server/{serverUuid}', [Client\DedicatedController::class, 'destroy']);
-    Route::get('/egg/{egg}', [Client\DedicatedController::class, 'egg']);
+    
+    // Egg routes must come before allocation routes to avoid conflicts
+    Route::get('/eggs/{egg}', [Client\DedicatedController::class, 'egg']);
+    
+    // Allocation routes
     Route::get('/{allocation}/nests', [Client\DedicatedController::class, 'nests']);
     Route::get('/{allocation}/stats', [Client\DedicatedController::class, 'stats']);
 });

@@ -17,7 +17,7 @@ export const getAllocationStats = async (allocationId: number): Promise<any> => 
 };
 
 export const getEggDetails = async (eggId: number): Promise<Egg> => {
-    const { data } = await http.get(`/api/client/dedicated/egg/${eggId}`);
+    const { data } = await http.get(`/api/client/dedicated/eggs/${eggId}`);
     return data;
 };
 
