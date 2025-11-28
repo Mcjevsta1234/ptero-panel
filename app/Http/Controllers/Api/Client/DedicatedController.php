@@ -350,15 +350,21 @@ class DedicatedController extends ClientApiController
     /**
      * Delete a server owned by the authenticated user under dedicated allocation context.
      */
-    public function destroy(Request $request, Server $server): JsonResponse
+    public function destroy(Request $request, string $server): JsonResponse
     {
+        // Find the server by UUID
+        $serverModel = Server::query()
+            ->where('uuid', $server)
+            ->orWhere('uuidShort', $server)
+            ->firstOrFail();
+
         // Ensure the server belongs to the user and is tied to a dedicated allocation
-        if ($server->owner_id !== $request->user()->id || !$server->dedicated_allocation_id) {
+        if ($serverModel->owner_id !== $request->user()->id || !$serverModel->dedicated_allocation_id) {
             return response()->json(['error' => 'Access denied.'], 403);
         }
 
         try {
-            $this->serverDeletionService->handle($server);
+            $this->serverDeletionService->handle($serverModel);
         } catch (\Throwable $ex) {
             return response()->json(['error' => 'Failed to delete server: ' . $ex->getMessage()], 500);
         }

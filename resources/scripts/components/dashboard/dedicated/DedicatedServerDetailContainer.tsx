@@ -8,6 +8,7 @@ import TitledGreyBox from '@/components/elements/TitledGreyBox';
 import useFlash from '@/plugins/useFlash';
 import { Button } from '@/components/elements/button';
 import styled from 'styled-components/macro';
+import DeleteConfirmModal from './DeleteConfirmModal';
 
 const InfoCard = styled.div`
     ${tw`bg-neutral-700 rounded p-3 flex justify-between items-center`}
@@ -89,6 +90,11 @@ export default function DedicatedServerDetailContainer() {
 
     const [loading, setLoading] = useState(true);
     const [stats, setStats] = useState<AllocationStats | null>(null);
+    const [deleteModal, setDeleteModal] = useState<{ visible: boolean; serverName: string; serverUuid: string }>({
+        visible: false,
+        serverName: '',
+        serverUuid: '',
+    });
 
     const fetchStats = () => {
         setLoading(true);
@@ -124,19 +130,20 @@ export default function DedicatedServerDetailContainer() {
 
     const { allocation, servers } = stats;
 
-    const handleDelete = async (serverId: number) => {
-        if (!confirm('Are you sure you want to delete this server? This action cannot be undone.')) {
-            return;
-        }
-        
+    const handleDeleteClick = (serverName: string, serverUuid: string) => {
+        setDeleteModal({ visible: true, serverName, serverUuid });
+    };
+
+    const handleDeleteConfirm = async () => {
         clearFlashes('dedicated:detail');
         try {
-            await deleteDedicatedServer(serverId);
+            await deleteDedicatedServer(deleteModal.serverUuid);
             addFlash({ 
                 key: 'dedicated:detail', 
                 type: 'success', 
                 message: 'Server deleted successfully.' 
             });
+            setDeleteModal({ visible: false, serverName: '', serverUuid: '' });
             fetchStats();
         } catch (error) {
             console.error('Delete error:', error);
@@ -211,7 +218,10 @@ export default function DedicatedServerDetailContainer() {
                                             </Link>
                                             <Button.Danger
                                                 css={tw`text-xs px-3 py-1`}
-                                                onClick={() => handleDelete(s.id)}
+                                                onClick={(e) => {
+                                                    e.preventDefault();
+                                                    handleDeleteClick(s.name, s.uuid);
+                                                }}
                                             >
                                                 Delete
                                             </Button.Danger>
@@ -297,6 +307,13 @@ export default function DedicatedServerDetailContainer() {
                     </InfoCard>
                 </div>
             </TitledGreyBox>
+
+            {deleteModal.visible && (
+                <DeleteConfirmModal
+                    serverName={deleteModal.serverName}
+                    onConfirm={handleDeleteConfirm}
+                />
+            )}
         </PageContentBlock>
     );
 }

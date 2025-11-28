@@ -25,6 +25,6 @@ export const createDedicatedServer = async (request: CreateServerRequest): Promi
     await http.post('/api/client/dedicated', request);
 };
 
-export const deleteDedicatedServer = async (serverId: number): Promise<void> => {
-    await http.delete(`/api/client/dedicated/server/${serverId}`);
+export const deleteDedicatedServer = async (serverUuid: string): Promise<void> => {
+    await http.delete(`/api/client/dedicated/server/${serverUuid}`);
 };
