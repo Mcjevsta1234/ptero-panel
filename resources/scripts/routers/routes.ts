@@ -13,6 +13,7 @@ import AccountApiContainer from '@/components/dashboard/AccountApiContainer';
 import AccountSSHContainer from '@/components/dashboard/ssh/AccountSSHContainer';
 import ActivityLogContainer from '@/components/dashboard/activity/ActivityLogContainer';
 import DedicatedServersContainer from '@/components/dashboard/dedicated/DedicatedServersContainer';
+import DedicatedServerDetailContainer from '@/components/dashboard/dedicated/DedicatedServerDetailContainer';
 import ServerActivityLogContainer from '@/components/server/ServerActivityLogContainer';
 import { FaBoltLightning, FaBoxArchive, FaCalendar, FaDatabase, FaEye, FaFolder, FaGear, FaKey, FaLock, FaPlay, FaTerminal, FaUser, FaUsers, FaServer } from 'react-icons/fa6';
 
@@ -85,6 +86,12 @@ export default {
             name: 'account.dedicated',
             icon: FaServer,
             component: DedicatedServersContainer,
+            exact: true,
+        },
+        {
+            path: '/dedicated/:id',
+            name: undefined,
+            component: DedicatedServerDetailContainer,
         },
     ],
     server: {

@@ -52,6 +52,12 @@ export interface Nest {
     id: number;
     name: string;
     description: string | null;
+    eggs: Array<{
+        id: number;
+        name: string;
+        description: string | null;
+        nest_id: number;
+    }>;
 }
 
 export interface Egg {

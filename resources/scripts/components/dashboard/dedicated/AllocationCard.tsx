@@ -4,6 +4,7 @@ import { DedicatedAllocation } from '@/api/dedicated/types';
 import { Button } from '@/components/elements/button';
 import TitledGreyBox from '@/components/elements/TitledGreyBox';
 import { bytesToString } from '@/lib/formatters';
+import { Link } from 'react-router-dom';
 
 interface Props {
     allocation: DedicatedAllocation;
@@ -94,8 +95,13 @@ export default ({ allocation, onCreateServer }: Props) => {
                     )}
                 </div>
 
-                {/* Create Button */}
-                <div css={tw`pt-2`}>
+                {/* Action Buttons */}
+                <div css={tw`pt-2 space-y-2`}>
+                    <Link to={`/account/dedicated/${allocation.id}`}>
+                        <Button.Text css={tw`w-full`}>
+                            View Details
+                        </Button.Text>
+                    </Link>
                     <Button.Success
                         css={tw`w-full`}
                         onClick={onCreateServer}

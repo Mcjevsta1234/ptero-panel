@@ -6,8 +6,13 @@ export const getAllocations = async (): Promise<DedicatedAllocation[]> => {
     return data.data;
 };
 
-export const getFormData = async (allocationId: number): Promise<{ nests: Nest[]; eggs: any[] }> => {
-    const { data } = await http.get(`/api/client/dedicated/${allocationId}/create`);
+export const getFormData = async (allocationId: number): Promise<{ nests: Nest[] }> => {
+    const { data } = await http.get(`/api/client/dedicated/${allocationId}/nests`);
+    return data;
+};
+
+export const getAllocationStats = async (allocationId: number): Promise<any> => {
+    const { data } = await http.get(`/api/client/dedicated/${allocationId}/stats`);
     return data;
 };
 

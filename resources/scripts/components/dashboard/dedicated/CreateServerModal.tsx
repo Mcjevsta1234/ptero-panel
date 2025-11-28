@@ -53,8 +53,8 @@ export default ({ visible, allocation, onDismissed }: Props) => {
 
     const validationSchema = Yup.object().shape({
         name: Yup.string().required('Server name is required').min(3).max(191),
-        nest_id: Yup.number().required('Please select a nest'),
-        egg_id: Yup.number().required('Please select an egg'),
+        nest_id: Yup.number().required('Please select a server category'),
+        egg_id: Yup.number().required('Please select server software'),
         cpu: Yup.number()
             .required()
             .min(1, 'Minimum 1% CPU')
@@ -81,9 +81,13 @@ export default ({ visible, allocation, onDismissed }: Props) => {
             setLoading(true);
             clearFlashes('dedicated:create');
             getFormData(allocation.id)
-                .then(({ nests: nestsData, eggs: eggsData }) => {
+                .then(({ nests: nestsData }) => {
                     setNests(nestsData);
-                    setEggs(eggsData);
+                    // Flatten eggs from all nests
+                    const allEggs = nestsData.flatMap(nest => 
+                        nest.eggs.map(egg => ({ ...egg, nest_name: nest.name }))
+                    );
+                    setEggs(allEggs);
                 })
                 .catch((error) => clearAndAddHttpError({ key: 'dedicated:create', error }))
                 .finally(() => setLoading(false));
@@ -94,8 +98,8 @@ export default ({ visible, allocation, onDismissed }: Props) => {
         setFieldValue('nest_id', nestId);
         setFieldValue('egg_id', '');
         setSelectedEgg(null);
-        const filtered = eggs.filter((egg) => egg.nest_id === nestId);
-        setFilteredEggs(filtered);
+        const nest = nests.find(n => n.id === nestId);
+        setFilteredEggs(nest ? nest.eggs : []);
     };
 
     const handleEggChange = async (eggId: number, setFieldValue: any, values: FormValues) => {
@@ -162,14 +166,14 @@ export default ({ visible, allocation, onDismissed }: Props) => {
                                     <Field as={Input} name={'name'} />
                                 </FormikFieldWrapper>
 
-                                {/* Nest Selection */}
+                                {/* Server Software Category */}
                                 <div>
-                                    <Label>Nest</Label>
+                                    <Label>Server Category</Label>
                                     <Select
                                         value={values.nest_id}
                                         onChange={(e) => handleNestChange(Number(e.target.value), setFieldValue)}
                                     >
-                                        <option value="">-- Select Nest --</option>
+                                        <option value="">-- Select Category --</option>
                                         {nests.map((nest) => (
                                             <option key={nest.id} value={nest.id}>
                                                 {nest.name}
@@ -178,15 +182,15 @@ export default ({ visible, allocation, onDismissed }: Props) => {
                                     </Select>
                                 </div>
 
-                                {/* Egg Selection */}
+                                {/* Server Software Selection */}
                                 {filteredEggs.length > 0 && (
                                     <div>
-                                        <Label>Egg</Label>
+                                        <Label>Server Software</Label>
                                         <Select
                                             value={values.egg_id}
                                             onChange={(e) => handleEggChange(Number(e.target.value), setFieldValue, values)}
                                         >
-                                            <option value="">-- Select Egg --</option>
+                                            <option value="">-- Select Software --</option>
                                             {filteredEggs.map((egg) => (
                                                 <option key={egg.id} value={egg.id}>
                                                     {egg.name}

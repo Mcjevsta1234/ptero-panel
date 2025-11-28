@@ -74,6 +74,47 @@ class DedicatedController extends ClientApiController
     }
 
     /**
+     * Get nests and eggs available for this allocation.
+     */
+    public function nests(Request $request, DedicatedServerAllocation $allocation): JsonResponse
+    {
+        // Check ownership
+        if ($allocation->user_id !== $request->user()->id) {
+            return response()->json(['error' => 'Access denied.'], 403);
+        }
+
+        $nestsQuery = Nest::with('eggs');
+        
+        // Filter by allowed nests if specified
+        if ($allocation->allowed_nests && count($allocation->allowed_nests) > 0) {
+            $nestsQuery->whereIn('id', $allocation->allowed_nests);
+        }
+        
+        $nests = $nestsQuery->get()->map(function ($nest) use ($allocation) {
+            $eggs = $nest->eggs;
+            
+            // Filter by allowed eggs if specified
+            if ($allocation->allowed_eggs && count($allocation->allowed_eggs) > 0) {
+                $eggs = $eggs->whereIn('id', $allocation->allowed_eggs);
+            }
+            
+            return [
+                'id' => $nest->id,
+                'name' => $nest->name,
+                'description' => $nest->description,
+                'eggs' => $eggs->map(fn($egg) => [
+                    'id' => $egg->id,
+                    'name' => $egg->name,
+                    'description' => $egg->description,
+                    'nest_id' => $egg->nest_id,
+                ])->values(),
+            ];
+        })->filter(fn($nest) => $nest['eggs']->isNotEmpty());
+
+        return new JsonResponse(['nests' => $nests->values()]);
+    }
+
+    /**
      * Get egg details for configuration.
      */
     public function egg(Request $request, Egg $egg): JsonResponse
@@ -201,5 +242,69 @@ class DedicatedController extends ClientApiController
         } catch (\Exception $e) {
             return response()->json(['error' => 'Failed to create server: ' . $e->getMessage()], 500);
         }
+    }
+
+    /**
+     * Get real-time stats for a dedicated allocation.
+     */
+    public function stats(Request $request, DedicatedServerAllocation $allocation): JsonResponse
+    {
+        // Check ownership
+        if ($allocation->user_id !== $request->user()->id) {
+            return response()->json(['error' => 'Access denied.'], 403);
+        }
+
+        $servers = $allocation->servers()->with(['egg', 'node'])->get();
+        
+        // Calculate aggregated stats
+        $totalMemoryUsed = $servers->sum('memory');
+        $totalDiskUsed = $servers->sum('disk');
+        $totalCpuUsed = $servers->sum('cpu');
+        
+        $serverStats = $servers->map(function ($server) {
+            return [
+                'id' => $server->id,
+                'uuid' => $server->uuid,
+                'name' => $server->name,
+                'identifier' => $server->uuidShort,
+                'egg' => $server->egg ? $server->egg->name : 'Unknown',
+                'cpu' => $server->cpu,
+                'memory' => $server->memory,
+                'disk' => $server->disk,
+                'status' => $server->status,
+                'suspended' => $server->suspended,
+                'created_at' => $server->created_at->toIso8601String(),
+            ];
+        });
+
+        return new JsonResponse([
+            'allocation' => [
+                'id' => $allocation->id,
+                'name' => $allocation->name,
+                'node' => [
+                    'id' => $allocation->node->id,
+                    'name' => $allocation->node->name,
+                    'fqdn' => $allocation->node->fqdn,
+                    'location' => $allocation->node->location->short ?? 'Unknown',
+                ],
+                'limits' => [
+                    'cpu' => $allocation->cpu,
+                    'memory' => $allocation->memory,
+                    'disk' => $allocation->disk,
+                ],
+                'used' => [
+                    'cpu' => $totalCpuUsed,
+                    'memory' => $totalMemoryUsed,
+                    'disk' => $totalDiskUsed,
+                    'servers' => $servers->count(),
+                ],
+                'available' => $allocation->available_resources,
+                'overallocation' => [
+                    'memory' => $allocation->allow_memory_overallocation,
+                    'disk' => $allocation->allow_disk_overallocation,
+                ],
+            ],
+            'servers' => $serverStats,
+        ]);
     }
 }

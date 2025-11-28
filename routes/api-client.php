@@ -55,6 +55,8 @@ Route::prefix('/account')->middleware(AccountSubject::class)->group(function () 
 Route::prefix('/dedicated')->group(function () {
     Route::get('/', [Client\DedicatedController::class, 'index']);
     Route::post('/', [Client\DedicatedController::class, 'store']);
+    Route::get('/{allocation}/nests', [Client\DedicatedController::class, 'nests']);
+    Route::get('/{allocation}/stats', [Client\DedicatedController::class, 'stats']);
     Route::get('/egg/{egg}', [Client\DedicatedController::class, 'egg']);
 });
 

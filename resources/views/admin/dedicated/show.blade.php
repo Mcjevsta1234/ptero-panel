@@ -61,8 +61,8 @@
                     <div class="row">
                         <div class="col-xs-6 text-center">
                             <p class="text-muted">CPU</p>
-                            <h3>{{ $used['cpu'] }} / {{ $allocation->cpu === 0 ? 'Unlimited' : $allocation->cpu }}</h3>
-                            <p class="small">{{ ($allocation->cpu === 0 || $available['cpu'] === -1) ? 'Unlimited' : $available['cpu'] }} cores available</p>
+                            <h3>{{ $used['cpu'] }}% / {{ $allocation->cpu === 0 ? 'Unlimited' : ($allocation->cpu . '%') }}</h3>
+                            <p class="small">{{ ($allocation->cpu === 0 || $available['cpu'] === -1) ? 'Unlimited' : ($available['cpu'] . '%') }} available</p>
                         </div>
                         <div class="col-xs-6 text-center">
                             <p class="text-muted">Memory</p>
@@ -96,8 +96,8 @@
                     <table class="table table-hover">
                         <tbody>
                             <tr>
-                                <td>CPU Cores</td>
-                                <td>{{ $allocation->cpu === 0 ? 'Unlimited' : $allocation->cpu }}</td>
+                                <td>CPU</td>
+                                <td>{{ $allocation->cpu === 0 ? 'Unlimited' : ($allocation->cpu . '%') }}</td>
                                 <td>
                                     @if($allocation->allow_cpu_overallocation)
                                         <span class="label label-info">Overallocation Allowed</span>
