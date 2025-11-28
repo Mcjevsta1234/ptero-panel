@@ -133,6 +133,8 @@ export default ({ visible, allocation, onDismissed }: Props) => {
             databases: 0,
             allocations: 1,
             backups: 0,
+            swap: 1024,
+            io: 500,
         };
 
         try {

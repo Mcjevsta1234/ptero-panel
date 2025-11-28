@@ -277,6 +277,11 @@ class DedicatedController extends ClientApiController
             ];
         });
 
+        $node = $allocation->node;
+        $nodeMemoryAllocated = $node->servers()->sum('memory');
+        $nodeDiskAllocated = $node->servers()->sum('disk');
+        $nodeCpuAllocated = $node->servers()->sum('cpu');
+
         return new JsonResponse([
             'allocation' => [
                 'id' => $allocation->id,
@@ -303,6 +308,14 @@ class DedicatedController extends ClientApiController
                     'memory' => $allocation->allow_memory_overallocation,
                     'disk' => $allocation->allow_disk_overallocation,
                 ],
+            ],
+            'node_usage' => [
+                'memory_allocated' => $nodeMemoryAllocated,
+                'memory_capacity' => $node->memory,
+                'disk_allocated' => $nodeDiskAllocated,
+                'disk_capacity' => $node->disk,
+                'cpu_allocated' => $nodeCpuAllocated,
+                'cpu_capacity' => null,
             ],
             'servers' => $serverStats,
         ]);

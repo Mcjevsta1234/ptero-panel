@@ -133,6 +133,8 @@ export default () => {
                 databases: values.databases,
                 allocations: values.allocations,
                 backups: values.backups,
+                swap: 1024,
+                io: 500,
             });
             addFlash({
                 key: 'dedicated:detail',
@@ -165,7 +167,7 @@ export default () => {
         );
     }
 
-    const { allocation, servers } = stats;
+    const { allocation, servers, node_usage } = stats;
     const cpuPercent = allocation.limits.cpu === 0 ? 0 : (allocation.used.cpu / allocation.limits.cpu) * 100;
     const memoryPercent = allocation.limits.memory === 0 ? 0 : (allocation.used.memory / allocation.limits.memory) * 100;
     const diskPercent = allocation.limits.disk === 0 ? 0 : (allocation.used.disk / allocation.limits.disk) * 100;
@@ -233,6 +235,16 @@ export default () => {
                         )}
                     </div>
                 </TitledGreyBox>
+
+                {node_usage && (
+                    <TitledGreyBox title={'Node Host Usage'}>
+                        <div css={tw`text-center py-2 space-y-1`}>
+                            <p css={tw`text-xs text-neutral-400`}>Memory: {(node_usage.memory_allocated / 1024).toFixed(1)} GB / {(node_usage.memory_capacity / 1024).toFixed(1)} GB</p>
+                            <p css={tw`text-xs text-neutral-400`}>Disk: {(node_usage.disk_allocated / 1024).toFixed(1)} GB / {(node_usage.disk_capacity / 1024).toFixed(1)} GB</p>
+                            <p css={tw`text-xs text-neutral-400`}>CPU Allocated: {node_usage.cpu_allocated}%</p>
+                        </div>
+                    </TitledGreyBox>
+                )}
             </div>
 
             {/* Resource Details */}

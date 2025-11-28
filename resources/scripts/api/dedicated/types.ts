@@ -90,4 +90,6 @@ export interface CreateServerRequest {
     databases: number;
     allocations: number;
     backups: number;
+    swap: number;
+    io: number;
 }
