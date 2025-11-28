@@ -8,7 +8,7 @@ import { Link } from 'react-router-dom';
 
 interface Props {
     allocation: DedicatedAllocation;
-    onCreateServer: () => void;
+    onCreateServer?: () => void;
 }
 
 export default ({ allocation, onCreateServer }: Props) => {
@@ -105,7 +105,7 @@ export default ({ allocation, onCreateServer }: Props) => {
                     <Button.Success
                         css={tw`w-full`}
                         onClick={onCreateServer}
-                        disabled={!allocation.active}
+                        disabled={!allocation.active || !onCreateServer}
                     >
                         {allocation.active ? 'Create Server' : 'Allocation Inactive'}
                     </Button.Success>

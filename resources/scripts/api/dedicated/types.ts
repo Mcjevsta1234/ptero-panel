@@ -88,6 +88,6 @@ export interface CreateServerRequest {
     memory: number;
     disk: number;
     databases: number;
-    allocations: number;
+    allocations_count: number;
     backups: number;
 }
