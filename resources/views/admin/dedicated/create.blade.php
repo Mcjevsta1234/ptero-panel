@@ -121,23 +121,29 @@
                         <h3 class="box-title">Overallocation Settings</h3>
                     </div>
                     <div class="box-body">
-                        <div class="checkbox">
-                            <label>
-                                <input type="checkbox" name="allow_memory_overallocation" value="1" {{ old('allow_memory_overallocation') ? 'checked' : '' }}>
-                                Allow Memory Overallocation
-                            </label>
+                        <div class="form-group">
+                            <div class="checkbox checkbox-primary">
+                                <input type="checkbox" name="allow_memory_overallocation" id="allow_memory_overallocation" value="1" {{ old('allow_memory_overallocation') ? 'checked' : '' }}>
+                                <label for="allow_memory_overallocation">
+                                    Allow Memory Overallocation
+                                </label>
+                            </div>
                         </div>
-                        <div class="checkbox">
-                            <label>
-                                <input type="checkbox" name="allow_disk_overallocation" value="1" {{ old('allow_disk_overallocation') ? 'checked' : '' }}>
-                                Allow Disk Overallocation
-                            </label>
+                        <div class="form-group">
+                            <div class="checkbox checkbox-primary">
+                                <input type="checkbox" name="allow_disk_overallocation" id="allow_disk_overallocation" value="1" {{ old('allow_disk_overallocation') ? 'checked' : '' }}>
+                                <label for="allow_disk_overallocation">
+                                    Allow Disk Overallocation
+                                </label>
+                            </div>
                         </div>
-                        <div class="checkbox">
-                            <label>
-                                <input type="checkbox" name="active" value="1" {{ old('active', true) ? 'checked' : '' }}>
-                                Active
-                            </label>
+                        <div class="form-group">
+                            <div class="checkbox checkbox-success">
+                                <input type="checkbox" name="active" id="active" value="1" {{ old('active', true) ? 'checked' : '' }}>
+                                <label for="active">
+                                    Active
+                                </label>
+                            </div>
                         </div>
                         <p class="text-muted small">If enabled, user can create servers exceeding these limits (total resources across all servers can exceed the allocation).</p>
                     </div>
