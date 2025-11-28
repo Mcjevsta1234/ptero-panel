@@ -10,6 +10,8 @@ import { Button } from '@/components/elements/button';
 import styled from 'styled-components/macro';
 import DeleteConfirmModal from './DeleteConfirmModal';
 import CreateServerModal from './CreateServerModal';
+import Card from '@/witchyworlds/ui/Card';
+import Title from '@/witchyworlds/ui/Title';
 
 const InfoCard = styled.div`
     ${tw`bg-neutral-700 rounded p-3 flex justify-between items-center`}
@@ -21,6 +23,16 @@ const InfoLabel = styled.span`
 
 const InfoValue = styled.span`
     ${tw`font-semibold text-neutral-100`}
+`;
+
+const ProgressTrack = styled.div`
+    ${tw`w-full h-2 rounded-full bg-neutral-800 overflow-hidden`}
+`;
+
+const ProgressFill = styled.div<{ percent: number; color: string }>`
+    ${tw`h-full rounded-full transition-all duration-300`}
+    width: ${({ percent }) => Math.min(percent, 100)}%;
+    background-color: ${({ color }) => color};
 `;
 
 interface AllocationStats {
@@ -91,10 +103,10 @@ export default function DedicatedServerDetailContainer() {
 
     const [loading, setLoading] = useState(true);
     const [stats, setStats] = useState<AllocationStats | null>(null);
-    const [deleteModal, setDeleteModal] = useState<{ visible: boolean; serverName: string; serverUuid: string }>({
+    const [deleteModal, setDeleteModal] = useState<{ visible: boolean; serverName: string; serverIdentifier: string }>({
         visible: false,
         serverName: '',
-        serverUuid: '',
+        serverIdentifier: '',
     });
     const [createModalVisible, setCreateModalVisible] = useState(false);
 
@@ -132,20 +144,20 @@ export default function DedicatedServerDetailContainer() {
 
     const { allocation, servers } = stats;
 
-    const handleDeleteClick = (serverName: string, serverUuid: string) => {
-        setDeleteModal({ visible: true, serverName, serverUuid });
+    const handleDeleteClick = (serverName: string, serverIdentifier: string) => {
+        setDeleteModal({ visible: true, serverName, serverIdentifier });
     };
 
     const handleDeleteConfirm = async () => {
         clearFlashes('dedicated:detail');
         try {
-            await deleteDedicatedServer(deleteModal.serverUuid);
+            await deleteDedicatedServer(deleteModal.serverIdentifier);
             addFlash({ 
                 key: 'dedicated:detail', 
                 type: 'success', 
                 message: 'Server deleted successfully.' 
             });
-            setDeleteModal({ visible: false, serverName: '', serverUuid: '' });
+            setDeleteModal({ visible: false, serverName: '', serverIdentifier: '' });
             fetchStats();
         } catch (error) {
             console.error('Delete error:', error);
@@ -153,73 +165,63 @@ export default function DedicatedServerDetailContainer() {
         }
     };
 
+    const formatGb = (value: number) => `${(value / 1024).toFixed(1)} GB`;
+    const formatLimit = (value: number, suffix = '') => (value === 0 ? 'Unlimited' : `${value}${suffix}`);
+    const formatLimitGb = (value: number) => (value === 0 ? 'Unlimited' : formatGb(value));
+    const remainingCpu = allocation.limits.cpu === 0 ? 'Unlimited' : `${Math.max(allocation.limits.cpu - allocation.used.cpu, 0)}%`;
+    const remainingMemory = allocation.limits.memory === 0 ? 'Unlimited' : formatGb(Math.max(allocation.limits.memory - allocation.used.memory, 0));
+    const remainingDisk = allocation.limits.disk === 0 ? 'Unlimited' : formatGb(Math.max(allocation.limits.disk - allocation.used.disk, 0));
+    const cpuPercent = allocation.limits.cpu === 0 ? 0 : (allocation.used.cpu / allocation.limits.cpu) * 100;
+    const memoryPercent = allocation.limits.memory === 0 ? 0 : (allocation.used.memory / allocation.limits.memory) * 100;
+    const diskPercent = allocation.limits.disk === 0 ? 0 : (allocation.used.disk / allocation.limits.disk) * 100;
+
     return (
         <PageContentBlock title={allocation.name || 'Dedicated Server'}>
             <div css={tw`mb-6 flex justify-between items-center`}>
-                <Link to={'/account/dedicated'}>
-                    <Button.Text>&larr; Back to Allocations</Button.Text>
-                </Link>
-                <div css={tw`flex items-center gap-3`}>
-                    <p css={tw`text-xs text-neutral-400`}>Auto-refreshes every 30 seconds</p>
-                    <Button onClick={() => setCreateModalVisible(true)} css={tw`px-4 py-2`}>
-                        Create Server
-                    </Button>
-                </div>
-            </div>
-
-            {/* Top Row: Server Plan Info & Server List */}
-            <div css={tw`grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6`}>
-                {/* Left: Server Plan - Nested info cards */}
-                <TitledGreyBox title={'Server Plan'}>
-                    <div css={tw`space-y-3`}>
-                        <InfoCard>
-                            <InfoLabel>CPU</InfoLabel>
-                            <InfoValue>{allocation.limits.cpu === 0 ? 'Unlimited' : `${allocation.limits.cpu}%`}</InfoValue>
-                        </InfoCard>
-                        <InfoCard>
-                            <InfoLabel>Memory</InfoLabel>
-                            <InfoValue>{allocation.limits.memory === 0 ? 'Unlimited' : `${(allocation.limits.memory / 1024).toFixed(1)} GB`}</InfoValue>
-                        </InfoCard>
-                        <InfoCard>
-                            <InfoLabel>Disk</InfoLabel>
-                            <InfoValue>{allocation.limits.disk === 0 ? 'Unlimited' : `${(allocation.limits.disk / 1024).toFixed(1)} GB`}</InfoValue>
-                        </InfoCard>
-                        <InfoCard>
-                            <InfoLabel>Databases</InfoLabel>
-                            <InfoValue>{allocation.limits.databases === 0 ? 'Unlimited' : allocation.limits.databases}</InfoValue>
-                        </InfoCard>
-                        <InfoCard>
-                            <InfoLabel>Allocations</InfoLabel>
-                            <InfoValue>{allocation.limits.allocations === 0 ? 'Unlimited' : allocation.limits.allocations}</InfoValue>
-                        </InfoCard>
-                        <InfoCard>
-                            <InfoLabel>Backups</InfoLabel>
-                            <InfoValue>{allocation.limits.backups === 0 ? 'Unlimited' : allocation.limits.backups}</InfoValue>
-                        </InfoCard>
-                    </div>
-                </TitledGreyBox>
-
-                {/* Right: Server List */}
-                <TitledGreyBox title={'Servers'}>
-                    <div css={tw`space-y-3 max-h-[400px] overflow-y-auto`}>
-                        {servers.length === 0 ? (
-                            <div css={tw`flex items-center justify-center h-full min-h-[300px]`}>
-                                <p css={tw`text-neutral-400 text-sm`}>No servers created yet</p>
-                            </div>
-                        ) : (
-                            servers.map((s) => (
-                                <div key={s.id} css={tw`bg-neutral-700 rounded p-4`}>
-                                    <div css={tw`flex items-start justify-between mb-3`}>
-                                        <div css={tw`flex-1`}>
-                                            <Link 
-                                                to={`/server/${s.identifier}`} 
-                                                css={tw`text-base font-semibold text-neutral-100 hover:text-cyan-400 transition-colors`}
-                                            >
-                                                {s.name}
-                                            </Link>
-                                            <p css={tw`text-xs text-neutral-400 mt-1`}>{s.address ?? s.identifier}</p>
+                {/* Server Fleet */}
+                <div css={tw`mb-8`}>
+                    {servers.length === 0 ? (
+                        <TitledGreyBox title={'Servers'}>
+                            <div css={tw`py-10 text-center text-neutral-400`}>No servers created yet.</div>
+                        </TitledGreyBox>
+                    ) : (
+                        <div css={tw`grid grid-cols-1 lg:grid-cols-2 gap-5`}>
+                            {servers.map((s) => (
+                                <Card key={s.id} css={tw`!p-0 overflow-hidden relative`}>
+                                    <div
+                                        css={tw`relative p-5`}
+                                        style={{
+                                            backgroundImage: 'linear-gradient(135deg, rgba(76, 0, 255, 0.1), rgba(0, 200, 255, 0.05))',
+                                        }}
+                                    >
+                                        <div css={tw`flex items-start justify-between`}>
+                                            <div>
+                                                <Title css={tw`text-xl mb-1`}>{s.name}</Title>
+                                                <p css={tw`text-sm text-neutral-400`}>{s.address ?? s.identifier}</p>
+                                            </div>
+                                            <span css={tw`text-xs px-3 py-1 rounded-full bg-neutral-800 text-neutral-200`}>
+                                                {s.status ?? 'Unknown'}
+                                            </span>
                                         </div>
-                                        <div css={tw`flex items-center gap-2`}>
+                                        <div css={tw`grid grid-cols-2 gap-3 mt-4 text-sm`}>
+                                            <InfoCard css={tw`bg-neutral-800 bg-opacity-60`}>
+                                                <InfoLabel>CPU</InfoLabel>
+                                                <InfoValue>{s.cpu}%</InfoValue>
+                                            </InfoCard>
+                                            <InfoCard css={tw`bg-neutral-800 bg-opacity-60`}>
+                                                <InfoLabel>Memory</InfoLabel>
+                                                <InfoValue>{(s.memory / 1024).toFixed(1)} GB</InfoValue>
+                                            </InfoCard>
+                                            <InfoCard css={tw`bg-neutral-800 bg-opacity-60`}>
+                                                <InfoLabel>Disk</InfoLabel>
+                                                <InfoValue>{(s.disk / 1024).toFixed(1)} GB</InfoValue>
+                                            </InfoCard>
+                                            <InfoCard css={tw`bg-neutral-800 bg-opacity-60`}>
+                                                <InfoLabel>Egg</InfoLabel>
+                                                <InfoValue css={tw`text-xs`}>{s.egg}</InfoValue>
+                                            </InfoCard>
+                                        </div>
+                                        <div css={tw`flex items-center gap-3 mt-5`}>
                                             <Link to={`/server/${s.identifier}`}>
                                                 <Button.Text css={tw`text-xs px-3 py-1`}>Manage</Button.Text>
                                             </Link>
@@ -227,58 +229,63 @@ export default function DedicatedServerDetailContainer() {
                                                 css={tw`text-xs px-3 py-1`}
                                                 onClick={(e) => {
                                                     e.preventDefault();
-                                                    handleDeleteClick(s.name, s.uuid);
+                                                    handleDeleteClick(s.name, s.identifier);
                                                 }}
                                             >
                                                 Delete
                                             </Button.Danger>
                                         </div>
                                     </div>
-                                    
-                                    {/* Server specs in nested cards */}
-                                    <div css={tw`grid grid-cols-2 gap-2`}>
-                                        <InfoCard css={tw`py-2`}>
-                                            <InfoLabel>CPU</InfoLabel>
-                                            <InfoValue>{s.cpu}%</InfoValue>
-                                        </InfoCard>
-                                        <InfoCard css={tw`py-2`}>
-                                            <InfoLabel>Memory</InfoLabel>
-                                            <InfoValue>{(s.memory / 1024).toFixed(1)} GB</InfoValue>
-                                        </InfoCard>
-                                        <InfoCard css={tw`py-2`}>
-                                            <InfoLabel>Disk</InfoLabel>
-                                            <InfoValue>{(s.disk / 1024).toFixed(1)} GB</InfoValue>
-                                        </InfoCard>
-                                        <InfoCard css={tw`py-2`}>
-                                            <InfoLabel>Egg</InfoLabel>
-                                            <InfoValue css={tw`text-xs`}>{s.egg}</InfoValue>
-                                        </InfoCard>
-                                    </div>
-                                </div>
-                            ))
-                        )}
-                    </div>
-                </TitledGreyBox>
-            </div>
+                                </Card>
+                            ))}
+                        </div>
+                    )}
+                </div>
 
-            {/* Bottom Row: Usage Stats */}
-            <div css={tw`grid grid-cols-1 md:grid-cols-3 gap-4 mb-6`}>
-                <TitledGreyBox title={'CPU Usage'}>
-                    <div css={tw`py-4`}>
-                        <p css={tw`text-4xl font-bold text-cyan-400`}>{allocation.used.cpu}%</p>
-                        <p css={tw`text-xs text-neutral-400 mt-2`}>
-                            of {allocation.limits.cpu === 0 ? 'unlimited' : `${allocation.limits.cpu}%`}
-                        </p>
-                    </div>
-                </TitledGreyBox>
+                {/* Usage Progress Bars */}
+                <div css={tw`grid grid-cols-1 md:grid-cols-3 gap-4 mb-8`}>
+                    <TitledGreyBox title={'CPU Allocation'}>
+                        <div css={tw`space-y-2`}>
+                            <div css={tw`flex justify-between text-sm`}>
+                                <span css={tw`text-neutral-400`}>Used</span>
+                                <span css={tw`font-semibold`}>{allocation.used.cpu}%</span>
+                            </div>
+                            <ProgressTrack>
+                                <ProgressFill percent={cpuPercent} color={'rgb(59,130,246)'} />
+                            </ProgressTrack>
+                            <p css={tw`text-xs text-neutral-400`}>Total: {formatLimit(allocation.limits.cpu, '%')}</p>
+                            <p css={tw`text-xs text-neutral-300`}>Available: {remainingCpu}</p>
+                        </div>
+                    </TitledGreyBox>
 
-                <TitledGreyBox title={'Memory Usage'}>
-                    <div css={tw`py-4`}>
-                        <p css={tw`text-4xl font-bold text-green-400`}>{(allocation.used.memory / 1024).toFixed(1)} GB</p>
-                        <p css={tw`text-xs text-neutral-400 mt-2`}>
-                            of {allocation.limits.memory === 0 ? 'unlimited' : `${(allocation.limits.memory / 1024).toFixed(1)} GB`}
-                        </p>
-                    </div>
+                    <TitledGreyBox title={'Memory Allocation'}>
+                        <div css={tw`space-y-2`}>
+                            <div css={tw`flex justify-between text-sm`}>
+                                <span css={tw`text-neutral-400`}>Used</span>
+                                <span css={tw`font-semibold`}>{formatGb(allocation.used.memory)}</span>
+                            </div>
+                            <ProgressTrack>
+                                <ProgressFill percent={memoryPercent} color={'rgb(16,185,129)'} />
+                            </ProgressTrack>
+                            <p css={tw`text-xs text-neutral-400`}>Total: {formatLimitGb(allocation.limits.memory)}</p>
+                            <p css={tw`text-xs text-neutral-300`}>Available: {remainingMemory}</p>
+                        </div>
+                    </TitledGreyBox>
+
+                    <TitledGreyBox title={'Disk Allocation'}>
+                        <div css={tw`space-y-2`}>
+                            <div css={tw`flex justify-between text-sm`}>
+                                <span css={tw`text-neutral-400`}>Used</span>
+                                <span css={tw`font-semibold`}>{formatGb(allocation.used.disk)}</span>
+                            </div>
+                            <ProgressTrack>
+                                <ProgressFill percent={diskPercent} color={'rgb(250,204,21)'} />
+                            </ProgressTrack>
+                            <p css={tw`text-xs text-neutral-400`}>Total: {formatLimitGb(allocation.limits.disk)}</p>
+                            <p css={tw`text-xs text-neutral-300`}>Available: {remainingDisk}</p>
+                        </div>
+                    </TitledGreyBox>
+                </div>
                 </TitledGreyBox>
 
                 <TitledGreyBox title={'Disk Usage'}>
@@ -347,7 +354,12 @@ export default function DedicatedServerDetailContainer() {
                         allowed_eggs: null,
                         active: true,
                         servers_count: servers.length,
-                        servers: [],
+                        servers: servers.map((s) => ({
+                            id: s.id,
+                            uuid: s.uuid,
+                            name: s.name,
+                            identifier: s.identifier,
+                        })),
                         used_resources: {
                             cpu: allocation.used.cpu,
                             memory: allocation.used.memory,
