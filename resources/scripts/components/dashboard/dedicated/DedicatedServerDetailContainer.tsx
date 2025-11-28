@@ -12,7 +12,7 @@ import DeleteConfirmModal from './DeleteConfirmModal';
 import CreateServerInlineForm from './CreateServerInlineForm';
 
 const InfoCard = styled.div`
-    ${tw`bg-neutral-700 rounded p-3 flex justify-between items-center`}
+    ${tw`bg-neutral-700 rounded p-3 flex flex-col gap-1 sm:flex-row sm:items-center sm:justify-between`}
 `;
 
 const InfoLabel = styled.span`
@@ -20,7 +20,7 @@ const InfoLabel = styled.span`
 `;
 
 const InfoValue = styled.span`
-    ${tw`font-semibold text-neutral-100`}
+    ${tw`font-semibold text-neutral-100 break-words`}
 `;
 
 const ProgressTrack = styled.div`
@@ -41,8 +41,18 @@ const ServerMeta = styled.div`
     ${tw`text-xs text-neutral-400 flex flex-wrap gap-x-4 gap-y-1`}
 `;
 
-const StatusBadge = styled.span`
-    ${tw`text-[10px] tracking-wide uppercase px-2 py-0.5 rounded-full bg-neutral-800 text-neutral-100`}
+type StatusIntent = 'online' | 'offline' | 'installing' | 'suspended';
+
+const statusVariants: Record<StatusIntent, ReturnType<typeof tw>> = {
+    online: tw`bg-emerald-500/20 text-emerald-200 border border-emerald-500/30`,
+    offline: tw`bg-neutral-800 text-neutral-200 border border-neutral-700`,
+    installing: tw`bg-amber-500/20 text-amber-200 border border-amber-500/30`,
+    suspended: tw`bg-red-500/20 text-red-200 border border-red-500/30`,
+};
+
+const StatusBadge = styled.span<{ intent: StatusIntent }>`
+    ${tw`text-[10px] tracking-wide uppercase px-2 py-0.5 rounded-full border`}
+    ${({ intent }) => statusVariants[intent] || statusVariants.offline}
 `;
 
 interface AllocationStats {
@@ -183,56 +193,87 @@ export default function DedicatedServerDetailContainer() {
     const cpuPercent = allocation.limits.cpu === 0 ? 0 : (allocation.used.cpu / allocation.limits.cpu) * 100;
     const memoryPercent = allocation.limits.memory === 0 ? 0 : (allocation.used.memory / allocation.limits.memory) * 100;
     const diskPercent = allocation.limits.disk === 0 ? 0 : (allocation.used.disk / allocation.limits.disk) * 100;
+    const nodeLocation = allocation.node.location || 'Unknown';
+
+    const humanizeStatus = (value: string) =>
+        value
+            .replace(/_/g, ' ')
+            .toLowerCase()
+            .replace(/\b\w/g, (char) => char.toUpperCase());
+
+    const resolveServerStatus = (server: AllocationStats['servers'][number]): { label: string; intent: StatusIntent } => {
+        if (server.suspended) {
+            return { label: 'Suspended', intent: 'suspended' };
+        }
+
+        const raw = (server.status || '').trim();
+        if (!raw) {
+            return { label: 'Offline', intent: 'offline' };
+        }
+
+        const normalized = raw.toLowerCase();
+        if (normalized.includes('install')) {
+            return { label: 'Installing', intent: 'installing' };
+        }
+        if (normalized.includes('running') || normalized.includes('online')) {
+            return { label: 'Online', intent: 'online' };
+        }
+        if (normalized.includes('starting')) {
+            return { label: 'Starting', intent: 'installing' };
+        }
+        if (normalized.includes('offline') || normalized.includes('stopping')) {
+            return { label: 'Offline', intent: 'offline' };
+        }
+
+        return { label: humanizeStatus(raw), intent: 'offline' };
+    };
 
 
     return (
         <PageContentBlock title={allocation.name || 'Dedicated Server'}>
-            <div css={tw`text-sm text-neutral-400 mb-6`}>
-                <span css={tw`block`}>Node: {allocation.node.name} · {allocation.node.location}</span>
-                <span css={tw`block`}>Address: {allocation.node.fqdn}</span>
-            </div>
-
             <div css={tw`grid grid-cols-1 xl:grid-cols-2 gap-6 mb-8`}>
                 <TitledGreyBox title={'Allocation Overview'}>
-                    <div css={tw`space-y-4`}>
-                        <div>
-                            <div css={tw`flex justify-between text-xs uppercase tracking-wide text-neutral-400`}>
-                                <span>CPU Usage</span>
-                                <span>{allocation.used.cpu}% / {formatLimit(allocation.limits.cpu, '%')}</span>
+                    <div css={tw`space-y-6`}>
+                        <div css={tw`grid grid-cols-1 lg:grid-cols-3 gap-4`}>
+                            <div>
+                                <div css={tw`flex justify-between text-xs uppercase tracking-wide text-neutral-400`}>
+                                    <span>CPU Usage</span>
+                                    <span>{allocation.used.cpu}% / {formatLimit(allocation.limits.cpu, '%')}</span>
+                                </div>
+                                <ProgressTrack>
+                                    <ProgressFill percent={cpuPercent} color={'rgb(59,130,246)'} />
+                                </ProgressTrack>
+                                <p css={tw`text-xs text-neutral-300 mt-1`}>Available: {remainingCpu}</p>
                             </div>
-                            <ProgressTrack>
-                                <ProgressFill percent={cpuPercent} color={'rgb(59,130,246)'} />
-                            </ProgressTrack>
-                            <p css={tw`text-xs text-neutral-300 mt-1`}>Available: {remainingCpu}</p>
+
+                            <div>
+                                <div css={tw`flex justify-between text-xs uppercase tracking-wide text-neutral-400`}>
+                                    <span>Memory Usage</span>
+                                    <span>
+                                        {formatGb(allocation.used.memory)} / {formatLimitGb(allocation.limits.memory)}
+                                    </span>
+                                </div>
+                                <ProgressTrack>
+                                    <ProgressFill percent={memoryPercent} color={'rgb(16,185,129)'} />
+                                </ProgressTrack>
+                                <p css={tw`text-xs text-neutral-300 mt-1`}>Available: {remainingMemory}</p>
+                            </div>
+
+                            <div>
+                                <div css={tw`flex justify-between text-xs uppercase tracking-wide text-neutral-400`}>
+                                    <span>Disk Usage</span>
+                                    <span>
+                                        {formatGb(allocation.used.disk)} / {formatLimitGb(allocation.limits.disk)}
+                                    </span>
+                                </div>
+                                <ProgressTrack>
+                                    <ProgressFill percent={diskPercent} color={'rgb(250,204,21)'} />
+                                </ProgressTrack>
+                                <p css={tw`text-xs text-neutral-300 mt-1`}>Available: {remainingDisk}</p>
+                            </div>
                         </div>
 
-                        <div>
-                            <div css={tw`flex justify-between text-xs uppercase tracking-wide text-neutral-400`}>
-                                <span>Memory Usage</span>
-                                <span>
-                                    {formatGb(allocation.used.memory)} / {formatLimitGb(allocation.limits.memory)}
-                                </span>
-                            </div>
-                            <ProgressTrack>
-                                <ProgressFill percent={memoryPercent} color={'rgb(16,185,129)'} />
-                            </ProgressTrack>
-                            <p css={tw`text-xs text-neutral-300 mt-1`}>Available: {remainingMemory}</p>
-                        </div>
-
-                        <div>
-                            <div css={tw`flex justify-between text-xs uppercase tracking-wide text-neutral-400`}>
-                                <span>Disk Usage</span>
-                                <span>
-                                    {formatGb(allocation.used.disk)} / {formatLimitGb(allocation.limits.disk)}
-                                </span>
-                            </div>
-                            <ProgressTrack>
-                                <ProgressFill percent={diskPercent} color={'rgb(250,204,21)'} />
-                            </ProgressTrack>
-                            <p css={tw`text-xs text-neutral-300 mt-1`}>Available: {remainingDisk}</p>
-                        </div>
-
-                        <div css={tw`grid grid-cols-1 sm:grid-cols-3 gap-3`}>
+                        <div css={tw`grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-3`}>
                             <InfoCard>
                                 <InfoLabel>Databases</InfoLabel>
                                 <InfoValue>
@@ -251,6 +292,23 @@ export default function DedicatedServerDetailContainer() {
                                     {allocation.used.backups} / {allocation.limits.backups === 0 ? '∞' : allocation.limits.backups}
                                 </InfoValue>
                             </InfoCard>
+                            <InfoCard>
+                                <div>
+                                    <InfoLabel>Node</InfoLabel>
+                                    <InfoValue>{allocation.node.name}</InfoValue>
+                                </div>
+                                <span css={tw`text-xs text-neutral-400`}>{nodeLocation}</span>
+                            </InfoCard>
+                            <InfoCard>
+                                <div>
+                                    <InfoLabel>Main IP</InfoLabel>
+                                    <InfoValue css={tw`text-xs sm:text-sm break-all`}>{allocation.node.fqdn}</InfoValue>
+                                </div>
+                            </InfoCard>
+                            <InfoCard>
+                                <InfoLabel>Servers Deployed</InfoLabel>
+                                <InfoValue>{servers.length}</InfoValue>
+                            </InfoCard>
                         </div>
                     </div>
                 </TitledGreyBox>
@@ -268,21 +326,24 @@ export default function DedicatedServerDetailContainer() {
                     <div css={tw`py-12 text-center text-neutral-400`}>No servers created yet.</div>
                 ) : (
                     <div css={tw`grid grid-cols-1 lg:grid-cols-2 gap-4`}>
-                        {servers.map((s) => (
-                            <ServerCard key={s.id}>
-                                <div css={tw`flex items-start justify-between gap-4`}>
-                                    <div>
-                                        <p css={tw`text-sm font-semibold text-neutral-100 leading-tight`}>{s.name}</p>
-                                        <p css={tw`text-[11px] text-neutral-500`}>{s.address ?? s.identifier}</p>
+                        {servers.map((s) => {
+                            const statusInfo = resolveServerStatus(s);
+
+                            return (
+                                <ServerCard key={s.id}>
+                                    <div css={tw`flex items-start justify-between gap-4`}>
+                                        <div>
+                                            <p css={tw`text-sm font-semibold text-neutral-100 leading-tight`}>{s.name}</p>
+                                            <p css={tw`text-[11px] text-neutral-500`}>{s.address ?? s.identifier}</p>
+                                        </div>
+                                        <StatusBadge intent={statusInfo.intent}>{statusInfo.label}</StatusBadge>
                                     </div>
-                                    <StatusBadge>{s.status ?? 'Unknown'}</StatusBadge>
-                                </div>
-                                <ServerMeta>
-                                    <span>CPU {s.cpu}%</span>
-                                    <span>RAM {(s.memory / 1024).toFixed(1)} GB</span>
-                                    <span>Disk {(s.disk / 1024).toFixed(1)} GB</span>
-                                    <span>Egg {s.egg}</span>
-                                </ServerMeta>
+                                    <ServerMeta>
+                                        <span>CPU {s.cpu}%</span>
+                                        <span>RAM {(s.memory / 1024).toFixed(1)} GB</span>
+                                        <span>Disk {(s.disk / 1024).toFixed(1)} GB</span>
+                                        <span>Game {s.egg}</span>
+                                    </ServerMeta>
                                 <div css={tw`flex flex-wrap gap-2`}>
                                     <Link to={`/server/${s.identifier}`}>
                                         <Button.Text css={tw`text-[11px] px-3 py-1`}>Manage</Button.Text>
@@ -297,8 +358,9 @@ export default function DedicatedServerDetailContainer() {
                                         Delete
                                     </Button.Danger>
                                 </div>
-                            </ServerCard>
-                        ))}
+                                </ServerCard>
+                            );
+                        })}
                     </div>
                 )}
             </TitledGreyBox>

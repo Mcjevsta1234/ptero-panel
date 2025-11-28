@@ -1,12 +1,12 @@
 import http from '@/api/http';
-import { DedicatedAllocation, CreateServerRequest, Egg, Nest } from './types';
+import { DedicatedAllocation, CreateServerRequest, Egg, Nest, AllocationPort } from './types';
 
 export const getAllocations = async (): Promise<DedicatedAllocation[]> => {
     const { data } = await http.get('/api/client/dedicated');
     return data.data;
 };
 
-export const getFormData = async (allocationId: number): Promise<{ nests: Nest[] }> => {
+export const getFormData = async (allocationId: number): Promise<{ nests: Nest[]; ports: AllocationPort[] }> => {
     const { data } = await http.get(`/api/client/dedicated/${allocationId}/nests`);
     return data;
 };

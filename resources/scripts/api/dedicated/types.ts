@@ -60,6 +60,13 @@ export interface Nest {
     }>;
 }
 
+export interface AllocationPort {
+    id: number;
+    ip: string;
+    port: number;
+    display: string;
+}
+
 export interface Egg {
     id: number;
     nest_id: number;
@@ -93,4 +100,5 @@ export interface CreateServerRequest {
     swap: number;
     io: number;
     docker_image?: string;
+    allocation_port_id?: number;
 }

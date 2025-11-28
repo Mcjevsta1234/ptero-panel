@@ -113,7 +113,28 @@ class DedicatedController extends ClientApiController
             ];
         })->filter(fn($nest) => $nest['eggs']->isNotEmpty());
 
-        return new JsonResponse(['nests' => $nests->values()]);
+        $portsQuery = Allocation::query()
+            ->where('node_id', $allocation->node_id)
+            ->whereNull('server_id');
+
+        if ($allocation->port_range_start && $allocation->port_range_end) {
+            $portsQuery->whereBetween('port', [$allocation->port_range_start, $allocation->port_range_end]);
+        }
+
+        $ports = $portsQuery
+            ->orderBy('port')
+            ->get()
+            ->map(fn($availablePort) => [
+                'id' => $availablePort->id,
+                'ip' => $availablePort->ip,
+                'port' => $availablePort->port,
+                'display' => sprintf('%s:%s', $availablePort->ip, $availablePort->port),
+            ]);
+
+        return new JsonResponse([
+            'nests' => $nests->values(),
+            'ports' => $ports,
+        ]);
     }
 
     /**
@@ -160,6 +181,7 @@ class DedicatedController extends ClientApiController
             'startup' => 'nullable|string',
             'environment' => 'nullable|array',
             'docker_image' => 'nullable|string',
+            'allocation_port_id' => 'nullable|integer|exists:allocations,id',
         ]);
 
         $allocation = DedicatedServerAllocation::findOrFail($validated['allocation_id']);
@@ -191,15 +213,38 @@ class DedicatedController extends ClientApiController
         }
 
         // Find an available allocation on the node within the port range
-        $nodeAllocation = Allocation::query()
-            ->where('node_id', $allocation->node_id)
-            ->whereNull('server_id')
-            ->when($allocation->port_range_start && $allocation->port_range_end, function ($query) use ($allocation) {
-                return $query->whereBetween('port', [$allocation->port_range_start, $allocation->port_range_end]);
-            })
-            ->first();
+        $selectedAllocation = null;
 
-        if (!$nodeAllocation) {
+        if (!empty($validated['allocation_port_id'])) {
+            $selectedAllocation = Allocation::query()
+                ->where('id', $validated['allocation_port_id'])
+                ->whereNull('server_id')
+                ->first();
+
+            if (!$selectedAllocation) {
+                return response()->json(['error' => 'Selected port is no longer available.'], 422);
+            }
+
+            if ($selectedAllocation->node_id !== $allocation->node_id) {
+                return response()->json(['error' => 'Selected port does not belong to this node.'], 403);
+            }
+
+            if ($allocation->port_range_start && $allocation->port_range_end) {
+                if ($selectedAllocation->port < $allocation->port_range_start || $selectedAllocation->port > $allocation->port_range_end) {
+                    return response()->json(['error' => 'Selected port is outside of your allowed range.'], 403);
+                }
+            }
+        } else {
+            $selectedAllocation = Allocation::query()
+                ->where('node_id', $allocation->node_id)
+                ->whereNull('server_id')
+                ->when($allocation->port_range_start && $allocation->port_range_end, function ($query) use ($allocation) {
+                    return $query->whereBetween('port', [$allocation->port_range_start, $allocation->port_range_end]);
+                })
+                ->first();
+        }
+
+        if (!$selectedAllocation) {
             return response()->json(['error' => 'No available allocations on the node within your port range.'], 400);
         }
 
@@ -236,7 +281,7 @@ class DedicatedController extends ClientApiController
                 'owner_id' => $request->user()->id,
                 'egg_id' => $validated['egg_id'],
                 'node_id' => $allocation->node_id,
-                'allocation_id' => $nodeAllocation->id,
+                'allocation_id' => $selectedAllocation->id,
                 'allocation_additional' => [],
                 'memory' => $validated['memory'],
                 'disk' => $validated['disk'],
