@@ -250,8 +250,10 @@ export default function CreateDedicatedServerContainer() {
     };
 
     const submit = async (values: FormValues, { setSubmitting }: FormikHelpers<FormValues>) => {
+        console.log('Submit called with values:', values);
         clearFlashes('dedicated:create');
         try {
+            console.log('Sending create request...');
             await createDedicatedServer({
                 allocation_id: allocationId,
                 name: values.name,
@@ -271,9 +273,11 @@ export default function CreateDedicatedServerContainer() {
                 environment: values.environment,
             });
 
+            console.log('Server created successfully');
             addFlash({ key: 'dedicated:create', type: 'success', message: 'Server created successfully.' });
             history.push(`/account/dedicated/${allocationId}`);
         } catch (error) {
+            console.error('Create server error:', error);
             clearAndAddHttpError({ key: 'dedicated:create', error });
         } finally {
             setSubmitting(false);
@@ -295,10 +299,12 @@ export default function CreateDedicatedServerContainer() {
             <FlashMessageRender byKey={'dedicated:create'} css={tw`mb-4`} />
             
             <Formik initialValues={initialValues} validationSchema={validationSchema} onSubmit={submit} enableReinitialize>
-                {({ isSubmitting, values, setFieldValue, errors, submitForm }) => {
+                {({ isSubmitting, values, setFieldValue, errors, submitForm, isValid }) => {
                     const eggSelectDisabled = !values.nest_id;
                     const eggsForSelect = eggSelectDisabled ? [] : filteredEggs;
                     const portUnavailable = ports.length === 0;
+
+                    console.log('Formik render - isValid:', isValid, 'isSubmitting:', isSubmitting, 'errors:', errors);
 
                     return (
                         <Form>
@@ -503,7 +509,18 @@ export default function CreateDedicatedServerContainer() {
                                         <Button.Text onClick={() => history.push(`/account/dedicated/${allocationId}`)} css={tw`flex-1`}>
                                             Cancel
                                         </Button.Text>
-                                        <Button.Success type={'button'} disabled={isSubmitting} onClick={submitForm} css={tw`flex-1`}>
+                                        <Button.Success 
+                                            type={'button'} 
+                                            disabled={isSubmitting} 
+                                            onClick={() => {
+                                                console.log('Create button clicked');
+                                                console.log('Current form values:', values);
+                                                console.log('Current form errors:', errors);
+                                                console.log('Is form valid:', isValid);
+                                                submitForm();
+                                            }} 
+                                            css={tw`flex-1`}
+                                        >
                                             {isSubmitting ? 'Creating...' : 'Create Server'}
                                         </Button.Success>
                                     </div>
