@@ -233,6 +233,7 @@ export default function DedicatedServerDetailContainer() {
         } catch (error) {
             console.error('Delete error:', error);
             clearAndAddHttpError({ key: 'dedicated:detail', error });
+            throw error; // Re-throw so modal knows deletion failed
         }
     };
 

@@ -76,9 +76,9 @@ const createValidationSchema = (portRequired: boolean) =>
         name: Yup.string().required('A server name is required.'),
         nest_id: Yup.number().typeError('Select a category.').required('Select a category.'),
         egg_id: Yup.number().typeError('Select a game version.').required('Select a game version.'),
-        cpu: Yup.number().required().min(1),
-        memory: Yup.number().required().min(128),
-        disk: Yup.number().required().min(512),
+        cpu: Yup.number().required().min(1, 'Minimum 1 core'),
+        memory: Yup.number().required().min(1, 'Minimum 1 GB'),
+        disk: Yup.number().required().min(1, 'Minimum 1 GB'),
         databases: Yup.number().required().min(0),
         allocations: Yup.number().required().min(1),
         backups: Yup.number().required().min(0),
@@ -112,9 +112,9 @@ const CreateServerInlineForm: React.FC<Props> = ({ allocationId, limits, used, o
         nest_id: '',
         egg_id: '',
         docker_image: '',
-        cpu: defaultResourceValue(limits.cpu, used.cpu, 100),
-        memory: defaultResourceValue(limits.memory, used.memory, 1024),
-        disk: defaultResourceValue(limits.disk, used.disk, 10240),
+        cpu: Math.max(1, Math.floor(defaultResourceValue(limits.cpu, used.cpu, 100) / 100)), // Convert % to cores
+        memory: Math.max(1, Math.floor(defaultResourceValue(limits.memory, used.memory, 1024) / 1024)), // Convert MB to GB
+        disk: Math.max(10, Math.floor(defaultResourceValue(limits.disk, used.disk, 10240) / 1024)), // Convert MB to GB
         databases: 0,
         allocations: 1,
         backups: 0,
@@ -205,9 +205,9 @@ const CreateServerInlineForm: React.FC<Props> = ({ allocationId, limits, used, o
                 name: values.name,
                 egg_id: values.egg_id as number,
                 docker_image: values.docker_image || undefined,
-                cpu: values.cpu,
-                memory: values.memory,
-                disk: values.disk,
+                cpu: values.cpu * 100, // Convert cores to %
+                memory: values.memory * 1024, // Convert GB to MB
+                disk: values.disk * 1024, // Convert GB to MB
                 databases: values.databases,
                 allocations: values.allocations,
                 backups: values.backups,
@@ -333,23 +333,23 @@ const CreateServerInlineForm: React.FC<Props> = ({ allocationId, limits, used, o
                                     <div css={tw`grid grid-cols-1 md:grid-cols-3 gap-4`}>
                                         <div>
                                             <Label>CPU (Cores)</Label>
-                                            <Field as={Input} type={'number'} name={'cpu'} min={100} step={100} />
+                                            <Field as={Input} type={'number'} name={'cpu'} min={1} step={1} />
                                             <p css={tw`text-xs text-neutral-500 mt-1`}>
-                                                Available: {formatAvailable(availableCpu, '%')} (1 core = 100%)
+                                                Available: {availableCpu === 'Unlimited' ? 'Unlimited' : `${Math.floor((availableCpu as number) / 100)} cores`}
                                             </p>
                                         </div>
                                         <div>
                                             <Label>Memory (GB)</Label>
-                                            <Field as={Input} type={'number'} name={'memory'} min={1024} step={1024} />
+                                            <Field as={Input} type={'number'} name={'memory'} min={1} step={1} />
                                             <p css={tw`text-xs text-neutral-500 mt-1`}>
-                                                Available: {formatAvailable(availableMemory, ' MB')} ({availableMemory === 'Unlimited' ? 'Unlimited' : `${(availableMemory as number / 1024).toFixed(1)} GB`})
+                                                Available: {availableMemory === 'Unlimited' ? 'Unlimited' : `${Math.floor((availableMemory as number) / 1024)} GB`}
                                             </p>
                                         </div>
                                         <div>
                                             <Label>Disk (GB)</Label>
-                                            <Field as={Input} type={'number'} name={'disk'} min={1024} step={1024} />
+                                            <Field as={Input} type={'number'} name={'disk'} min={1} step={1} />
                                             <p css={tw`text-xs text-neutral-500 mt-1`}>
-                                                Available: {formatAvailable(availableDisk, ' MB')} ({availableDisk === 'Unlimited' ? 'Unlimited' : `${(availableDisk as number / 1024).toFixed(1)} GB`})
+                                                Available: {availableDisk === 'Unlimited' ? 'Unlimited' : `${Math.floor((availableDisk as number) / 1024)} GB`}
                                             </p>
                                         </div>
                                     </div>
