@@ -215,13 +215,20 @@ export default function CreateDedicatedServerContainer() {
         }
     };
 
-    const handleEggChange = async (rawValue: string, setFieldValue: FormikHelpers<FormValues>['setFieldValue']) => {
+    const handleEggChange = async (
+        rawValue: string,
+        setFieldValue: FormikHelpers<FormValues>['setFieldValue'],
+        validateForm: () => Promise<any>,
+        setSubmitting: (isSubmitting: boolean) => void,
+        setErrors: (errors: any) => void
+    ) => {
         if (!rawValue) {
             setFieldValue('egg_id', '');
             setFieldValue('environment', {});
             setFieldValue('docker_image', '');
             setFieldValue('startup', '');
             setSelectedEgg(null);
+            setErrors({});
             return;
         }
 
@@ -243,11 +250,21 @@ export default function CreateDedicatedServerContainer() {
             // Set startup command
             setFieldValue('startup', eggDetails.startup || '');
 
-            // Set default environment variables - set each field individually for Formik validation
+            // Set default environment variables - set each field individually & validate
             eggDetails.variables.forEach((variable) => {
                 console.log(`Setting ${variable.env_variable} = ${variable.default_value}`);
-                setFieldValue(`environment.${variable.env_variable}`, variable.default_value || '', false);
+                setFieldValue(`environment.${variable.env_variable}`, variable.default_value || '');
             });
+
+            // Clear previous environment errors & revalidate form
+            setErrors((prev: any) => {
+                const cleaned: any = { ...prev };
+                Object.keys(cleaned).forEach((k) => {
+                    if (k.startsWith('environment.') || k === 'environment') delete cleaned[k];
+                });
+                return cleaned;
+            });
+            await validateForm();
         } catch (error) {
             clearAndAddHttpError({ key: 'dedicated:create', error });
         }
@@ -303,7 +320,7 @@ export default function CreateDedicatedServerContainer() {
             <FlashMessageRender byKey={'dedicated:create'} css={tw`mb-4`} />
             
             <Formik initialValues={initialValues} validationSchema={validationSchema} onSubmit={submit} enableReinitialize>
-                {({ isSubmitting, values, setFieldValue, errors, submitForm, isValid }) => {
+                {({ isSubmitting, values, setFieldValue, errors, submitForm, isValid, validateForm, setSubmitting, setErrors }) => {
                     const eggSelectDisabled = !values.nest_id;
                     const eggsForSelect = eggSelectDisabled ? [] : filteredEggs;
                     const portUnavailable = ports.length === 0;
@@ -351,7 +368,7 @@ export default function CreateDedicatedServerContainer() {
                                                 <Select
                                                     value={values.egg_id === '' ? '' : String(values.egg_id)}
                                                     disabled={eggSelectDisabled}
-                                                    onChange={(e) => handleEggChange(e.target.value, setFieldValue)}
+                                                    onChange={(e) => handleEggChange(e.target.value, setFieldValue, validateForm, setSubmitting, setErrors)}
                                                 >
                                                     <option value="">{eggSelectDisabled ? 'Select a category first' : '-- Select Version --'}</option>
                                                     {eggsForSelect.map((egg) => (
