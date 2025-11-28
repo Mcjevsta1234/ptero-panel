@@ -96,8 +96,10 @@ const createValidationSchema = (portRequired: boolean, selectedEgg: Egg | null) 
         ),
     };
 
-    // Add validation for egg variables
+    // Add validation for egg variables - must be nested under environment object
     if (selectedEgg && selectedEgg.variables) {
+        const envSchema: any = {};
+        
         selectedEgg.variables.forEach((variable) => {
             if (variable.user_editable) {
                 const rules = variable.rules.split('|');
@@ -117,9 +119,11 @@ const createValidationSchema = (portRequired: boolean, selectedEgg: Egg | null) 
                     }
                 });
 
-                schema[`environment.${variable.env_variable}`] = validator;
+                envSchema[variable.env_variable] = validator;
             }
         });
+
+        schema.environment = Yup.object().shape(envSchema);
     }
 
     return Yup.object().shape(schema);
