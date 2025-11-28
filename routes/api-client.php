@@ -55,7 +55,7 @@ Route::prefix('/account')->middleware(AccountSubject::class)->group(function () 
 Route::prefix('/dedicated')->group(function () {
     Route::get('/', [Client\DedicatedController::class, 'index']);
     Route::post('/', [Client\DedicatedController::class, 'store']);
-    Route::delete('/server/{server}', [Client\DedicatedController::class, 'destroy']);
+    Route::delete('/server/{serverUuid}', [Client\DedicatedController::class, 'destroy']);
     Route::get('/{allocation}/nests', [Client\DedicatedController::class, 'nests']);
     Route::get('/{allocation}/stats', [Client\DedicatedController::class, 'stats']);
     Route::get('/egg/{egg}', [Client\DedicatedController::class, 'egg']);

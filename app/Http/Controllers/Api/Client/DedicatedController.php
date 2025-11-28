@@ -395,17 +395,17 @@ class DedicatedController extends ClientApiController
     /**
      * Delete a server owned by the authenticated user under dedicated allocation context.
      */
-    public function destroy(Request $request, string $server): JsonResponse
+    public function destroy(Request $request, string $serverUuid): JsonResponse
     {
         \Log::info('Delete server request', [
-            'server_param' => $server,
+            'server_param' => $serverUuid,
             'user_id' => $request->user()->id,
         ]);
 
         // Find the server by UUID or short UUID
         $serverModel = Server::query()
-            ->where('uuid', $server)
-            ->orWhere('uuidShort', $server)
+            ->where('uuid', $serverUuid)
+            ->orWhere('uuidShort', $serverUuid)
             ->first();
 
         \Log::info('Server lookup result', [
