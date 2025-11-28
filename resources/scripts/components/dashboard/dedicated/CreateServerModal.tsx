@@ -84,9 +84,10 @@ export default ({ visible, allocation, onDismissed }: Props) => {
                 .then(({ nests: nestsData }) => {
                     setNests(nestsData);
                     // Flatten eggs from all nests
-                    const allEggs = nestsData.flatMap(nest => 
-                        nest.eggs.map(egg => ({ ...egg, nest_name: nest.name }))
-                    );
+                    const allEggs = nestsData.reduce((acc: any[], nest) => {
+                        const eggsWithNest = nest.eggs.map((egg) => ({ ...egg, nest_name: nest.name }));
+                        return acc.concat(eggsWithNest);
+                    }, []);
                     setEggs(allEggs);
                 })
                 .catch((error) => clearAndAddHttpError({ key: 'dedicated:create', error }))

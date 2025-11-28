@@ -268,7 +268,7 @@ export default ({ match }: RouteComponentProps<{ id: string }>) => {
                                         </td>
                                         <td css={tw`py-3 px-4 text-right`}>
                                             <Link to={`/server/${server.identifier}`}>
-                                                <Button.Text size={'xsmall'}>Manage</Button.Text>
+                                                <Button.Text css={tw`text-xs py-1 px-2`}>Manage</Button.Text>
                                             </Link>
                                         </td>
                                     </tr>
