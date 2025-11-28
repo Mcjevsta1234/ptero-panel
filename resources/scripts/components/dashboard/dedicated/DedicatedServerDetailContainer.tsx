@@ -15,77 +15,51 @@ const TitleText = styled.div`
     ${tw`text-center font-semibold text-base text-neutral-100`}
 `;
 
-const CIRCLE_RADIUS = 50;
-const CIRCLE_CIRCUMFERENCE = 2 * Math.PI * CIRCLE_RADIUS;
-
 const MetricsPanel = styled.div`
-    ${tw`bg-neutral-900 border border-neutral-800 rounded-2xl p-6 lg:p-8`}
+    ${tw`bg-neutral-700 rounded-2xl p-6 lg:p-8`}
     width: 100%;
     min-height: 100%;
     display: flex;
     flex-direction: column;
 `;
 
-const CircleGrid = styled.div`
-    ${tw`grid gap-6 w-full`}
-    --circle-size: clamp(150px, 22vw, 280px);
-    grid-auto-rows: minmax(260px, 1fr);
-    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
-    align-items: stretch;
-
-    @media (max-width: 1024px) {
-        --circle-size: clamp(150px, 32vw, 240px);
-        grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-    }
+const MetricGrid = styled.div`
+    ${tw`grid gap-4 w-full`}
+    grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+    grid-auto-rows: auto;
 
     @media (max-width: 640px) {
-        --circle-size: clamp(140px, 60vw, 220px);
-        grid-auto-rows: minmax(240px, 1fr);
-        grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+        grid-template-columns: 1fr;
     }
 `;
 
-const CircleCard = styled.div`
-    ${tw`bg-neutral-800 rounded-2xl p-5 lg:p-6 flex flex-col items-center text-center gap-3`}
+const MetricCard = styled.div`
+    ${tw`bg-neutral-800 rounded-lg p-4 flex flex-col gap-2`}
     width: 100%;
-    min-height: 100%;
-    justify-content: center;
 `;
 
-const CircleSvg = styled.svg`
-    width: var(--circle-size);
-    height: var(--circle-size);
-    max-width: 100%;
+const ProgressBar = styled.div`
+    ${tw`w-full h-2 rounded-full bg-neutral-900 overflow-hidden`}
 `;
 
-const CircleTrack = styled.circle`
-    stroke: rgba(255, 255, 255, 0.08);
-    stroke-width: 10;
-    fill: none;
+const ProgressFill = styled.div<{ percent: number; color: string }>`
+    ${tw`h-full rounded-full transition-all duration-300`}
+    width: ${({ percent }) => Math.min(percent, 100)}%;
+    background-color: ${({ color }) => color};
 `;
 
-const CircleProgress = styled.circle<{ color: string; dashoffset: number }>`
-    stroke: ${({ color }) => color};
-    stroke-width: 10;
-    fill: none;
-    stroke-linecap: round;
-    transform: rotate(-90deg);
-    transform-origin: 60px 60px;
-    stroke-dasharray: ${CIRCLE_CIRCUMFERENCE};
-    stroke-dashoffset: ${({ dashoffset }) => dashoffset};
-    transition: stroke-dashoffset 0.4s ease;
-`;
 
-const CircleLabel = styled.span`
+
+const MetricLabel = styled.span`
     ${tw`text-xs uppercase tracking-wide text-neutral-400`}
 `;
 
-const CircleValue = styled.span`
-    ${tw`text-lg font-semibold text-neutral-50`}
+const MetricValue = styled.div`
+    ${tw`flex justify-between items-baseline text-sm`}
 `;
 
-const CircleDetail = styled.span`
-    ${tw`text-xs text-neutral-300`}
+const MetricDetail = styled.span`
+    ${tw`text-xs text-neutral-400`}
 `;
 
 const ServerCard = styled.div`
@@ -386,25 +360,24 @@ export default function DedicatedServerDetailContainer() {
         <PageContentBlock title={allocation.name || 'Dedicated Server'}>
             <div css={tw`grid grid-cols-1 xl:grid-cols-2 gap-6 mb-8`}>
                 <MetricsPanel>
-                    <CircleGrid>
-                        {circleMetrics.map((metric) => (
-                            <CircleCard key={metric.key}>
-                                <CircleLabel>{metric.label}</CircleLabel>
-                                <CircleSvg viewBox="0 0 120 120">
-                                    <CircleTrack cx={60} cy={60} r={CIRCLE_RADIUS} />
-                                    <CircleProgress
-                                        cx={60}
-                                        cy={60}
-                                        r={CIRCLE_RADIUS}
-                                        color={metric.color}
-                                        dashoffset={metric.dashOffset}
-                                    />
-                                </CircleSvg>
-                                <CircleValue>{metric.detail}</CircleValue>
-                                <CircleDetail>Available: {metric.available}</CircleDetail>
-                            </CircleCard>
+                    <MetricGrid>
+                        {usageMetrics.map((metric) => (
+                            <MetricCard key={metric.key}>
+                                <MetricLabel>{metric.label}</MetricLabel>
+                                <MetricValue>
+                                    <span css={tw`font-semibold text-neutral-100`}>
+                                        {metric.key === 'cpu' || metric.key === 'memory' || metric.key === 'disk'
+                                            ? `${metric.used} / ${metric.total}`
+                                            : metric.used}
+                                    </span>
+                                </MetricValue>
+                                <ProgressBar>
+                                    <ProgressFill percent={metric.percent} color={metric.color} />
+                                </ProgressBar>
+                                <MetricDetail>Available: {metric.available}</MetricDetail>
+                            </MetricCard>
                         ))}
-                    </CircleGrid>
+                    </MetricGrid>
                 </MetricsPanel>
 
                 <CreateServerInlineForm
