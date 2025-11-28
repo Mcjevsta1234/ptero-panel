@@ -10,6 +10,7 @@ import { Button } from '@/components/elements/button';
 import styled from 'styled-components/macro';
 import DeleteConfirmModal from './DeleteConfirmModal';
 import CreateServerModal from './CreateServerModal';
+import CreateServerInlineForm from './CreateServerInlineForm';
 import Card from '@/witchyworlds/ui/Card';
 import Title from '@/witchyworlds/ui/Title';
 
@@ -321,6 +322,13 @@ export default function DedicatedServerDetailContainer() {
                     </InfoCard>
                 </div>
             </TitledGreyBox>
+
+            {/* Create Server inline */}
+            <CreateServerInlineForm
+                allocationId={allocation.id}
+                available={allocation.available}
+                onCreated={() => fetchStats()}
+            />
 
             <DeleteConfirmModal
                 visible={deleteModal.visible}
