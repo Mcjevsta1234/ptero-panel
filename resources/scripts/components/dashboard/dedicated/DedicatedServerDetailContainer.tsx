@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { RouteComponentProps } from 'react-router-dom';
+import { useParams } from 'react-router-dom';
 import tw from 'twin.macro';
 import { getAllocationStats, getFormData, getEggDetails, createDedicatedServer } from '@/api/dedicated';
 import PageContentBlock from '@/components/elements/PageContentBlock';
@@ -70,7 +70,7 @@ interface CreateServerFormValues {
     backups: number;
 }
 
-export default ({ match }: RouteComponentProps<{ id: string }>) => {
+export default () => {
     const [loading, setLoading] = useState(true);
     const [stats, setStats] = useState<AllocationStats | null>(null);
     const [showCreateForm, setShowCreateForm] = useState(false);
@@ -79,7 +79,8 @@ export default ({ match }: RouteComponentProps<{ id: string }>) => {
     const [selectedEgg, setSelectedEgg] = useState<Egg | null>(null);
     const [loadingFormData, setLoadingFormData] = useState(false);
     const { clearFlashes, clearAndAddHttpError, addFlash } = useFlash();
-    const allocationId = parseInt(match.params.id);
+    const { id } = useParams<{ id: string }>();
+    const allocationId = parseInt(id as string);
 
     const fetchStats = () => {
         setLoading(true);
