@@ -237,13 +237,10 @@ export default function CreateDedicatedServerContainer() {
             // Set startup command
             setFieldValue('startup', eggDetails.startup || '');
 
-            // Set default environment variables
-            const envDefaults: Record<string, string> = {};
+            // Set default environment variables - set each field individually for Formik validation
             eggDetails.variables.forEach((variable) => {
-                envDefaults[variable.env_variable] = variable.default_value || '';
+                setFieldValue(`environment.${variable.env_variable}`, variable.default_value || '', false);
             });
-
-            setFieldValue('environment', envDefaults);
         } catch (error) {
             clearAndAddHttpError({ key: 'dedicated:create', error });
         }
