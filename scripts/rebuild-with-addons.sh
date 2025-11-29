@@ -1,6 +1,12 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
+DEBUG="${REBUILD_DEBUG:-0}"
+if [[ "$DEBUG" == "2" ]]; then
+  # Trace mode (very verbose) if REBUILD_DEBUG=2
+  set -x
+fi
+
 START_DIR="$(pwd)"
 DEBUG="${REBUILD_DEBUG:-0}"
 
@@ -73,35 +79,36 @@ fi
 
 # Fresh clone into a temp directory to ensure clean state
 info "Cloning fresh repository"
-command -v git >/dev/null 2>&1 || { err "git not installed"; exit 1; }
 TMP_DIR="../panel-clean-$(date +%s)"
-REMOTE_URL="${PANEL_REMOTE_URL:-$(git config --get remote.origin.url)}"
-if [[ -z "$REMOTE_URL" ]]; then
-  err "Cannot determine remote.origin.url (set PANEL_REMOTE_URL env to override)"
-  exit 1
-fi
-[[ "$DEBUG" == "1" ]] && info "Using remote: $REMOTE_URL -> temp: $TMP_DIR"
-if ! git clone --branch experimental --depth 1 "$REMOTE_URL" "$TMP_DIR"; then
-  warn "Primary clone failed. Retrying with explicit HTTPS origin..."
-  ALT_URL="https://github.com/Mcjevsta1234/ptero-panel.git"
-  if [[ "$REMOTE_URL" != "$ALT_URL" ]]; then
-    if ! git clone --branch experimental --depth 1 "$ALT_URL" "$TMP_DIR"; then
-      err "Fallback clone also failed. Aborting."; exit 1
-    fi
-    REMOTE_URL="$ALT_URL"
-  else
-    err "Clone failed. Aborting."; exit 1
+
+if command -v git >/dev/null 2>&1; then
+  REMOTE_URL="${PANEL_REMOTE_URL:-$(git config --get remote.origin.url || true)}"
+  if [[ -z "$REMOTE_URL" ]]; then
+    warn "No git remote detected; using default panel remote."
+    REMOTE_URL="https://github.com/Mcjevsta1234/ptero-panel.git"
   fi
+  [[ "$DEBUG" != "0" ]] && info "Remote: $REMOTE_URL Temp: $TMP_DIR"
+  if ! git clone --branch experimental --depth 1 "$REMOTE_URL" "$TMP_DIR"; then
+    err "Git clone failed (remote=$REMOTE_URL). Skipping reset and continuing with current tree.";
+    TMP_DIR=""
+  fi
+else
+  warn "git not installed; skipping fresh clone reset step. Install git for full reset.";
+  TMP_DIR=""
 fi
-[[ "$DEBUG" == "1" ]] && info "Clone completed; listing temp dir" && ls -1 "$TMP_DIR" | head -20 || true
+[[ -n "$TMP_DIR" && -d "$TMP_DIR" && "$DEBUG" != "0" ]] && info "Clone completed; sample contents:" && ls -1 "$TMP_DIR" | head -20 || true
 
 # Replace working tree with fresh clone (preserve .git and .env)
-info "Replacing working tree with fresh clone"
-[[ "$DEBUG" == "1" ]] && info "Pre-replace contents:" && ls -1 | head -20 || true
-find . -maxdepth 1 -mindepth 1 ! -name .git ! -name .env -exec rm -rf {} +
-rsync -a "$TMP_DIR/" ./ --exclude .git
-[[ "$DEBUG" == "1" ]] && info "Post-sync contents:" && ls -1 | head -20 || true
-rm -rf "$TMP_DIR"
+if [[ -n "$TMP_DIR" && -d "$TMP_DIR" ]]; then
+  info "Replacing working tree with fresh clone"
+  [[ "$DEBUG" != "0" ]] && info "Pre-replace snapshot:" && ls -1 | head -20 || true
+  find . -maxdepth 1 -mindepth 1 ! -name .git ! -name .env -exec rm -rf {} +
+  rsync -a "$TMP_DIR/" ./ --exclude .git
+  [[ "$DEBUG" != "0" ]] && info "Post-replace snapshot:" && ls -1 | head -20 || true
+  rm -rf "$TMP_DIR"
+else
+  warn "Skipping working tree replace (no cloned temp directory)."
+fi
 
 # Restore .env and storage
 info "Restoring .env and storage"
