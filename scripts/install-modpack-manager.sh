@@ -10,9 +10,16 @@ info() { echo -e "\033[1;34m[INFO]\033[0m $*"; }
 warn() { echo -e "\033[1;33m[WARN]\033[0m $*"; }
 err()  { echo -e "\033[1;31m[ERR ]\033[0m $*"; }
 
-MODPACK_DIR="$ROOT_DIR/addons/Modpack-Manager"
+# Support both lowercase and capitalized addon folder names
+if [[ -d "$ROOT_DIR/addons/Modpack-Manager" ]]; then
+  MODPACK_DIR="$ROOT_DIR/addons/Modpack-Manager"
+elif [[ -d "$ROOT_DIR/Addons/Modpack-Manager" ]]; then
+  MODPACK_DIR="$ROOT_DIR/Addons/Modpack-Manager"
+else
+  MODPACK_DIR=""
+fi
 
-if [[ ! -d "$MODPACK_DIR" ]]; then
+if [[ -z "$MODPACK_DIR" || ! -d "$MODPACK_DIR" ]]; then
   err "Modpack Manager addon not found at $MODPACK_DIR"
   exit 1
 fi

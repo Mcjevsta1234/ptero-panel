@@ -164,9 +164,11 @@ else
 fi
 
 # Run addon installers via ainx
-if [[ -d addons ]]; then
+if [[ -d addons || -d Addons ]]; then
   info "Installing addons via ainx"
-  pushd addons >/dev/null
+  ADDONS_DIR="addons"
+  [[ -d Addons ]] && ADDONS_DIR="Addons"
+  pushd "$ADDONS_DIR" >/dev/null
   # Run custom remove scripts if present (per README)
   for script in remove-*.sh; do
     [[ -f "$script" ]] && bash "$script" || true
