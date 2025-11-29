@@ -30,13 +30,21 @@ mkdir -p ../panel-backup
 cp -f .env ../panel-backup/.env
 rsync -a storage/ ../panel-backup/storage/ || true
 
-# Reset repository to remote clean state
-info "Resetting git working tree"
-git fetch origin experimental
-# Remove everything but .git
+# Fresh clone into a temp directory to ensure clean state
+info "Cloning fresh repository"
+TMP_DIR="../panel-clean-$(date +%s)"
+REMOTE_URL="$(git config --get remote.origin.url)"
+if [[ -z "$REMOTE_URL" ]]; then
+  err "Cannot determine remote.origin.url"
+  exit 1
+fi
+git clone --branch experimental --depth 1 "$REMOTE_URL" "$TMP_DIR"
+
+# Replace working tree with fresh clone (preserve .git and .env)
+info "Replacing working tree with fresh clone"
 find . -maxdepth 1 -mindepth 1 ! -name .git ! -name .env -exec rm -rf {} +
-# Restore tracked files
-git checkout -f experimental
+rsync -a "$TMP_DIR/" ./ --exclude .git
+rm -rf "$TMP_DIR"
 
 # Restore .env and storage
 info "Restoring .env and storage"
@@ -56,6 +64,20 @@ info "Ensuring NodeJS 16+ and installing ainx"
 npm install -g ainx || {
   warn "Failed to install ainx globally via npm. Try running: npm install -g ainx";
 }
+
+# Prompt for CurseForge API key required by Modpack Manager and write to .env before build
+if grep -q "CURSEFORGE_API_KEY" .env; then
+  info "CURSEFORGE_API_KEY already present in .env"
+else
+  echo "Modpack Manager requires a CurseForge API key."
+  read -p "Enter CURSEFORGE_API_KEY (or leave empty to skip): " CF_API
+  if [[ -n "$CF_API" ]]; then
+    echo "CURSEFORGE_API_KEY=\"$CF_API\"" >> .env
+    info "Added CURSEFORGE_API_KEY to .env"
+  else
+    warn "Skipped adding CURSEFORGE_API_KEY"
+  fi
+fi
 
 # Clear caches
 info "Clearing Laravel caches"
