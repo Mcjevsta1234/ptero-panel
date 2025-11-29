@@ -8,7 +8,24 @@ if [[ ${EUID:-$(id -u)} -ne 0 ]]; then
   echo "[INFO] Running without root; some steps may require sudo." >&2
 fi
 
-ROOT_DIR="$(cd "$(dirname "$0")"/.. && pwd)"
+# Determine panel root robustly when invoked via process substitution (bash <(curl ...))
+# Prefer current directory if artisan exists; avoid using $0 which is 'bash' in that case.
+if [[ -f artisan ]]; then
+  ROOT_DIR="$(pwd)"
+else
+  # Try BASH_SOURCE path
+  SRC_DIR="$(dirname "${BASH_SOURCE[0]:-.}")"
+  if [[ -f "$SRC_DIR/artisan" ]]; then
+    cd "$SRC_DIR"
+    ROOT_DIR="$(pwd)"
+  elif [[ -d pterodactyl && -f pterodactyl/artisan ]]; then
+    cd pterodactyl
+    ROOT_DIR="$(pwd)"
+  else
+    echo "[ERR ] Could not locate panel root (artisan not found). Run the script from /var/www/pterodactyl." >&2
+    exit 1
+  fi
+fi
 cd "$ROOT_DIR"
 
 info() { echo -e "\033[1;34m[INFO]\033[0m $*"; }
