@@ -168,18 +168,18 @@ if [[ -d addons || -d Addons ]]; then
   info "Installing addons via ainx"
   ADDONS_DIR="addons"
   [[ -d Addons ]] && ADDONS_DIR="Addons"
-  pushd "$ADDONS_DIR" >/dev/null
   # Run custom remove scripts if present (per README)
-  for script in remove-*.sh; do
+  for script in "$ADDONS_DIR"/remove-*.sh; do
     [[ -f "$script" ]] && bash "$script" || true
   done
-  # Install ainx packages
-  for ainx in **/*.ainx *.ainx; do
+  # Install ainx packages from panel root (ainx requires running in panel root)
+  shopt -s nullglob globstar
+  for ainx in "$ADDONS_DIR"/**/*.ainx "$ADDONS_DIR"/*.ainx; do
     [[ -f "$ainx" ]] || continue
     info "Installing addon: $ainx"
-    ainx install "$ainx" || { err "Failed to install $ainx"; exit 1; }
+    ( cd "$ROOT_DIR" && ainx install "$ainx" ) || { err "Failed to install $ainx"; exit 1; }
   done
-  popd >/dev/null
+  shopt -u nullglob globstar
 else
   warn "No addons directory found; skipping ainx installation"
 fi
