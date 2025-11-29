@@ -112,6 +112,10 @@ php artisan migrate --path=database/migrations-versionchanger --force || true
 php artisan migrate --path=database/migrations-serversplitter --force || true
 php artisan migrate --path=database/migrations-serverimporter --force || true
 
+# Install Modpack Manager (file patches, upload copy, egg import)
+info "Installing Modpack Manager"
+bash scripts/install-modpack-manager.sh || { err "Failed to install Modpack Manager"; exit 1; }
+
 # Build assets once after installing all addons
 info "Building production assets"
 yarn build:production
