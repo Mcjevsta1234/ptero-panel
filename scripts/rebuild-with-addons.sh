@@ -172,12 +172,15 @@ if [[ -d addons || -d Addons ]]; then
   for script in "$ADDONS_DIR"/remove-*.sh; do
     [[ -f "$script" ]] && bash "$script" || true
   done
-  # Install ainx packages from panel root (ainx requires running in panel root)
+  # Copy .ainx files to panel root temporarily (ainx requires them in root)
   shopt -s nullglob globstar
   for ainx in "$ADDONS_DIR"/**/*.ainx "$ADDONS_DIR"/*.ainx; do
     [[ -f "$ainx" ]] || continue
-    info "Installing addon: $ainx"
-    ( cd "$ROOT_DIR" && ainx install "$ainx" ) || { err "Failed to install $ainx"; exit 1; }
+    BASENAME="$(basename "$ainx")"
+    cp "$ainx" "$ROOT_DIR/$BASENAME"
+    info "Installing addon: $BASENAME"
+    ainx install "$BASENAME" || { err "Failed to install $BASENAME"; exit 1; }
+    rm -f "$ROOT_DIR/$BASENAME"
   done
   shopt -u nullglob globstar
 else
