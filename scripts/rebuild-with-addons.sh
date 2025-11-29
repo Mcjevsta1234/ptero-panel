@@ -27,8 +27,8 @@ php artisan down || true
 # Preserve critical files
 info "Preserving .env and storage/uploads"
 mkdir -p ../panel-backup
-cp -f .env ../panel-backup/.env
-rsync -a storage/ ../panel-backup/storage/ || true
+[[ -f .env ]] && cp -f .env ../panel-backup/.env || warn ".env not found, skipping backup"
+[[ -d storage ]] && rsync -a storage/ ../panel-backup/storage/ || warn "storage/ not found, skipping backup"
 
 # Fresh clone into a temp directory to ensure clean state
 info "Cloning fresh repository"
@@ -48,8 +48,8 @@ rm -rf "$TMP_DIR"
 
 # Restore .env and storage
 info "Restoring .env and storage"
-cp -f ../panel-backup/.env .env || true
-rsync -a ../panel-backup/storage/ storage/ || true
+[[ -f ../panel-backup/.env ]] && cp -f ../panel-backup/.env .env || warn "No .env backup to restore"
+[[ -d ../panel-backup/storage ]] && rsync -a ../panel-backup/storage/ storage/ || warn "No storage backup to restore"
 
 # Dependencies
 info "Installing composer dependencies"
