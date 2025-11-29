@@ -1,6 +1,9 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
+START_DIR="$(pwd)"
+DEBUG="${REBUILD_DEBUG:-0}"
+
 # Rebuild panel from scratch keeping .env, storage, and database
 # Then install ainx and all addons per READMEs.
 
@@ -8,25 +11,34 @@ if [[ ${EUID:-$(id -u)} -ne 0 ]]; then
   echo "[INFO] Running without root; some steps may require sudo." >&2
 fi
 
-# Determine panel root robustly when invoked via process substitution (bash <(curl ...))
-# Prefer current directory if artisan exists; avoid using $0 which is 'bash' in that case.
-if [[ -f artisan ]]; then
-  ROOT_DIR="$(pwd)"
+# Robust panel root detection.
+# 1. Use current directory if artisan exists.
+# 2. If not, try common install paths.
+# 3. If still not found, abort with guidance.
+
+if [[ -f "$START_DIR/artisan" ]]; then
+  ROOT_DIR="$START_DIR"
 else
-  # Try BASH_SOURCE path
-  SRC_DIR="$(dirname "${BASH_SOURCE[0]:-.}")"
-  if [[ -f "$SRC_DIR/artisan" ]]; then
-    cd "$SRC_DIR"
-    ROOT_DIR="$(pwd)"
-  elif [[ -d pterodactyl && -f pterodactyl/artisan ]]; then
-    cd pterodactyl
-    ROOT_DIR="$(pwd)"
-  else
-    echo "[ERR ] Could not locate panel root (artisan not found). Run the script from /var/www/pterodactyl." >&2
+  CANDIDATES=("/var/www/pterodactyl" "/srv/pterodactyl" "$START_DIR/pterodactyl")
+  ROOT_DIR=""
+  for d in "${CANDIDATES[@]}"; do
+    [[ -f "$d/artisan" ]] && ROOT_DIR="$d" && break || true
+  done
+  if [[ -z "$ROOT_DIR" ]]; then
+    echo "[ERR ] Could not locate panel root (artisan not found). Run this from the directory containing artisan." >&2
+    echo "        Current directory: $START_DIR" >&2
+    echo "        Tried: ${CANDIDATES[*]}" >&2
     exit 1
   fi
 fi
 cd "$ROOT_DIR"
+
+if [[ "$DEBUG" == "1" ]]; then
+  echo "[DEBUG] START_DIR=$START_DIR ROOT_DIR=$ROOT_DIR PWD=$(pwd)"
+  ls -1 | head -20 || true
+  [[ -f artisan ]] && echo "[DEBUG] artisan found" || echo "[DEBUG] artisan missing";
+  [[ -f .env ]] && echo "[DEBUG] .env present" || echo "[DEBUG] .env missing";
+fi
 
 info() { echo -e "\033[1;34m[INFO]\033[0m $*"; }
 warn() { echo -e "\033[1;33m[WARN]\033[0m $*"; }
@@ -39,13 +51,25 @@ read -p "Type 'RESET' to continue: " CONFIRM
 
 # Maintenance mode
 info "Entering maintenance mode"
-php artisan down || true
+if [[ -f artisan ]]; then
+  php artisan down || true
+else
+  warn "artisan not found at runtime (PWD=$(pwd)). Skipping maintenance mode."
+fi
 
 # Preserve critical files
 info "Preserving .env and storage/uploads"
 mkdir -p ../panel-backup
-[[ -f .env ]] && cp -f .env ../panel-backup/.env || warn ".env not found, skipping backup"
-[[ -d storage ]] && rsync -a storage/ ../panel-backup/storage/ || warn "storage/ not found, skipping backup"
+if [[ -f .env ]]; then
+  cp -f .env ../panel-backup/.env
+else
+  warn ".env not found at $(pwd); skipping backup"
+fi
+if [[ -d storage ]]; then
+  rsync -a storage/ ../panel-backup/storage/
+else
+  warn "storage/ directory not found; skipping backup"
+fi
 
 # Fresh clone into a temp directory to ensure clean state
 info "Cloning fresh repository"
@@ -65,8 +89,16 @@ rm -rf "$TMP_DIR"
 
 # Restore .env and storage
 info "Restoring .env and storage"
-[[ -f ../panel-backup/.env ]] && cp -f ../panel-backup/.env .env || warn "No .env backup to restore"
-[[ -d ../panel-backup/storage ]] && rsync -a ../panel-backup/storage/ storage/ || warn "No storage backup to restore"
+if [[ -f ../panel-backup/.env ]]; then
+  cp -f ../panel-backup/.env .env
+else
+  warn "No .env backup to restore"
+fi
+if [[ -d ../panel-backup/storage ]]; then
+  rsync -a ../panel-backup/storage/ storage/
+else
+  warn "No storage backup to restore"
+fi
 
 # Dependencies
 info "Installing composer dependencies"
@@ -98,11 +130,15 @@ fi
 
 # Clear caches
 info "Clearing Laravel caches"
-php artisan cache:clear
-php artisan config:clear
-php artisan route:clear
-php artisan view:clear
-php artisan optimize:clear
+if [[ -f artisan ]]; then
+  php artisan cache:clear || true
+  php artisan config:clear || true
+  php artisan route:clear || true
+  php artisan view:clear || true
+  php artisan optimize:clear || true
+else
+  warn "artisan not available for cache clear"
+fi
 
 # Run addon installers via ainx
 if [[ -d addons ]]; then
@@ -125,13 +161,21 @@ fi
 
 # Migrations: some addons require manual migrations
 info "Running known addon migrations if present"
-php artisan migrate --path=database/migrations-versionchanger --force || true
-php artisan migrate --path=database/migrations-serversplitter --force || true
-php artisan migrate --path=database/migrations-serverimporter --force || true
+if [[ -f artisan ]]; then
+  php artisan migrate --path=database/migrations-versionchanger --force || true
+  php artisan migrate --path=database/migrations-serversplitter --force || true
+  php artisan migrate --path=database/migrations-serverimporter --force || true
+else
+  warn "Skipping migrations (artisan not found)"
+fi
 
 # Install Modpack Manager (file patches, upload copy, egg import)
 info "Installing Modpack Manager"
-bash scripts/install-modpack-manager.sh || { err "Failed to install Modpack Manager"; exit 1; }
+if [[ -f scripts/install-modpack-manager.sh ]]; then
+  bash scripts/install-modpack-manager.sh || { err "Failed to install Modpack Manager"; exit 1; }
+else
+  warn "Modpack Manager installer script not found; skipping"
+fi
 
 # Build assets once after installing all addons
 info "Building production assets"
@@ -139,6 +183,10 @@ yarn build:production
 
 # Up
 info "Exiting maintenance mode"
-php artisan up || true
+if [[ -f artisan ]]; then
+  php artisan up || true
+else
+  warn "Skipping artisan up (artisan not found)"
+fi
 
 info "Rebuild complete with addons installed."
