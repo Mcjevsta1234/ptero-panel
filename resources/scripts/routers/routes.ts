@@ -14,6 +14,11 @@ import AccountSSHContainer from '@/components/dashboard/ssh/AccountSSHContainer'
 import ActivityLogContainer from '@/components/dashboard/activity/ActivityLogContainer';
 import DedicatedServersContainer from '@/components/dashboard/dedicated/DedicatedServersContainer';
 import DedicatedServerDetailContainer from '@/components/dashboard/dedicated/DedicatedServerDetailContainer';
+// Addons
+import MinecraftPlayerManagerContainer from '@/components/server/minecraftplayermanager/PlayerManagerContainer';
+import ServerSplitterContainer from '@/components/server/serversplitter/ServerSplitterContainer';
+import MinecraftVersionChangerContainer from '@/components/server/versionchanger/VersionChangerContainer';
+import ServerImporterContainer from '@/components/server/serverimporter/ServerImporterContainer';
 import CreateDedicatedServerContainer from '@/components/dashboard/dedicated/CreateDedicatedServerContainer';
 import ServerActivityLogContainer from '@/components/server/ServerActivityLogContainer';
 import { FaBoltLightning, FaBoxArchive, FaCalendar, FaDatabase, FaEye, FaFolder, FaGear, FaKey, FaLock, FaPlay, FaTerminal, FaUser, FaUsers, FaServer } from 'react-icons/fa6';
@@ -113,6 +118,34 @@ export default {
                 exact: true,
             },
             {
+                {
+                    path: '/minecraft/versions',
+                    permission: 'file.update',
+                    name: 'minecraft.versions',
+                    component: MinecraftVersionChangerContainer,
+                    icon: FaCalendar,
+                },
+                {
+                    path: '/minecraft/players',
+                    permission: 'control.console',
+                    name: 'minecraft.players',
+                    component: MinecraftPlayerManagerContainer,
+                    icon: FaUsers,
+                },
+                {
+                    path: '/splitter',
+                    permission: 'splitter.read',
+                    name: 'server.splitter',
+                    component: ServerSplitterContainer,
+                    icon: FaGear,
+                },
+                {
+                    path: '/importer',
+                    permission: 'file.delete',
+                    name: 'server.importer',
+                    component: ServerImporterContainer,
+                    icon: FaFolder,
+                },
                 path: '/files',
                 permission: 'file.*',
                 name: 'server.files',
