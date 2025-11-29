@@ -23,6 +23,9 @@ type ThemeData = {
 
 declare global {
     interface Window {
+        // Canonical casing used by Blade wrapper
+        WitchyWorldsConfiguration?: any;
+        // Backwards-compat alias just in case
         WitchyworldsConfiguration?: any;
     }
 }
@@ -61,7 +64,9 @@ const hexToRgbString = (hex: string) => {
 };
 
 const getThemeFromConfig = (key: PaletteKey): ThemeData => {
-    const conf = typeof window !== 'undefined' ? window.WitchyworldsConfiguration || {} : {};
+    const conf = typeof window !== 'undefined'
+        ? (window.WitchyWorldsConfiguration || window.WitchyworldsConfiguration || {})
+        : {};
     const t = conf[key.toLowerCase()] || {};
     return {
         displayName: t.name || key,
