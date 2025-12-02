@@ -6,6 +6,7 @@ import { ExclamationCircleIcon, DocumentTextIcon, ClipboardCopyIcon } from '@her
 import { httpErrorToHuman } from '@/api/http';
 import useFlash from '@/plugins/useFlash';
 import http from '@/api/http';
+import { getCrashLogs, saveCrashLog } from '@/api/server/crashLogs';
 
 const Container = styled.div`
     ${tw`bg-gray-700 border border-gray-600 rounded-lg p-4`}
@@ -76,6 +77,11 @@ const CrashDiagnostics = ({ className }: { className?: string }) => {
     const status = ServerContext.useStoreState((state) => state.status.value);
     const prevStatusRef = React.useRef<string | null>(null);
 
+    // Load stored logs on mount
+    useEffect(() => {
+        loadStoredLogs();
+    }, []);
+
     useEffect(() => {
         // Check if server just stopped/crashed
         const prevStatus = prevStatusRef.current;
@@ -85,13 +91,27 @@ const CrashDiagnostics = ({ className }: { className?: string }) => {
         if (justStopped) {
             // Server just crashed/stopped - immediately upload latest.log
             autoUploadLatestLog();
-        } else {
-            // Normal fetch
-            fetchRecentLogs();
         }
 
         prevStatusRef.current = status;
     }, [status]);
+
+    const loadStoredLogs = async () => {
+        try {
+            const storedLogs = await getCrashLogs(uuid);
+            
+            if (storedLogs.length > 0) {
+                setLogs(storedLogs.map(log => ({
+                    type: log.log_type === 'crash' ? 'crash' : 'log',
+                    filename: log.filename,
+                    timestamp: new Date(log.uploaded_at).toLocaleString(),
+                    mclogsUrl: log.mclo_url,
+                })));
+            }
+        } catch (error) {
+            console.log('Could not load stored logs:', error);
+        }
+    };
 
     const autoUploadLatestLog = async () => {
         try {
@@ -114,6 +134,9 @@ const CrashDiagnostics = ({ className }: { className?: string }) => {
                 const mclogsData = await mclogsResponse.json();
 
                 if (mclogsData.success) {
+                    // Save to database
+                    await saveCrashLog(uuid, 'latest.log', 'latest', mclogsData.url);
+
                     logList.push({
                         type: 'log',
                         filename: 'latest.log',
@@ -159,6 +182,9 @@ const CrashDiagnostics = ({ className }: { className?: string }) => {
                         const mclogsData = await mclogsResponse.json();
 
                         if (mclogsData.success) {
+                            // Save to database
+                            await saveCrashLog(uuid, `crash-reports/${crashFile.name}`, 'crash', mclogsData.url);
+
                             logList.push({
                                 type: 'crash',
                                 filename: `crash-reports/${crashFile.name}`,
@@ -177,51 +203,6 @@ const CrashDiagnostics = ({ className }: { className?: string }) => {
             setLogs(logList);
         } catch (error) {
             console.log('Could not auto-upload logs:', error);
-            // Fall back to normal fetch
-            fetchRecentLogs();
-        }
-    };
-
-    const fetchRecentLogs = async () => {
-        try {
-            const logList: CrashLog[] = [];
-
-            // Get latest.log (without uploading)
-            logList.push({
-                type: 'log',
-                filename: 'latest.log',
-                timestamp: new Date().toLocaleString(),
-            });
-
-            // Try to get crash reports from crash-reports directory (only recent ones)
-            try {
-                const crashResponse = await http.get(`/api/client/servers/${uuid}/files/list`, {
-                    params: { directory: '/crash-reports' }
-                });
-                
-                const fiveMinutesAgo = Date.now() - (5 * 60 * 1000);
-                
-                const recentCrashReports = crashResponse.data
-                    .filter((file: any) => {
-                        const fileTime = new Date(file.modified_at).getTime();
-                        return fileTime >= fiveMinutesAgo && 
-                               (file.name.endsWith('.txt') || file.name.endsWith('.log'));
-                    })
-                    .slice(0, 2)
-                    .map((file: any) => ({
-                        type: 'crash' as const,
-                        filename: `crash-reports/${file.name}`,
-                        timestamp: new Date(file.modified_at).toLocaleString(),
-                    }));
-
-                logList.push(...recentCrashReports);
-            } catch (error) {
-                // No crash reports directory, that's fine
-            }
-
-            setLogs(logList);
-        } catch (error) {
-            console.log('Could not fetch logs:', error);
         }
     };
 

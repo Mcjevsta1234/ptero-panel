@@ -94,6 +94,12 @@ Route::group([
         Route::post('/', [Client\Servers\AnalyticsController::class, 'store']);
     });
 
+    Route::group(['prefix' => '/crash-logs'], function () {
+        Route::get('/', [Client\Servers\CrashLogController::class, 'index']);
+        Route::post('/', [Client\Servers\CrashLogController::class, 'store']);
+        Route::delete('/cleanup', [Client\Servers\CrashLogController::class, 'cleanup']);
+    });
+
     Route::group(['prefix' => '/databases'], function () {
         Route::get('/', [Client\Servers\DatabaseController::class, 'index']);
         Route::post('/', [Client\Servers\DatabaseController::class, 'store']);
