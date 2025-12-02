@@ -6,6 +6,7 @@ use Illuminate\Http\JsonResponse;
 use Pterodactyl\Models\Server;
 use Pterodactyl\Models\ServerMod;
 use Pterodactyl\Services\Mods\CurseForgeService;
+use Pterodactyl\Services\Mods\SpigotService;
 use Pterodactyl\Services\Mods\ModInstallerService;
 use Pterodactyl\Http\Controllers\Api\Client\ClientApiController;
 use Pterodactyl\Http\Requests\Api\Client\Servers\GetServerRequest;
