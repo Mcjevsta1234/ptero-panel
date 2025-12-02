@@ -327,21 +327,23 @@ print_success "Permissions updated"
 print_step "Building frontend assets"
 if [ -f "package.json" ]; then
     if command -v yarn &> /dev/null; then
-        # Install recharts for analytics charts
-        print_step "Installing recharts dependency"
-        yarn add recharts
-        print_success "Recharts installed"
+        print_step "Installing frontend dependencies"
+        # Install Monaco Editor and other required dependencies
+        yarn add esbuild-loader monaco-editor @monaco-editor/react recharts --ignore-scripts 2>/dev/null || true
+        yarn install --ignore-scripts
+        print_success "Dependencies installed"
         
-        yarn install
+        print_step "Building production assets"
         yarn build:production
         print_success "Frontend assets built with yarn"
     elif command -v npm &> /dev/null; then
-        # Install recharts for analytics charts
-        print_step "Installing recharts dependency"
-        npm install recharts --save
-        print_success "Recharts installed"
+        print_step "Installing frontend dependencies"
+        # Install Monaco Editor and other required dependencies
+        npm install esbuild-loader monaco-editor @monaco-editor/react recharts --no-save --legacy-peer-deps 2>/dev/null || true
+        npm install --legacy-peer-deps
+        print_success "Dependencies installed"
         
-        npm install
+        print_step "Building production assets"
         npm run build
         print_success "Frontend assets built with npm"
     else

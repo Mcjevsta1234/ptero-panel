@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import getFileContents from '@/api/server/files/getFileContents';
 import { httpErrorToHuman } from '@/api/http';
 import SpinnerOverlay from '@/components/elements/SpinnerOverlay';
@@ -19,8 +19,40 @@ import { ServerContext } from '@/state/server';
 import ErrorBoundary from '@/components/elements/ErrorBoundary';
 import { encodePathSegments, hashToPath } from '@/helpers';
 import { dirname } from 'path';
+import { Editor } from '@monaco-editor/react';
 import CodemirrorEditor from '@/components/elements/CodemirrorEditor';
 import Card from '@/witchyworlds/ui/Card';
+
+const isMobile = () => {
+    return /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+};
+
+const getLanguageFromFilename = (filename: string) => {
+    const extension = filename.split('.').pop();
+    switch (extension) {
+        case 'js': return 'javascript';
+        case 'ts': return 'typescript';
+        case 'py': return 'python';
+        case 'html': return 'html';
+        case 'css': return 'css';
+        case 'json': return 'json';
+        case 'md': return 'markdown';
+        case 'xml': return 'xml';
+        case 'java': return 'java';
+        case 'cpp': case 'h': return 'cpp';
+        case 'cs': return 'csharp';
+        case 'go': return 'go';
+        case 'php': return 'php';
+        case 'rb': return 'ruby';
+        case 'rs': return 'rust';
+        case 'sh': case 'bash': return 'shell';
+        case 'sql': return 'sql';
+        case 'yaml': case 'yml': return 'yaml';
+        case 'properties': case 'conf': case 'cfg': return 'ini';
+        case 'toml': return 'ini';
+        default: return 'plaintext';
+    }
+};
 
 export default () => {
     const [error, setError] = useState('');
@@ -29,6 +61,7 @@ export default () => {
     const [content, setContent] = useState('');
     const [modalVisible, setModalVisible] = useState(false);
     const [mode, setMode] = useState('text/plain');
+    const editorRef = useRef<any>(null);
 
     const history = useHistory();
     const { hash } = useLocation();
@@ -87,13 +120,18 @@ export default () => {
     }, [action, uuid, hash]);
 
     const save = (name?: string) => {
-        if (!fetchFileContent) {
+        if (!fetchFileContent && !editorRef.current) {
             return;
         }
 
         setLoading(true);
         clearFlashes('files:view');
-        fetchFileContent()
+        
+        const savePromise = isMobile() || !editorRef.current
+            ? fetchFileContent!()
+            : Promise.resolve(editorRef.current.getValue());
+
+        savePromise
             .then((content) => saveFileContents(uuid, name || hashToPath(hash), content))
             .then(() => {
                 if (name) {
@@ -150,22 +188,78 @@ export default () => {
             />
             <Card css={tw`relative !p-1 !rounded-none mb-1`}>
                 <SpinnerOverlay visible={loading} />
-                <CodemirrorEditor
-                    mode={mode}
-                    filename={hash.replace(/^#/, '')}
-                    onModeChanged={setMode}
-                    initialContent={content}
-                    fetchContent={(value) => {
-                        fetchFileContent = value;
-                    }}
-                    onContentSaved={() => {
-                        if (action !== 'edit') {
-                            setModalVisible(true);
-                        } else {
-                            save();
-                        }
-                    }}
-                />
+                {isMobile() ? (
+                    <CodemirrorEditor
+                        mode={mode}
+                        filename={hash.replace(/^#/, '')}
+                        onModeChanged={setMode}
+                        initialContent={content}
+                        fetchContent={(value) => {
+                            fetchFileContent = value;
+                        }}
+                        onContentSaved={() => {
+                            if (action !== 'edit') {
+                                setModalVisible(true);
+                            } else {
+                                save();
+                            }
+                        }}
+                    />
+                ) : (
+                    <Editor
+                        height="75vh"
+                        theme="pterodactyl-dark"
+                        language={getLanguageFromFilename(hash.replace(/^#/, ''))}
+                        value={content}
+                        onMount={(editor) => {
+                            editorRef.current = editor;
+                        }}
+                        beforeMount={(monaco) => {
+                            monaco.editor.defineTheme('pterodactyl-dark', {
+                                base: 'vs-dark',
+                                inherit: true,
+                                rules: [],
+                                colors: {
+                                    'editor.background': '#374151',
+                                    'editor.foreground': '#D1D5DB',
+                                    'editorLineNumber.foreground': '#9CA3AF',
+                                    'editorLineNumber.activeForeground': '#F3F4F6',
+                                    'editor.selectionBackground': '#4B556380',
+                                    'editor.inactiveSelectionBackground': '#4B556340',
+                                    'editorCursor.foreground': '#F3F4F6',
+                                    'editor.lineHighlightBackground': '#4B5563',
+                                    'editorWidget.background': '#1F2937',
+                                    'editorWidget.border': '#4B5563',
+                                    'editorSuggestWidget.background': '#1F2937',
+                                    'editorSuggestWidget.border': '#4B5563',
+                                    'editorSuggestWidget.selectedBackground': '#374151',
+                                    'editorHoverWidget.background': '#1F2937',
+                                    'editorHoverWidget.border': '#4B5563',
+                                    'input.background': '#1F2937',
+                                    'input.border': '#4B5563',
+                                    'inputOption.activeBorder': '#6B7280',
+                                    'scrollbar.shadow': '#00000050',
+                                    'scrollbarSlider.background': '#4B556380',
+                                    'scrollbarSlider.hoverBackground': '#4B5563A0',
+                                    'scrollbarSlider.activeBackground': '#4B5563',
+                                    'minimap.background': '#2D3748',
+                                },
+                            });
+                        }}
+                        options={{
+                            fontSize: 14,
+                            minimap: { enabled: true },
+                            scrollBeyondLastLine: false,
+                            automaticLayout: true,
+                            tabSize: 4,
+                            wordWrap: 'on',
+                            lineNumbers: 'on',
+                            renderWhitespace: 'selection',
+                            quickSuggestions: true,
+                            suggestOnTriggerCharacters: true,
+                        }}
+                    />
+                )}
             </Card>
             <Card css={tw`flex justify-end !rounded-t-none !px-2 !py-3`}>
                 <div css={tw`flex-1 sm:flex-none rounded-ui bg-gray-700 border border-gray-600 mr-4`}>
