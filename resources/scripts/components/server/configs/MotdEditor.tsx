@@ -47,21 +47,26 @@ export default ({ value, onChange }: MotdEditorProps) => {
         return text.replace(/[§&][0-9a-fk-or]/gi, '');
     };
 
-    const applyFormatting = (text: string): string => {
+    const applyFormatting = (code: string): void => {
         const textarea = textareaRef.current;
-        if (!textarea) return text;
+        if (!textarea) return;
 
         const start = textarea.selectionStart;
         const end = textarea.selectionEnd;
+        const text = plainText;
 
         if (start === end) {
-            // No selection, apply formatting to entire text
-            let formatted = `§${selectedColor}`;
-            selectedStyles.forEach(style => {
-                formatted += `§${style}`;
-            });
-            formatted += text;
-            return formatted;
+            // No selection, just insert the code at cursor
+            const newText = text.substring(0, start) + `§${code}` + text.substring(end);
+            setPlainText(newText);
+            setMotd(newText);
+            onChange(newText);
+            
+            setTimeout(() => {
+                textarea.focus();
+                textarea.setSelectionRange(start + 2, start + 2);
+            }, 0);
+            return;
         }
 
         // Apply formatting to selection
@@ -69,39 +74,36 @@ export default ({ value, onChange }: MotdEditorProps) => {
         const selected = text.substring(start, end);
         const after = text.substring(end);
 
-        let formatted = `§${selectedColor}`;
-        selectedStyles.forEach(style => {
-            formatted += `§${style}`;
-        });
+        const newText = before + `§${code}` + selected + '§r' + after;
         
-        return before + formatted + selected + '§r' + after;
+        setPlainText(newText);
+        setMotd(newText);
+        onChange(newText);
+        
+        setTimeout(() => {
+            textarea.focus();
+            textarea.setSelectionRange(start, end + 4); // Select the formatted text
+        }, 0);
     };
 
     const handleTextChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
         const newText = e.target.value;
         setPlainText(newText);
-        
-        // Don't auto-apply formatting on every keystroke
-        // User will select text and click buttons to format
         setMotd(newText);
         onChange(newText);
     };
 
-    const toggleStyle = (style: string) => {
+    const toggleStyle = (code: string) => {
+        const wasSelected = selectedStyles.includes(code);
         setSelectedStyles(prev => 
-            prev.includes(style) ? prev.filter(s => s !== style) : [...prev, style]
+            wasSelected ? prev.filter(s => s !== code) : [...prev, code]
         );
+        applyFormatting(code);
     };
 
-    const handleColorChange = (color: string) => {
-        setSelectedColor(color);
-    };
-
-    const applyCurrentFormatting = () => {
-        const formatted = applyFormatting(plainText);
-        setPlainText(formatted);
-        setMotd(formatted);
-        onChange(formatted);
+    const handleColorChange = (code: string) => {
+        setSelectedColor(code);
+        applyFormatting(code);
     };
 
     const renderPreview = () => {
@@ -111,7 +113,7 @@ export default ({ value, onChange }: MotdEditorProps) => {
                 <div css={tw`text-center mb-3 text-gray-500 text-xs uppercase tracking-wide`}>Server List Preview</div>
                 <div css={tw`bg-[#383838] p-4 rounded`}>
                     {lines.slice(0, 2).map((line: string, idx: number) => (
-                        <div key={idx} css={tw`font-mono text-center leading-tight`} style={{ fontSize: '16px', textShadow: '2px 2px 0px rgba(0,0,0,0.5)' }}>
+                        <div key={idx} css={tw`font-mono leading-tight`} style={{ fontSize: '16px', textShadow: '2px 2px 0px rgba(0,0,0,0.5)' }}>
                             {renderFormattedText(line)}
                         </div>
                     ))}
@@ -258,16 +260,6 @@ export default ({ value, onChange }: MotdEditorProps) => {
                                 R
                             </button>
                         </div>
-
-                        {/* Apply button */}
-                        <button
-                            type="button"
-                            onClick={applyCurrentFormatting}
-                            css={tw`ml-2 px-4 h-8 rounded bg-blue-600 hover:bg-blue-700 text-white font-medium transition-colors`}
-                            title="Apply formatting to selected text"
-                        >
-                            Apply
-                        </button>
                     </div>
                 </div>
 
@@ -283,7 +275,7 @@ export default ({ value, onChange }: MotdEditorProps) => {
                         placeholder="Enter your MOTD here..."
                     />
                     <div css={tw`mt-2 text-xs text-gray-500`}>
-                        Select text, choose color/styles above, then click "Apply" to format. Use Shift+Enter for a new line.
+                        Select text and click a color or style button to format it. Use Shift+Enter for a new line.
                     </div>
                 </div>
 
