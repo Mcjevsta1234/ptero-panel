@@ -212,7 +212,8 @@ export default () => {
                 (opt) =>
                     !searchQuery ||
                     opt.key.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                    opt.path.toLowerCase().includes(searchQuery.toLowerCase())
+                    opt.path.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                    (opt.description && opt.description.toLowerCase().includes(searchQuery.toLowerCase()))
             ),
         }))
         .filter((section) => section.options.length > 0);
@@ -225,6 +226,9 @@ export default () => {
                 {/* Sidebar - Config File Selector */}
                 <Card css={tw`lg:w-64 p-4 space-y-2`}>
                     <h3 css={tw`font-bold text-gray-100 mb-3`}>Config Files</h3>
+                    <p css={tw`text-xs text-gray-400 mb-3 pb-3 border-b border-gray-600`}>
+                        Automatically detected YAML config files
+                    </p>
                     {configs.map((config) => (
                         <button
                             key={config.path}
@@ -289,11 +293,18 @@ export default () => {
                                             <div css={tw`space-y-4`}>
                                                 {section.options.map((option) => (
                                                     <div key={option.path} css={tw`space-y-2`}>
-                                                        <div css={tw`flex items-center justify-between`}>
-                                                            <label css={tw`block text-sm font-medium text-gray-200`}>
-                                                                {option.key}
-                                                            </label>
-                                                            <span css={tw`text-xs text-gray-500 font-mono`}>
+                                                        <div css={tw`flex items-start justify-between gap-2`}>
+                                                            <div css={tw`flex-1`}>
+                                                                <label css={tw`block text-sm font-medium text-gray-200`}>
+                                                                    {option.key}
+                                                                </label>
+                                                                {option.description && (
+                                                                    <p css={tw`text-xs text-gray-400 mt-1`}>
+                                                                        {option.description}
+                                                                    </p>
+                                                                )}
+                                                            </div>
+                                                            <span css={tw`text-xs text-gray-500 font-mono whitespace-nowrap`}>
                                                                 {option.path}
                                                             </span>
                                                         </div>
