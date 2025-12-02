@@ -137,6 +137,11 @@
                             <i class="RiViewColumns"></i> <span>@lang('admin/navigation.service.mounts')</span>
                         </a>
                     </li>
+                    <li class="{{ !starts_with(Route::currentRouteName(), 'admin.schedule-presets') ?: 'active' }}">
+                        <a href="{{ route('admin.schedule-presets.index') }}">
+                            <i class="RiClock"></i> <span>Schedule Presets</span>
+                        </a>
+                    </li>
                     <li class="{{ !starts_with(Route::currentRouteName(), 'admin.nests') ?: 'active' }}">
                         <a href="{{ route('admin.nests') }}">
                             <i class="RiLifebuoy"></i> <span>@lang('admin/navigation.service.nests')</span>

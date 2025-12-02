@@ -281,6 +281,18 @@ print_step "Running database migrations"
 php artisan migrate --force || print_error "Migration failed"
 print_success "Database migrations completed"
 
+# Seed default schedule presets (idempotent)
+print_step "Seeding default schedule presets"
+set +e
+php artisan db:seed --class=Database\\Seeders\\SchedulePresetSeeder
+SEED_STATUS=$?
+set -e
+if [ $SEED_STATUS -eq 0 ]; then
+    print_success "Schedule presets seeded (or already present)"
+else
+    print_warning "Could not seed schedule presets; continuing without defaults"
+fi
+
 # Clear caches
 print_step "Clearing application caches"
 php artisan view:clear
