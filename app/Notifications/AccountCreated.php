@@ -24,6 +24,10 @@ class AccountCreated extends Notification implements ShouldQueue
      */
     public function via(): array
     {
+        // Only send mail if SMTP is properly configured
+        if (empty(config('mail.mailers.smtp.host')) || config('mail.mailers.smtp.host') === 'localhost') {
+            return [];
+        }
         return ['mail'];
     }
 
