@@ -77,29 +77,67 @@ const CrashDiagnostics = ({ className }: { className?: string }) => {
     const status = ServerContext.useStoreState((state) => state.status.value);
 
     useEffect(() => {
-        // Listen for server crashes/stops/restarts
-        if (status === 'offline' || status === 'stopping') {
-            fetchRecentLogs();
-        }
+        // Always fetch logs on mount and when status changes
+        fetchRecentLogs();
     }, [status]);
 
     const fetchRecentLogs = async () => {
         try {
-            const response = await http.get(`/api/client/servers/${uuid}/files/list`, {
-                params: { directory: '/logs' }
-            });
-            
-            const crashReports = response.data.filter((file: any) => 
-                file.name.endsWith('.log') || file.name.includes('crash')
-            ).slice(0, 5);
+            // Always get latest.log first
+            const latestLog: CrashLog = {
+                type: 'log',
+                filename: 'latest.log',
+                timestamp: new Date().toLocaleString(),
+            };
 
-            setLogs(crashReports.map((file: any) => ({
-                type: file.name.includes('crash') ? 'crash' : 'log',
-                filename: file.name,
-                timestamp: new Date(file.modified_at).toLocaleString(),
-            })));
+            const logList = [latestLog];
+
+            // Try to get crash reports from crash-reports directory
+            try {
+                const crashResponse = await http.get(`/api/client/servers/${uuid}/files/list`, {
+                    params: { directory: '/crash-reports' }
+                });
+                
+                const crashReports = crashResponse.data
+                    .filter((file: any) => file.name.endsWith('.txt') || file.name.endsWith('.log'))
+                    .slice(0, 3)
+                    .map((file: any) => ({
+                        type: 'crash' as const,
+                        filename: `crash-reports/${file.name}`,
+                        timestamp: new Date(file.modified_at).toLocaleString(),
+                    }));
+
+                logList.push(...crashReports);
+            } catch (error) {
+                // No crash reports directory, that's fine
+            }
+
+            // Try to get other logs from logs directory
+            try {
+                const logsResponse = await http.get(`/api/client/servers/${uuid}/files/list`, {
+                    params: { directory: '/logs' }
+                });
+                
+                const otherLogs = logsResponse.data
+                    .filter((file: any) => 
+                        file.name.endsWith('.log') && 
+                        file.name !== 'latest.log' &&
+                        !file.name.includes('debug')
+                    )
+                    .slice(0, 2)
+                    .map((file: any) => ({
+                        type: 'log' as const,
+                        filename: `logs/${file.name}`,
+                        timestamp: new Date(file.modified_at).toLocaleString(),
+                    }));
+
+                logList.push(...otherLogs);
+            } catch (error) {
+                // No logs directory, that's fine
+            }
+
+            setLogs(logList);
         } catch (error) {
-            // Silently fail if logs directory doesn't exist
             console.log('Could not fetch logs:', error);
         }
     };
@@ -109,9 +147,13 @@ const CrashDiagnostics = ({ className }: { className?: string }) => {
         clearFlashes('crash-diagnostics');
 
         try {
-            // Read the log file
+            // Read the log file - handle both root directory and subdirectory files
+            const filePath = filename.startsWith('logs/') || filename.startsWith('crash-reports/') 
+                ? `/${filename}` 
+                : `/logs/${filename}`;
+
             const fileResponse = await http.get(`/api/client/servers/${uuid}/files/contents`, {
-                params: { file: `/logs/${filename}` }
+                params: { file: filePath }
             });
 
             // Upload to mclo.gs
@@ -148,10 +190,6 @@ const CrashDiagnostics = ({ className }: { className?: string }) => {
     const copyUrl = (url: string) => {
         navigator.clipboard.writeText(url);
     };
-
-    if (logs.length === 0 && status !== 'offline' && status !== 'stopping') {
-        return null;
-    }
 
     return (
         <Container className={className}>
