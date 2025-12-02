@@ -150,7 +150,7 @@ export default () => {
                             onClick={() => setShowRecent(false)}
                             className={`px-3 py-1 rounded ${!showRecent ? 'bg-primary-500 text-white' : 'bg-gray-600 text-gray-300 hover:bg-gray-500'}`}
                         >
-                            Current
+                            Files
                         </button>
                         <button
                             type={'button'}
@@ -185,24 +185,23 @@ export default () => {
                             </p>
                         ) : (
                             <div>
-                                <p css={tw`text-neutral-300 text-xs mb-2`}>Recently viewed files (last 7 days)</p>
-                                {recentFiles.map((rf, idx) => (
-                                    <NavLink
-                                        key={idx}
-                                        to={`/server/${id}/files/edit#${encodeURIComponent(rf.path)}`}
-                                        onClick={() => {
-                                            setShowRecent(false);
+                                {recentFiles.map((rf) => (
+                                    <FileObjectRow
+                                        key={rf.path}
+                                        file={{
+                                            key: rf.path,
+                                            name: rf.name,
+                                            mode: '-rw-r--r--',
+                                            modeBits: '0644',
+                                            size: 0,
+                                            isFile: true,
+                                            isSymlink: false,
+                                            mimetype: 'application/octet-stream',
+                                            createdAt: new Date(rf.timestamp),
+                                            modifiedAt: new Date(rf.timestamp),
+                                            isEditable: () => true,
                                         }}
-                                        css={tw`flex items-center justify-between p-2 mb-1 rounded bg-neutral-700 hover:bg-neutral-600 text-neutral-100 no-underline`}
-                                    >
-                                        <div>
-                                            <div css={tw`font-medium`}>{rf.name}</div>
-                                            <div css={tw`text-xs text-neutral-400`}>{rf.directory || '/'}</div>
-                                        </div>
-                                        <div css={tw`text-xs text-neutral-500`}>
-                                            {new Date(rf.timestamp).toLocaleDateString()}
-                                        </div>
-                                    </NavLink>
+                                    />
                                 ))}
                             </div>
                         )

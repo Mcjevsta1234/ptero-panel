@@ -39,8 +39,8 @@
                             <div class="col-sm-2"><label>Day (Month)</label><input type="text" class="form-control" name="cron_day_of_month" value="{{ old('cron_day_of_month', $preset->cron_day_of_month ?? '*') }}" required></div>
                             <div class="col-sm-2"><label>Month</label><input type="text" class="form-control" name="cron_month" value="{{ old('cron_month', $preset->cron_month ?? '*') }}" required></div>
                             <div class="col-sm-2"><label>Day (Week)</label><input type="text" class="form-control" name="cron_day_of_week" value="{{ old('cron_day_of_week', $preset->cron_day_of_week ?? '*') }}" required></div>
-                            <div class="col-sm-2"><label>&nbsp;</label><div class="checkbox"><label><input type="checkbox" name="only_when_online" value="1" {{ (old('only_when_online') !== null ? old('only_when_online') : $preset->only_when_online) ? 'checked' : '' }}> Only when server online</label></div></div>
                         </div>
+                        <input type="hidden" name="only_when_online" value="1">
                         <hr>
                         <h4>Tasks</h4>
                         <p class="text-muted">Add the actions this preset will create. Command payloads are sent to the console; power actions are one of: start, stop, restart, kill.</p>
