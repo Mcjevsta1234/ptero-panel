@@ -33,19 +33,13 @@ const formatCodes: Record<string, { name: string; color?: string; style?: string
 
 export default ({ value, onChange }: MotdEditorProps) => {
     const [motd, setMotd] = useState(value || '');
-    const [plainText, setPlainText] = useState('');
     const [selectedColor, setSelectedColor] = useState('f');
     const [selectedStyles, setSelectedStyles] = useState<string[]>([]);
     const textareaRef = useRef<HTMLTextAreaElement>(null);
 
     useEffect(() => {
         setMotd(value || '');
-        setPlainText(stripFormatting(value || ''));
     }, [value]);
-
-    const stripFormatting = (text: string): string => {
-        return text.replace(/[§&][0-9a-fk-or]/gi, '');
-    };
 
     const applyFormatting = (code: string): void => {
         const textarea = textareaRef.current;
@@ -53,12 +47,11 @@ export default ({ value, onChange }: MotdEditorProps) => {
 
         const start = textarea.selectionStart;
         const end = textarea.selectionEnd;
-        const text = plainText;
+        const text = motd;
 
         if (start === end) {
             // No selection, just insert the code at cursor
             const newText = text.substring(0, start) + `§${code}` + text.substring(end);
-            setPlainText(newText);
             setMotd(newText);
             onChange(newText);
             
@@ -76,19 +69,17 @@ export default ({ value, onChange }: MotdEditorProps) => {
 
         const newText = before + `§${code}` + selected + '§r' + after;
         
-        setPlainText(newText);
         setMotd(newText);
         onChange(newText);
         
         setTimeout(() => {
             textarea.focus();
-            textarea.setSelectionRange(start, end + 4); // Select the formatted text
+            textarea.setSelectionRange(start + 2, end + 4); // Keep selection on formatted text
         }, 0);
     };
 
     const handleTextChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
         const newText = e.target.value;
-        setPlainText(newText);
         setMotd(newText);
         onChange(newText);
     };
@@ -266,23 +257,28 @@ export default ({ value, onChange }: MotdEditorProps) => {
                 {/* Text Editor */}
                 <div>
                     <label css={tw`block text-sm font-medium mb-2 text-gray-300`}>MOTD Text (2 lines max)</label>
-                    <textarea
-                        ref={textareaRef}
-                        value={plainText}
-                        onChange={handleTextChange}
-                        rows={2}
-                        css={tw`w-full px-3 py-2 bg-gray-900 border border-gray-600 rounded focus:border-blue-500 focus:ring-1 focus:ring-blue-500 font-mono text-sm text-gray-100`}
-                        placeholder="Enter your MOTD here..."
-                    />
+                    <div css={tw`relative`}>
+                        {/* Colored preview overlay */}
+                        <div 
+                            css={tw`absolute inset-0 px-3 py-2 pointer-events-none font-mono text-sm overflow-hidden whitespace-pre-wrap break-words`}
+                            style={{ lineHeight: '1.5rem' }}
+                        >
+                            {renderFormattedText(motd)}
+                        </div>
+                        {/* Actual textarea */}
+                        <textarea
+                            ref={textareaRef}
+                            value={motd}
+                            onChange={handleTextChange}
+                            rows={2}
+                            css={tw`w-full px-3 py-2 bg-transparent border border-gray-600 rounded focus:border-blue-500 focus:ring-1 focus:ring-blue-500 font-mono text-sm relative z-10`}
+                            style={{ color: 'transparent', caretColor: '#FFFFFF', lineHeight: '1.5rem' }}
+                            placeholder="Enter your MOTD here..."
+                        />
+                    </div>
                     <div css={tw`mt-2 text-xs text-gray-500`}>
                         Select text and click a color or style button to format it. Use Shift+Enter for a new line.
                     </div>
-                </div>
-
-                {/* Formatted Output */}
-                <div css={tw`mt-3 p-3 bg-gray-900 rounded border border-gray-700`}>
-                    <div css={tw`text-xs font-medium mb-1 text-gray-400`}>Formatted Output:</div>
-                    <code css={tw`text-xs text-green-400 break-all`}>{motd}</code>
                 </div>
             </div>
 
