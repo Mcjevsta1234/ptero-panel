@@ -1,8 +1,8 @@
 <?php
 
-namespace App\Console\Commands\Analytics;
+namespace Pterodactyl\Console\Commands\Analytics;
 
-use App\Models\Server;
+use Pterodactyl\Models\Server;
 use App\Models\ServerAnalytic;
 use Illuminate\Console\Command;
 use Pterodactyl\Repositories\Wings\DaemonServerRepository;

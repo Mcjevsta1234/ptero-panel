@@ -307,6 +307,11 @@ rm -rf storage/framework/cache/*
 rm -rf bootstrap/cache/*.php
 print_success "All caches cleared"
 
+# Clear composer autoload cache to prevent duplicate class declarations
+print_step "Clearing composer autoload cache"
+COMPOSER_ALLOW_SUPERUSER=1 composer dump-autoload --no-dev --optimize
+print_success "Composer autoload cache cleared"
+
 # Rebuild cache
 print_step "Rebuilding application cache"
 php artisan config:cache
