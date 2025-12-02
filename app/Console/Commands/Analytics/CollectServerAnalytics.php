@@ -19,11 +19,22 @@ class CollectServerAnalytics extends Command
 
     public function handle(): int
     {
+        // Collect 4 times with 15 second intervals to achieve 15-second collection rate
+        for ($i = 0; $i < 4; $i++) {
+            if ($i > 0) {
+                sleep(15);
+            }
+            $this->collectOnce();
+        }
+
+        return 0;
+    }
+
+    private function collectOnce(): void
+    {
         $servers = Server::with('node')->get();
         $collected = 0;
         $errors = 0;
-
-        $this->info('Collecting analytics for ' . $servers->count() . ' servers...');
 
         foreach ($servers as $server) {
             try {
@@ -44,15 +55,14 @@ class CollectServerAnalytics extends Command
                 }
             } catch (\Exception $e) {
                 $errors++;
-                $this->warn("Failed to collect analytics for server {$server->id}: " . $e->getMessage());
             }
         }
 
-        // Clean up old analytics data (older than 7 days)
-        $deleted = ServerAnalytic::where('recorded_at', '<', now()->subDays(7))->delete();
-
-        $this->info("Analytics collection complete: {$collected} collected, {$errors} errors, {$deleted} old records deleted.");
-
-        return 0;
+        // Clean up old analytics data (older than 7 days) only on first iteration
+        static $cleaned = false;
+        if (!$cleaned) {
+            ServerAnalytic::where('recorded_at', '<', now()->subDays(7))->delete();
+            $cleaned = true;
+        }
     }
 }
