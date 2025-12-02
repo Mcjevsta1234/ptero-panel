@@ -32,7 +32,7 @@ export default () => {
     const [loading, setLoading] = useState(true);
     const [period, setPeriod] = useState('24h');
     const [analytics, setAnalytics] = useState<ServerAnalytics[]>([]);
-    const [countdown, setCountdown] = useState(5);
+    const [countdown, setCountdown] = useState(15);
     const { clearFlashes, clearAndAddHttpError } = useFlash();
 
     const fetchAnalytics = () => {
@@ -46,17 +46,17 @@ export default () => {
         setLoading(true);
         clearFlashes('analytics');
         fetchAnalytics();
-        setCountdown(5);
+        setCountdown(15);
 
-        // Refresh every 5 seconds (same as console stats update rate)
+        // Refresh every 15 seconds to match data collection rate
         const interval = setInterval(() => {
             fetchAnalytics();
-            setCountdown(5);
-        }, 5000);
+            setCountdown(15);
+        }, 15000);
 
         // Countdown timer
         const countdownInterval = setInterval(() => {
-            setCountdown((prev) => (prev > 0 ? prev - 1 : 5));
+            setCountdown((prev) => (prev > 0 ? prev - 1 : 15));
         }, 1000);
 
         return () => {
@@ -102,7 +102,7 @@ export default () => {
                                         fill="none"
                                         stroke="currentColor"
                                         strokeWidth="2"
-                                        strokeDasharray={`${(countdown / 5) * 87.96} 87.96`}
+                                        strokeDasharray={`${(countdown / 15) * 87.96} 87.96`}
                                         css={tw`text-blue-500 transition-all duration-1000`}
                                     />
                                 </svg>
