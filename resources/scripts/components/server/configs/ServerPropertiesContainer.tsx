@@ -10,7 +10,6 @@ import updateServerProperties from '@/api/server/configs/updateServerProperties'
 import Spinner from '@/components/elements/Spinner';
 import Button from '@/components/elements/Button';
 import { useTranslation } from 'react-i18next';
-import MotdEditor from './MotdEditor';
 
 interface PropertyConfig {
     label: string;
@@ -174,10 +173,25 @@ export default () => {
                                             <p css={tw`text-xs text-gray-400`}>{config.description}</p>
                                             
                                             {key === 'motd' ? (
-                                                <MotdEditor
-                                                    value={value || ''}
-                                                    onChange={(newValue) => handleChange(key, newValue)}
-                                                />
+                                                <div>
+                                                    <div css={tw`mb-2 text-xs`}>
+                                                        <a 
+                                                            href="https://motd.gg/" 
+                                                            target="_blank" 
+                                                            rel="noopener noreferrer"
+                                                            css={tw`text-blue-400 hover:text-blue-300 underline`}
+                                                        >
+                                                            Use MOTD.gg to generate your MOTD →
+                                                        </a>
+                                                    </div>
+                                                    <textarea
+                                                        value={value || ''}
+                                                        onChange={(e) => handleChange(key, e.target.value)}
+                                                        rows={2}
+                                                        css={tw`w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded text-gray-100 font-mono text-sm focus:ring-2 focus:ring-primary-500 focus:border-transparent`}
+                                                        placeholder="A Minecraft Server"
+                                                    />
+                                                </div>
                                             ) : config.type === 'boolean' ? (
                                                 <label css={tw`flex items-center space-x-2`}>
                                                     <input
