@@ -199,6 +199,7 @@ export default () => {
                                             mimetype: 'application/octet-stream',
                                             createdAt: new Date(rf.timestamp),
                                             modifiedAt: new Date(rf.timestamp),
+                                            isArchiveType: () => false,
                                             isEditable: () => true,
                                         }}
                                     />
