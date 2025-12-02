@@ -295,10 +295,10 @@ fi
 
 # Clear caches
 print_step "Clearing application caches"
-php artisan view:clear
 php artisan config:clear
-php artisan cache:clear
 php artisan route:clear
+php artisan view:clear
+php artisan cache:clear
 
 # Manually delete compiled views to ensure fresh compilation
 print_step "Removing compiled view cache files"
@@ -312,11 +312,10 @@ print_step "Clearing composer autoload cache"
 COMPOSER_ALLOW_SUPERUSER=1 composer dump-autoload --no-dev --optimize
 print_success "Composer autoload cache cleared"
 
-# Rebuild cache
-print_step "Rebuilding application cache"
-php artisan config:cache
-php artisan route:cache
-print_success "Cache rebuilt"
+# Run database migrations
+print_step "Running database migrations"
+php artisan migrate --force || print_error "Migration failed"
+print_success "Database migrations completed"
 
 # Set correct permissions
 print_step "Setting file permissions"
@@ -356,6 +355,12 @@ fi
 print_step "Restarting queue workers"
 php artisan queue:restart
 print_success "Queue workers restarted"
+
+# Rebuild cache after everything is done
+print_step "Rebuilding application cache"
+php artisan config:cache
+php artisan route:cache
+print_success "Cache rebuilt"
 
 # Take panel out of maintenance mode
 print_step "Disabling maintenance mode"
