@@ -111,7 +111,7 @@ export default ({ value, onChange }: MotdEditorProps) => {
                 <div css={tw`text-center mb-3 text-gray-500 text-xs uppercase tracking-wide`}>Server List Preview</div>
                 <div css={tw`bg-[#383838] p-4 rounded`}>
                     {lines.slice(0, 2).map((line: string, idx: number) => (
-                        <div key={idx} css={tw`font-minecraft text-center leading-tight`} style={{ fontSize: '16px', textShadow: '2px 2px 0px rgba(0,0,0,0.5)' }}>
+                        <div key={idx} css={tw`font-mono text-center leading-tight`} style={{ fontSize: '16px', textShadow: '2px 2px 0px rgba(0,0,0,0.5)' }}>
                             {renderFormattedText(line)}
                         </div>
                     ))}
