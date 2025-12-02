@@ -19,10 +19,10 @@ class CollectServerAnalytics extends Command
 
     public function handle(): int
     {
-        // Collect 4 times with 15 second intervals to achieve 15-second collection rate
-        for ($i = 0; $i < 4; $i++) {
+        // Collect 6 times with 10 second intervals to achieve 10-second collection rate
+        for ($i = 0; $i < 6; $i++) {
             if ($i > 0) {
-                sleep(15);
+                sleep(10);
             }
             $this->collectOnce();
         }
@@ -42,13 +42,15 @@ class CollectServerAnalytics extends Command
                 $details = $this->daemonRepository->setServer($server)->getDetails();
                 
                 if (isset($details['state']) && $details['state'] === 'running') {
+                    // Wings returns network as cumulative totals, not rates
+                    // Map correct field names from Wings API response
                     ServerAnalytic::create([
                         'server_id' => $server->id,
                         'cpu_usage' => $details['utilization']['cpu_absolute'] ?? 0,
                         'memory_usage' => $details['utilization']['memory_bytes'] ?? 0,
                         'disk_usage' => $details['utilization']['disk_bytes'] ?? 0,
-                        'network_rx' => $details['utilization']['network_rx_bytes'] ?? 0,
-                        'network_tx' => $details['utilization']['network_tx_bytes'] ?? 0,
+                        'network_rx' => $details['utilization']['network']['rx_bytes'] ?? ($details['utilization']['network_rx_bytes'] ?? 0),
+                        'network_tx' => $details['utilization']['network']['tx_bytes'] ?? ($details['utilization']['network_tx_bytes'] ?? 0),
                         'recorded_at' => now(),
                     ]);
                     $collected++;

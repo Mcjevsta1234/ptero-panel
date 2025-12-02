@@ -32,6 +32,7 @@ export default () => {
     const [loading, setLoading] = useState(true);
     const [period, setPeriod] = useState('24h');
     const [analytics, setAnalytics] = useState<ServerAnalytics[]>([]);
+    const [countdown, setCountdown] = useState(5);
     const { clearFlashes, clearAndAddHttpError } = useFlash();
 
     const fetchAnalytics = () => {
@@ -45,13 +46,23 @@ export default () => {
         setLoading(true);
         clearFlashes('analytics');
         fetchAnalytics();
+        setCountdown(5);
 
         // Refresh every 5 seconds (same as console stats update rate)
         const interval = setInterval(() => {
             fetchAnalytics();
+            setCountdown(5);
         }, 5000);
 
-        return () => clearInterval(interval);
+        // Countdown timer
+        const countdownInterval = setInterval(() => {
+            setCountdown((prev) => (prev > 0 ? prev - 1 : 5));
+        }, 1000);
+
+        return () => {
+            clearInterval(interval);
+            clearInterval(countdownInterval);
+        };
     }, [uuid, period]);
 
     const chartData = analytics.map((record) => ({
@@ -67,10 +78,41 @@ export default () => {
         <ContentBlock title={'Resource Analytics'}>
             <FlashMessageRender byKey={'analytics'} css={tw`mb-4`} />
 
-            {/* Period Selector */}
+            {/* Period Selector with Refresh Timer */}
             <Card css={tw`p-4 mb-4`}>
                 <div css={tw`flex flex-wrap items-center justify-between gap-4`}>
-                    <h3 css={tw`text-lg font-bold text-gray-100`}>Time Period</h3>
+                    <div css={tw`flex items-center gap-3`}>
+                        <h3 css={tw`text-lg font-bold text-gray-100`}>Time Period</h3>
+                        <div css={tw`flex items-center gap-2`}>
+                            <div css={tw`relative w-8 h-8`}>
+                                <svg css={tw`w-8 h-8 transform -rotate-90`} viewBox="0 0 32 32">
+                                    <circle
+                                        cx="16"
+                                        cy="16"
+                                        r="14"
+                                        fill="none"
+                                        stroke="currentColor"
+                                        strokeWidth="2"
+                                        css={tw`text-gray-700`}
+                                    />
+                                    <circle
+                                        cx="16"
+                                        cy="16"
+                                        r="14"
+                                        fill="none"
+                                        stroke="currentColor"
+                                        strokeWidth="2"
+                                        strokeDasharray={`${(countdown / 5) * 87.96} 87.96`}
+                                        css={tw`text-blue-500 transition-all duration-1000`}
+                                    />
+                                </svg>
+                                <span css={tw`absolute inset-0 flex items-center justify-center text-xs font-bold text-gray-300`}>
+                                    {countdown}
+                                </span>
+                            </div>
+                            <span css={tw`text-sm text-gray-400`}>Next refresh</span>
+                        </div>
+                    </div>
                     <div css={tw`flex flex-wrap gap-2`}>
                         {periods.map((p) => (
                             <button
