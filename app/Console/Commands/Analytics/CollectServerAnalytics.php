@@ -19,14 +19,8 @@ class CollectServerAnalytics extends Command
 
     public function handle(): int
     {
-        // Collect 6 times with 10 second intervals to achieve 10-second collection rate
-        for ($i = 0; $i < 6; $i++) {
-            if ($i > 0) {
-                sleep(10);
-            }
-            $this->collectOnce();
-        }
-
+        // Collect once per minute (matches cron schedule)
+        $this->collectOnce();
         return 0;
     }
 
