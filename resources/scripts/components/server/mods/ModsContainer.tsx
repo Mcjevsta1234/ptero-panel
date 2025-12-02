@@ -160,7 +160,7 @@ export default () => {
                                     </p>
                                 </div>
                                 <Button
-                                    size="sm"
+                                    size="small"
                                     onClick={() =>
                                         handleInstall(
                                             result.id,
@@ -211,7 +211,7 @@ export default () => {
                                         </span>
                                     )}
                                 </div>
-                                <Button size="sm" color="red" onClick={() => handleUninstall(mod.id)}>
+                                <Button size="small" color="red" onClick={() => handleUninstall(mod.id)}>
                                     Uninstall
                                 </Button>
                             </div>
