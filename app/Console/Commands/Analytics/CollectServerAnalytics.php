@@ -3,7 +3,7 @@
 namespace Pterodactyl\Console\Commands\Analytics;
 
 use Pterodactyl\Models\Server;
-use App\Models\ServerAnalytic;
+use Pterodactyl\Models\ServerAnalytic;
 use Illuminate\Console\Command;
 use Pterodactyl\Repositories\Wings\DaemonServerRepository;
 

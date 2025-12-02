@@ -1,10 +1,10 @@
 <?php
 
-namespace App\Http\Controllers\Api\Client\Servers;
+namespace Pterodactyl\Http\Controllers\Api\Client\Servers;
 
-use App\Http\Controllers\Api\Client\ClientApiController;
-use App\Models\Server;
-use App\Models\ServerAnalytic;
+use Pterodactyl\Http\Controllers\Api\Client\ClientApiController;
+use Pterodactyl\Models\Server;
+use Pterodactyl\Models\ServerAnalytic;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Carbon\Carbon;
