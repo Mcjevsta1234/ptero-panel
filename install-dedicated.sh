@@ -327,19 +327,19 @@ print_success "Permissions updated"
 print_step "Building frontend assets"
 if [ -f "package.json" ]; then
     if command -v yarn &> /dev/null; then
-        # Install required dependencies
-        print_step "Installing required dependencies"
-        yarn add esbuild-loader monaco-editor @monaco-editor/react recharts
-        print_success "Dependencies installed"
+        # Install recharts for analytics charts
+        print_step "Installing recharts dependency"
+        yarn add recharts
+        print_success "Recharts installed"
         
         yarn install
         yarn build:production
         print_success "Frontend assets built with yarn"
     elif command -v npm &> /dev/null; then
-        # Install required dependencies
-        print_step "Installing required dependencies"
-        npm install esbuild-loader monaco-editor @monaco-editor/react recharts --save
-        print_success "Dependencies installed"
+        # Install recharts for analytics charts
+        print_step "Installing recharts dependency"
+        npm install recharts --save
+        print_success "Recharts installed"
         
         npm install
         npm run build
@@ -367,56 +367,6 @@ print_step "Disabling maintenance mode"
 php artisan up
 print_success "Panel is now live"
 
-# Clean up unnecessary files
-print_step "Cleaning up unnecessary files"
-FILES_TO_DELETE=(
-    "BUILDING.md"
-    "CHANGELOG.md"
-    "CODE_OF_CONDUCT.md"
-    "CONTRIBUTING.md"
-    "DEPLOYMENT_INSTRUCTIONS.md"
-    "PTERO_LICENSE.md"
-    "SECURITY.md"
-    "WITCHYWORLDS_CUSTOMIZATION.md"
-    "babel.config.js"
-    "clear-caches.sh"
-    "crowdin.yml"
-    "deploy-demo.sh"
-    "docker-compose.example.yml"
-    "Dockerfile"
-    "flake.nix"
-    "install.sh"
-    "jest.config.js"
-    "phpstan.neon"
-    "phpunit.xml"
-    "postcss.config.js"
-    "shell.nix"
-    "tailwind.config.js"
-    "tsconfig.json"
-    "webpack.config.js"
-    "code-editor-for-pterodactyl-v100 (2)"
-    "Addons"
-    "tests"
-    ".github"
-    "scripts"
-)
-
-for item in "${FILES_TO_DELETE[@]}"; do
-    if [ -e "$PANEL_DIR/$item" ]; then
-        rm -rf "$PANEL_DIR/$item"
-        print_success "Deleted: $item"
-    fi
-done
-
-# Delete the installer itself
-print_step "Removing installer script"
-if [ -f "$PANEL_DIR/install-dedicated.sh" ]; then
-    rm -f "$PANEL_DIR/install-dedicated.sh"
-    print_success "Installer removed"
-fi
-
-print_success "Cleanup completed"
-
 # Display success message
 echo ""
 echo -e "${GREEN}╔════════════════════════════════════════════════════════════╗${NC}"
@@ -431,9 +381,7 @@ echo "Next steps:"
 echo "  1. Visit /admin/dedicated to create user allocations"
 echo "  2. Users can access /dedicated to create their own servers"
 echo ""
-if [ -n "$BACKUP_FILE" ]; then
-    echo "Database backup location: /var/backups/$BACKUP_FILE"
-    echo ""
-    print_warning "If you encounter any issues, you can restore from the backup"
-    echo ""
-fi
+echo "Database backup location: /var/backups/$BACKUP_FILE"
+echo ""
+print_warning "If you encounter any issues, you can restore from the backup"
+echo ""

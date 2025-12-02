@@ -73,12 +73,6 @@ module.exports = {
                 type: 'javascript/auto',
             },
             {
-                test: /\.m?js$/,
-                include: /node_modules\/@?monaco-editor/,
-                type: 'javascript/auto',
-                loader: 'esbuild-loader',
-            },
-            {
                 test: /\.css$/,
                 use: [
                     { loader: 'style-loader' },
