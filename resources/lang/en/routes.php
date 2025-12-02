@@ -13,6 +13,7 @@ return [
     ],
     'server' => [
         'console' => 'Console',
+        'analytics' => 'Analytics',
         'files' => 'Files',
         'startup' => 'Startup',
         'network' => 'Network',

@@ -10,6 +10,7 @@ import FileManagerContainer from '@/components/server/files/FileManagerContainer
 import SettingsContainer from '@/components/server/settings/SettingsContainer';
 import ServerPropertiesContainer from '@/components/server/configs/ServerPropertiesContainer';
 import AdvancedConfigContainer from '@/components/server/configs/AdvancedConfigContainer';
+import AnalyticsContainer from '@/components/server/analytics/AnalyticsContainer';
 import AccountOverviewContainer from '@/components/dashboard/AccountOverviewContainer';
 import AccountApiContainer from '@/components/dashboard/AccountApiContainer';
 import AccountSSHContainer from '@/components/dashboard/ssh/AccountSSHContainer';
@@ -18,7 +19,7 @@ import DedicatedServersContainer from '@/components/dashboard/dedicated/Dedicate
 import DedicatedServerDetailContainer from '@/components/dashboard/dedicated/DedicatedServerDetailContainer';
 import CreateDedicatedServerContainer from '@/components/dashboard/dedicated/CreateDedicatedServerContainer';
 import ServerActivityLogContainer from '@/components/server/ServerActivityLogContainer';
-import { FaBoltLightning, FaBoxArchive, FaCalendar, FaDatabase, FaEye, FaFolder, FaGear, FaKey, FaLock, FaPlay, FaTerminal, FaUser, FaUsers, FaServer, FaWrench } from 'react-icons/fa6';
+import { FaBoltLightning, FaBoxArchive, FaCalendar, FaDatabase, FaEye, FaFolder, FaGear, FaKey, FaLock, FaPlay, FaTerminal, FaUser, FaUsers, FaServer, FaWrench, FaChartLine, FaScrewdriverWrench } from 'react-icons/fa6';
 
 // Each of the router files is already code split out appropriately — so
 // all of the items above will only be loaded in when that router is loaded.
@@ -51,9 +52,10 @@ interface Routes {
     account: RouteDefinition[];
     // All of the routes available under "/server/:id"
     server: {
-        control: ServerRouteDefinition[];
+        overview: ServerRouteDefinition[];
         management: ServerRouteDefinition[];
-        administration: ServerRouteDefinition[];
+        tools: ServerRouteDefinition[];
+        advanced: ServerRouteDefinition[];
     };
 }
 
@@ -105,7 +107,7 @@ export default {
         },
     ],
     server: {
-        control: [
+        overview: [
             {
                 path: '/',
                 permission: null,
@@ -114,6 +116,15 @@ export default {
                 icon: FaTerminal,
                 exact: true,
             },
+            {
+                path: '/analytics',
+                permission: null,
+                name: 'server.analytics',
+                component: AnalyticsContainer,
+                icon: FaChartLine,
+            },
+        ],
+        management: [
             {
                 path: '/files',
                 permission: 'file.*',
@@ -127,22 +138,6 @@ export default {
                 name: undefined,
                 component: FileEditContainer,
             },
-            {
-                path: '/startup',
-                permission: 'startup.*',
-                name: 'server.startup',
-                component: StartupContainer,
-                icon: FaPlay,
-            },
-            {
-                path: '/network',
-                permission: 'allocation.*',
-                name: 'server.network',
-                component: NetworkContainer,
-                icon: FaBoltLightning,
-            },
-        ],
-        management: [
             {
                 path: '/databases',
                 permission: 'database.*',
@@ -171,6 +166,29 @@ export default {
                 icon: FaBoxArchive,
             },
             {
+                path: '/users',
+                permission: 'user.*',
+                name: 'server.users',
+                component: UsersContainer,
+                icon: FaUsers,
+            },
+        ],
+        tools: [
+            {
+                path: '/startup',
+                permission: 'startup.*',
+                name: 'server.startup',
+                component: StartupContainer,
+                icon: FaPlay,
+            },
+            {
+                path: '/network',
+                permission: 'allocation.*',
+                name: 'server.network',
+                component: NetworkContainer,
+                icon: FaBoltLightning,
+            },
+            {
                 path: '/server-properties',
                 permission: 'file.*',
                 name: 'server.properties',
@@ -182,17 +200,10 @@ export default {
                 permission: 'file.*',
                 name: 'server.advanced-config',
                 component: AdvancedConfigContainer,
-                icon: FaGear,
+                icon: FaScrewdriverWrench,
             },
         ],
-        administration: [
-            {
-                path: '/users',
-                permission: 'user.*',
-                name: 'server.users',
-                component: UsersContainer,
-                icon: FaUsers,
-            },
+        advanced: [
             {
                 path: '/settings',
                 permission: ['settings.*', 'file.sftp'],

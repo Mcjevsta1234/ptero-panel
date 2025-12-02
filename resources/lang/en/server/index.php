@@ -1,9 +1,10 @@
 <?php
 
 return [
-    'control' => 'Control',
+    'overview' => 'Overview',
     'management' => 'Management',
-    'administration' => 'Administration',
+    'tools' => 'Tools',
+    'advanced' => 'Advanced',
     'start' => 'Start',
     'stop' => 'Stop',
     'restart' => 'Restart',
