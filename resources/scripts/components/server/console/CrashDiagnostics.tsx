@@ -75,11 +75,88 @@ const CrashDiagnostics = ({ className }: { className?: string }) => {
     const [uploading, setUploading] = useState<string | null>(null);
 
     const status = ServerContext.useStoreState((state) => state.status.value);
+    const prevStatusRef = React.useRef<string | null>(null);
 
     useEffect(() => {
-        // Always fetch logs on mount and when status changes
-        fetchRecentLogs();
+        // Check if server just stopped/crashed
+        const prevStatus = prevStatusRef.current;
+        const justStopped = (prevStatus === 'running' || prevStatus === 'starting') && 
+                           (status === 'offline' || status === 'stopping');
+
+        if (justStopped) {
+            // Server just crashed/stopped - immediately upload latest.log
+            autoUploadLatestLog();
+        } else {
+            // Normal fetch
+            fetchRecentLogs();
+        }
+
+        prevStatusRef.current = status;
     }, [status]);
+
+    const autoUploadLatestLog = async () => {
+        try {
+            // Read latest.log immediately
+            const fileResponse = await http.get(`/api/client/servers/${uuid}/files/contents`, {
+                params: { file: '/logs/latest.log' }
+            });
+
+            // Upload to mclo.gs
+            const mclogsResponse = await fetch('https://api.mclo.gs/1/log', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded',
+                },
+                body: `content=${encodeURIComponent(fileResponse.data)}`
+            });
+
+            const mclogsData = await mclogsResponse.json();
+
+            if (mclogsData.success) {
+                // Create log entry with URL already set
+                const latestLog: CrashLog = {
+                    type: 'log',
+                    filename: 'latest.log',
+                    timestamp: new Date().toLocaleString(),
+                    mclogsUrl: mclogsData.url,
+                };
+
+                const logList = [latestLog];
+
+                // Try to get recent crash reports (within last 5 minutes)
+                try {
+                    const crashResponse = await http.get(`/api/client/servers/${uuid}/files/list`, {
+                        params: { directory: '/crash-reports' }
+                    });
+                    
+                    const fiveMinutesAgo = Date.now() - (5 * 60 * 1000);
+                    
+                    const recentCrashReports = crashResponse.data
+                        .filter((file: any) => {
+                            const fileTime = new Date(file.modified_at).getTime();
+                            return fileTime >= fiveMinutesAgo && 
+                                   (file.name.endsWith('.txt') || file.name.endsWith('.log'));
+                        })
+                        .slice(0, 1) // Only get the most recent one
+                        .map((file: any) => ({
+                            type: 'crash' as const,
+                            filename: `crash-reports/${file.name}`,
+                            timestamp: new Date(file.modified_at).toLocaleString(),
+                        }));
+
+                    logList.push(...recentCrashReports);
+                } catch (error) {
+                    // No crash reports, that's fine
+                }
+
+                setLogs(logList);
+            }
+        } catch (error) {
+            console.log('Could not auto-upload latest.log:', error);
+            // Fall back to normal fetch
+            fetchRecentLogs();
+        }
+    };
 
     const fetchRecentLogs = async () => {
         try {
@@ -92,48 +169,30 @@ const CrashDiagnostics = ({ className }: { className?: string }) => {
 
             const logList = [latestLog];
 
-            // Try to get crash reports from crash-reports directory
+            // Try to get crash reports from crash-reports directory (only recent ones)
             try {
                 const crashResponse = await http.get(`/api/client/servers/${uuid}/files/list`, {
                     params: { directory: '/crash-reports' }
                 });
                 
-                const crashReports = crashResponse.data
-                    .filter((file: any) => file.name.endsWith('.txt') || file.name.endsWith('.log'))
-                    .slice(0, 3)
+                const fiveMinutesAgo = Date.now() - (5 * 60 * 1000);
+                
+                const recentCrashReports = crashResponse.data
+                    .filter((file: any) => {
+                        const fileTime = new Date(file.modified_at).getTime();
+                        return fileTime >= fiveMinutesAgo && 
+                               (file.name.endsWith('.txt') || file.name.endsWith('.log'));
+                    })
+                    .slice(0, 2)
                     .map((file: any) => ({
                         type: 'crash' as const,
                         filename: `crash-reports/${file.name}`,
                         timestamp: new Date(file.modified_at).toLocaleString(),
                     }));
 
-                logList.push(...crashReports);
+                logList.push(...recentCrashReports);
             } catch (error) {
                 // No crash reports directory, that's fine
-            }
-
-            // Try to get other logs from logs directory
-            try {
-                const logsResponse = await http.get(`/api/client/servers/${uuid}/files/list`, {
-                    params: { directory: '/logs' }
-                });
-                
-                const otherLogs = logsResponse.data
-                    .filter((file: any) => 
-                        file.name.endsWith('.log') && 
-                        file.name !== 'latest.log' &&
-                        !file.name.includes('debug')
-                    )
-                    .slice(0, 2)
-                    .map((file: any) => ({
-                        type: 'log' as const,
-                        filename: `logs/${file.name}`,
-                        timestamp: new Date(file.modified_at).toLocaleString(),
-                    }));
-
-                logList.push(...otherLogs);
-            } catch (error) {
-                // No logs directory, that's fine
             }
 
             setLogs(logList);
@@ -216,9 +275,9 @@ const CrashDiagnostics = ({ className }: { className?: string }) => {
                         </LogInfo>
                         
                         {log.mclogsUrl ? (
-                            <CopyButton onClick={() => copyUrl(log.mclogsUrl!)}>
-                                <ClipboardCopyIcon />
-                                Copy Link
+                            <CopyButton onClick={() => window.open(log.mclogsUrl, '_blank')}>
+                                <DocumentTextIcon />
+                                Open Log
                             </CopyButton>
                         ) : (
                             <CopyButton 
