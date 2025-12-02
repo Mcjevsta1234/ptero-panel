@@ -112,6 +112,13 @@ Route::group([
         Route::get('/upload', Client\Servers\FileUploadController::class);
     });
 
+    Route::group(['prefix' => '/configs'], function () {
+        Route::get('/server-properties', [Client\Servers\ConfigController::class, 'getServerProperties']);
+        Route::post('/server-properties', [Client\Servers\ConfigController::class, 'updateServerProperties']);
+        Route::get('/', [Client\Servers\ConfigController::class, 'getConfigs']);
+        Route::post('/update', [Client\Servers\ConfigController::class, 'updateConfig']);
+    });
+
     Route::group(['prefix' => '/schedules'], function () {
         Route::get('/', [Client\Servers\ScheduleController::class, 'index']);
         Route::post('/', [Client\Servers\ScheduleController::class, 'store']);

@@ -19,6 +19,8 @@ return [
         'databases' => 'Databases',
         'schedules' => 'Schedules',
         'backups' => 'Backups',
+        'properties' => 'Server Properties',
+        'advanced-config' => 'Advanced Config',
         'users' => 'Users',
         'settings' => 'Settings',
         'activity' => 'Activity',

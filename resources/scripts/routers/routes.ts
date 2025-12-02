@@ -8,6 +8,8 @@ import NetworkContainer from '@/components/server/network/NetworkContainer';
 import StartupContainer from '@/components/server/startup/StartupContainer';
 import FileManagerContainer from '@/components/server/files/FileManagerContainer';
 import SettingsContainer from '@/components/server/settings/SettingsContainer';
+import ServerPropertiesContainer from '@/components/server/configs/ServerPropertiesContainer';
+import AdvancedConfigContainer from '@/components/server/configs/AdvancedConfigContainer';
 import AccountOverviewContainer from '@/components/dashboard/AccountOverviewContainer';
 import AccountApiContainer from '@/components/dashboard/AccountApiContainer';
 import AccountSSHContainer from '@/components/dashboard/ssh/AccountSSHContainer';
@@ -16,7 +18,7 @@ import DedicatedServersContainer from '@/components/dashboard/dedicated/Dedicate
 import DedicatedServerDetailContainer from '@/components/dashboard/dedicated/DedicatedServerDetailContainer';
 import CreateDedicatedServerContainer from '@/components/dashboard/dedicated/CreateDedicatedServerContainer';
 import ServerActivityLogContainer from '@/components/server/ServerActivityLogContainer';
-import { FaBoltLightning, FaBoxArchive, FaCalendar, FaDatabase, FaEye, FaFolder, FaGear, FaKey, FaLock, FaPlay, FaTerminal, FaUser, FaUsers, FaServer } from 'react-icons/fa6';
+import { FaBoltLightning, FaBoxArchive, FaCalendar, FaDatabase, FaEye, FaFolder, FaGear, FaKey, FaLock, FaPlay, FaTerminal, FaUser, FaUsers, FaServer, FaWrench } from 'react-icons/fa6';
 
 // Each of the router files is already code split out appropriately — so
 // all of the items above will only be loaded in when that router is loaded.
@@ -167,6 +169,20 @@ export default {
                 name: 'server.backups',
                 component: BackupContainer,
                 icon: FaBoxArchive,
+            },
+            {
+                path: '/server-properties',
+                permission: 'file.*',
+                name: 'server.properties',
+                component: ServerPropertiesContainer,
+                icon: FaWrench,
+            },
+            {
+                path: '/advanced-config',
+                permission: 'file.*',
+                name: 'server.advanced-config',
+                component: AdvancedConfigContainer,
+                icon: FaGear,
             },
         ],
         administration: [
