@@ -278,3 +278,20 @@ Route::group(['prefix' => 'dedicated'], function () {
     Route::patch('/{allocation}', [Admin\DedicatedAllocationsController::class, 'update'])->name('admin.dedicated.update');
     Route::delete('/{allocation}', [Admin\DedicatedAllocationsController::class, 'destroy'])->name('admin.dedicated.destroy');
 });
+
+/*
+|--------------------------------------------------------------------------
+| Schedule Presets Routes
+|--------------------------------------------------------------------------
+|
+| Endpoint: /admin/schedule-presets
+|
+*/
+Route::group(['prefix' => 'schedule-presets'], function () {
+    Route::get('/', [Admin\SchedulePresetController::class, 'index'])->name('admin.schedule-presets.index');
+    Route::get('/create', [Admin\SchedulePresetController::class, 'create'])->name('admin.schedule-presets.create');
+    Route::post('/', [Admin\SchedulePresetController::class, 'store'])->name('admin.schedule-presets.store');
+    Route::get('/{preset}/edit', [Admin\SchedulePresetController::class, 'edit'])->name('admin.schedule-presets.edit');
+    Route::patch('/{preset}', [Admin\SchedulePresetController::class, 'update'])->name('admin.schedule-presets.update');
+    Route::delete('/{preset}', [Admin\SchedulePresetController::class, 'destroy'])->name('admin.schedule-presets.destroy');
+});

@@ -125,6 +125,12 @@ Route::group([
         Route::delete('/{schedule}/tasks/{task}', [Client\Servers\ScheduleTaskController::class, 'delete']);
     });
 
+    // Schedule Presets (list + apply)
+    Route::group(['prefix' => '/schedule-presets'], function () {
+        Route::get('/', [Client\Servers\SchedulePresetController::class, 'index']);
+        Route::post('/apply', [Client\Servers\SchedulePresetController::class, 'apply']);
+    });
+
     Route::group(['prefix' => '/network'], function () {
         Route::get('/allocations', [Client\Servers\NetworkAllocationController::class, 'index']);
         Route::post('/allocations', [Client\Servers\NetworkAllocationController::class, 'store']);
