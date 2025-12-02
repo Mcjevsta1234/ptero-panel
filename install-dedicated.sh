@@ -9,9 +9,9 @@ set -e
 ###############################################################
 
 # Basic option parsing (non-intrusive)
-ASSUME_YES=0
-AUTO_GIT=0
-DEFAULT_REPO="https://github.com/Mcjevsta1234/ptero-panel.git"
+ASSUME_YES=${ASSUME_YES:-0}
+AUTO_GIT=${AUTO_GIT:-0}
+DEFAULT_REPO="${REPO:-https://github.com/Mcjevsta1234/ptero-panel.git}"
 
 for arg in "$@"; do
     case "$arg" in
@@ -207,8 +207,13 @@ if [ ! -d ".git" ]; then
         git remote add origin "$DEFAULT_REPO" 2>/dev/null || print_warning "Origin already exists"
         print_step "Fetching experimental from origin"
         git fetch origin experimental || print_error "Failed to fetch 'experimental' from origin"
-        git checkout -B experimental origin/experimental || print_error "Failed to checkout experimental"
-        print_success "Repository initialized and experimental branch checked out"
+        # Force sync to origin/experimental; clean untracked if running non-interactively
+        git reset --hard origin/experimental || print_error "Failed to sync files to origin/experimental"
+        if [ "$AUTO_GIT" -eq 1 ] || [ "$ASSUME_YES" -eq 1 ]; then
+            git clean -fdx || true
+        fi
+        git checkout -B experimental >/dev/null 2>&1 || true
+        print_success "Repository initialized and synced to experimental"
     else
         print_warning "Git not initialized in $PANEL_DIR. Initialize now? (y/n)"
         read -r init_git
@@ -219,8 +224,20 @@ if [ ! -d ".git" ]; then
             git remote add origin "$REPO_URL" || print_warning "Origin already exists"
             print_step "Fetching experimental from origin"
             git fetch origin experimental || print_error "Failed to fetch 'experimental' from origin"
-            git checkout -B experimental origin/experimental || print_error "Failed to checkout experimental"
-            print_success "Repository initialized and experimental branch checked out"
+            if ! git checkout -B experimental origin/experimental; then
+                print_warning "Checkout failed due to existing files. Clean untracked files and force sync? (y/n)"
+                read -r clean_choice
+                if [[ "$clean_choice" =~ ^[Yy]$ ]]; then
+                    git reset --hard origin/experimental || print_error "Failed to reset to origin/experimental"
+                    git clean -fdx || true
+                    git checkout -B experimental >/dev/null 2>&1 || true
+                    print_success "Repository initialized and synced to experimental"
+                else
+                    print_error "Failed to checkout experimental due to untracked files"
+                fi
+            else
+                print_success "Repository initialized and experimental branch checked out"
+            fi
         else
             print_error "Cannot proceed without git repository setup"
         fi
@@ -243,6 +260,10 @@ else
         git checkout -B experimental || print_error "Failed to switch to experimental"
     fi
     git reset --hard origin/experimental || print_error "Failed to sync to origin/experimental"
+    # Optionally clean untracked files if running non-interactively
+    if [ "$ASSUME_YES" -eq 1 ]; then
+        git clean -fdx || true
+    fi
     print_success "Code synced to origin/experimental"
 fi
 
