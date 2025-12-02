@@ -66,7 +66,7 @@ class ModsController extends ClientApiController
      */
     public function index(GetServerRequest $request): JsonResponse
     {
-        $server = $request->getModel(Server::class);
+        $server = $request->getAttribute('server');
         $type = $request->input('type'); // Filter by type if provided
 
         $query = ServerMod::where('server_id', $server->id);
@@ -85,7 +85,7 @@ class ModsController extends ClientApiController
      */
     public function install(GetServerRequest $request): JsonResponse
     {
-        $server = $request->getModel(Server::class);
+        $server = $request->getAttribute('server');
         
         $validated = $request->validate([
             'mod_id' => 'required|integer',
@@ -116,7 +116,7 @@ class ModsController extends ClientApiController
      */
     public function uninstall(GetServerRequest $request, int $modId): JsonResponse
     {
-        $server = $request->getModel(Server::class);
+        $server = $request->getAttribute('server');
         $serverMod = ServerMod::where('server_id', $server->id)->where('id', $modId)->firstOrFail();
 
         try {
