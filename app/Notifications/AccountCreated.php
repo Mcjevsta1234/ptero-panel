@@ -24,12 +24,10 @@ class AccountCreated extends Notification implements ShouldQueue
      */
     public function via(): array
     {
-        // Don't send mail if SMTP isn't properly configured
-        $mailer = config('mail.default');
-        if ($mailer === 'smtp' && (!config('mail.mailers.smtp.host') || !config('mail.mailers.smtp.username'))) {
+        // Only send mail if SMTP is properly configured
+        if (empty(config('mail.mailers.smtp.host')) || config('mail.mailers.smtp.host') === 'localhost') {
             return [];
         }
-        
         return ['mail'];
     }
 
