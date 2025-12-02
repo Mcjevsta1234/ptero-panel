@@ -34,14 +34,24 @@ export default () => {
     const [analytics, setAnalytics] = useState<ServerAnalytics[]>([]);
     const { clearFlashes, clearAndAddHttpError } = useFlash();
 
-    useEffect(() => {
-        setLoading(true);
-        clearFlashes('analytics');
-
+    const fetchAnalytics = () => {
         getAnalytics(uuid, period)
             .then((data) => setAnalytics(data))
             .catch((error) => clearAndAddHttpError({ key: 'analytics', error }))
             .finally(() => setLoading(false));
+    };
+
+    useEffect(() => {
+        setLoading(true);
+        clearFlashes('analytics');
+        fetchAnalytics();
+
+        // Refresh every 5 seconds (same as console stats update rate)
+        const interval = setInterval(() => {
+            fetchAnalytics();
+        }, 5000);
+
+        return () => clearInterval(interval);
     }, [uuid, period]);
 
     const chartData = analytics.map((record) => ({
