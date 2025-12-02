@@ -257,11 +257,15 @@ export default ({ value, onChange }: MotdEditorProps) => {
                 {/* Text Editor */}
                 <div>
                     <label css={tw`block text-sm font-medium mb-2 text-gray-300`}>MOTD Text (2 lines max)</label>
-                    <div css={tw`relative`}>
+                    <div css={tw`relative bg-gray-900 rounded border border-gray-600 focus-within:border-blue-500 focus-within:ring-1 focus-within:ring-blue-500`}>
                         {/* Colored preview overlay */}
                         <div 
-                            css={tw`absolute inset-0 px-3 py-2 pointer-events-none font-mono text-sm overflow-hidden whitespace-pre-wrap break-words`}
-                            style={{ lineHeight: '1.5rem' }}
+                            css={tw`absolute inset-0 px-3 py-2 pointer-events-none font-mono text-sm overflow-hidden`}
+                            style={{ 
+                                lineHeight: '1.5rem',
+                                whiteSpace: 'pre-wrap',
+                                wordWrap: 'break-word'
+                            }}
                         >
                             {renderFormattedText(motd)}
                         </div>
@@ -271,13 +275,22 @@ export default ({ value, onChange }: MotdEditorProps) => {
                             value={motd}
                             onChange={handleTextChange}
                             rows={2}
-                            css={tw`w-full px-3 py-2 bg-transparent border border-gray-600 rounded focus:border-blue-500 focus:ring-1 focus:ring-blue-500 font-mono text-sm relative z-10`}
-                            style={{ color: 'transparent', caretColor: '#FFFFFF', lineHeight: '1.5rem' }}
-                            placeholder="Enter your MOTD here..."
+                            css={tw`w-full px-3 py-2 bg-transparent border-0 rounded font-mono text-sm relative z-10 resize-none outline-none`}
+                            style={{ 
+                                color: 'transparent', 
+                                caretColor: '#FFFFFF', 
+                                lineHeight: '1.5rem'
+                            }}
+                            placeholder="Enter your MOTD here or use formatting buttons..."
+                            spellCheck={false}
                         />
                     </div>
                     <div css={tw`mt-2 text-xs text-gray-500`}>
-                        Select text and click a color or style button to format it. Use Shift+Enter for a new line.
+                        Select text and click a color or style button to format it. Or manually type formatting codes like §c for red, §a for green, etc.
+                    </div>
+                    <div css={tw`mt-2 p-2 bg-gray-900 rounded border border-gray-700`}>
+                        <div css={tw`text-xs font-medium text-gray-400 mb-1`}>Server Properties Line:</div>
+                        <code css={tw`text-xs text-green-400 break-all select-all`}>motd={motd || 'A Minecraft Server'}</code>
                     </div>
                 </div>
             </div>
