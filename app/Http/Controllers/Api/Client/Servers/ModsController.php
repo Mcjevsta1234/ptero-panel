@@ -64,9 +64,8 @@ class ModsController extends ClientApiController
     /**
      * Get installed mods/plugins
      */
-    public function index(GetServerRequest $request): JsonResponse
+    public function index(GetServerRequest $request, Server $server): JsonResponse
     {
-        $server = $request->getAttribute('server');
         $type = $request->input('type'); // Filter by type if provided
 
         $query = ServerMod::where('server_id', $server->id);
@@ -83,9 +82,8 @@ class ModsController extends ClientApiController
     /**
      * Install a mod/plugin
      */
-    public function install(GetServerRequest $request): JsonResponse
+    public function install(GetServerRequest $request, Server $server): JsonResponse
     {
-        $server = $request->getAttribute('server');
         
         $validated = $request->validate([
             'mod_id' => 'required|integer',
@@ -114,9 +112,8 @@ class ModsController extends ClientApiController
     /**
      * Uninstall a mod/plugin
      */
-    public function uninstall(GetServerRequest $request, int $modId): JsonResponse
+    public function uninstall(GetServerRequest $request, Server $server, int $modId): JsonResponse
     {
-        $server = $request->getAttribute('server');
         $serverMod = ServerMod::where('server_id', $server->id)->where('id', $modId)->firstOrFail();
 
         try {
