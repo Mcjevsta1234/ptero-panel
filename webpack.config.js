@@ -45,8 +45,25 @@ module.exports = {
             },
             {
                 test: /\.tsx?$/,
-                exclude: /node_modules|\.spec\.tsx?$/,
+                exclude: /node_modules(?!\/es-toolkit)|\.spec\.tsx?$/,
                 loader: 'babel-loader',
+            },
+            {
+                // Transpile es-toolkit to handle optional chaining
+                test: /\.js$/,
+                include: /node_modules\/es-toolkit/,
+                use: {
+                    loader: 'babel-loader',
+                    options: {
+                        presets: [
+                            ['@babel/preset-env', {
+                                targets: {
+                                    browsers: ['last 2 versions', 'ie >= 11']
+                                }
+                            }]
+                        ]
+                    }
+                }
             },
             {
                 test: /\.mjs$/,
