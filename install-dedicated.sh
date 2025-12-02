@@ -8,6 +8,25 @@ set -e
 # Branch: experimental
 ###############################################################
 
+# Basic option parsing (non-intrusive)
+ASSUME_YES=0
+AUTO_GIT=0
+DEFAULT_REPO="https://github.com/Mcjevsta1234/ptero-panel.git"
+
+for arg in "$@"; do
+    case "$arg" in
+        -y|--yes)
+            ASSUME_YES=1
+            ;;
+        --auto-git)
+            AUTO_GIT=1
+            ;;
+        --repo=*)
+            DEFAULT_REPO="${arg#*=}"
+            ;;
+    esac
+done
+
 # Output colors
 GREEN='\033[0;32m'
 YELLOW='\033[1;33m'
@@ -116,8 +135,12 @@ EOF
     AUTO_STATUS=$?
     set -e  # Re-enable exit on error
     if [ $AUTO_STATUS -ne 0 ]; then
-        print_warning "Automatic backup failed. Would you like to enter credentials manually to retry? (y/n)"
-        read -r retry_manual
+        if [ "$ASSUME_YES" -eq 0 ]; then
+            print_warning "Automatic backup failed. Would you like to enter credentials manually to retry? (y/n)"
+            read -r retry_manual
+        else
+            retry_manual="n"
+        fi
         if [[ "$retry_manual" =~ ^[Yy]$ ]]; then
             echo "Enter database connection details (leave blank to keep defaults)." 
             read -p "Host [$DB_HOST]: " MAN_HOST; MAN_HOST=${MAN_HOST:-$DB_HOST}
@@ -130,23 +153,35 @@ EOF
             MAN_STATUS=$?
             set -e  # Re-enable exit on error
             if [ $MAN_STATUS -ne 0 ]; then
-                print_warning "Manual backup attempt failed. Proceed WITHOUT a backup? (y/n)"
-                read -r proceed_no_backup
+                if [ "$ASSUME_YES" -eq 0 ]; then
+                    print_warning "Manual backup attempt failed. Proceed WITHOUT a backup? (y/n)"
+                    read -r proceed_no_backup
+                else
+                    proceed_no_backup="y"
+                fi
                 if [[ ! "$proceed_no_backup" =~ ^[Yy]$ ]]; then
                     print_error "Installation cancelled due to backup failure"
                 fi
             fi
         else
-            print_warning "Skipping manual retry. Proceed WITHOUT a backup? (y/n)"
-            read -r proceed_no_backup
+            if [ "$ASSUME_YES" -eq 0 ]; then
+                print_warning "Skipping manual retry. Proceed WITHOUT a backup? (y/n)"
+                read -r proceed_no_backup
+            else
+                proceed_no_backup="y"
+            fi
             if [[ ! "$proceed_no_backup" =~ ^[Yy]$ ]]; then
                 print_error "Installation cancelled due to backup failure"
             fi
         fi
     fi
 else
-    print_warning "mysqldump not found. Continue without backup? (y/n)"
-    read -r response
+    if [ "$ASSUME_YES" -eq 0 ]; then
+        print_warning "mysqldump not found. Continue without backup? (y/n)"
+        read -r response
+    else
+        response="y"
+    fi
     if [[ ! "$response" =~ ^[Yy]$ ]]; then
         print_error "Installation cancelled"
     fi
@@ -166,28 +201,40 @@ fi
 git config --global --add safe.directory "$PANEL_DIR" 2>/dev/null || true
 
 if [ ! -d ".git" ]; then
-    print_warning "Git not initialized in $PANEL_DIR. Initialize now? (y/n)"
-    read -r init_git
-    if [[ "$init_git" =~ ^[Yy]$ ]]; then
-        DEFAULT_REPO="https://github.com/Mcjevsta1234/ptero-panel.git"
-        read -p "Remote repository URL [$DEFAULT_REPO]: " REPO_URL
-        REPO_URL=${REPO_URL:-$DEFAULT_REPO}
+    if [ "$AUTO_GIT" -eq 1 ] || [ "$ASSUME_YES" -eq 1 ]; then
+        print_warning "Git not initialized in $PANEL_DIR. Auto-initializing with $DEFAULT_REPO"
         git init
-        git remote add origin "$REPO_URL" || print_warning "Origin already exists"
+        git remote add origin "$DEFAULT_REPO" 2>/dev/null || print_warning "Origin already exists"
         print_step "Fetching experimental from origin"
         git fetch origin experimental || print_error "Failed to fetch 'experimental' from origin"
         git checkout -B experimental origin/experimental || print_error "Failed to checkout experimental"
         print_success "Repository initialized and experimental branch checked out"
     else
-        print_error "Cannot proceed without git repository setup"
+        print_warning "Git not initialized in $PANEL_DIR. Initialize now? (y/n)"
+        read -r init_git
+        if [[ "$init_git" =~ ^[Yy]$ ]]; then
+            read -p "Remote repository URL [$DEFAULT_REPO]: " REPO_URL
+            REPO_URL=${REPO_URL:-$DEFAULT_REPO}
+            git init
+            git remote add origin "$REPO_URL" || print_warning "Origin already exists"
+            print_step "Fetching experimental from origin"
+            git fetch origin experimental || print_error "Failed to fetch 'experimental' from origin"
+            git checkout -B experimental origin/experimental || print_error "Failed to checkout experimental"
+            print_success "Repository initialized and experimental branch checked out"
+        else
+            print_error "Cannot proceed without git repository setup"
+        fi
     fi
 else
     # Ensure origin exists
     if ! git remote get-url origin >/dev/null 2>&1; then
-        DEFAULT_REPO="https://github.com/Mcjevsta1234/ptero-panel.git"
-        read -p "No 'origin' remote found. Enter URL [$DEFAULT_REPO]: " REPO_URL
-        REPO_URL=${REPO_URL:-$DEFAULT_REPO}
-        git remote add origin "$REPO_URL"
+        if [ "$ASSUME_YES" -eq 1 ]; then
+            git remote add origin "$DEFAULT_REPO"
+        else
+            read -p "No 'origin' remote found. Enter URL [$DEFAULT_REPO]: " REPO_URL
+            REPO_URL=${REPO_URL:-$DEFAULT_REPO}
+            git remote add origin "$REPO_URL"
+        fi
     fi
     git fetch origin experimental || print_error "Failed to fetch experimental"
     # Checkout experimental if not current
