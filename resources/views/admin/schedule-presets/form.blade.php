@@ -94,35 +94,39 @@
     </div>
 @endsection
 
-@push('footer-scripts')
-<script>
-function addRow() {
-    const tbody = document.querySelector('#tasks-table tbody');
-    const idx = tbody.children.length;
-    const tr = document.createElement('tr');
-    tr.innerHTML = `
-        <td class="seq">${idx+1}</td>
-        <td>
-            <select name="tasks[action][]" class="form-control">
-                <option value="command">command</option>
-                <option value="power">power</option>
-                <option value="backup">backup</option>
-            </select>
-        </td>
-        <td><input type="text" name="tasks[payload][]" class="form-control" placeholder="e.g., say Clearing items... or restart"></td>
-        <td style="width:140px"><input type="number" name="tasks[time_offset][]" class="form-control" min="0" max="900" value="0"></td>
-        <td class="text-center"><input type="checkbox" name="tasks[continue_on_failure][]" value="1"></td>
-        <td><button type="button" class="btn btn-xs btn-danger" onclick="removeRow(this)">Remove</button></td>`;
-    tbody.appendChild(tr);
-    resequence();
-}
-function removeRow(btn) {
-    const tr = btn.closest('tr');
-    tr.parentNode.removeChild(tr);
-    resequence();
-}
-function resequence() {
-    document.querySelectorAll('#tasks-table tbody tr .seq').forEach((el, i) => el.textContent = i+1);
-}
-</script>
-@endpush
+@section('footer-scripts')
+    @parent
+    <script type="text/javascript">
+    window.addRow = function() {
+        var tbody = document.querySelector('#tasks-table tbody');
+        if (!tbody) return;
+        var idx = tbody.children.length;
+        var tr = document.createElement('tr');
+        tr.innerHTML = '<td class="seq">' + (idx+1) + '</td>' +
+            '<td><select name="tasks[action][]" class="form-control">' +
+            '<option value="command">command</option>' +
+            '<option value="power">power</option>' +
+            '<option value="backup">backup</option>' +
+            '</select></td>' +
+            '<td><input type="text" name="tasks[payload][]" class="form-control" placeholder="e.g., say Clearing items... or restart"></td>' +
+            '<td style="width:140px"><input type="number" name="tasks[time_offset][]" class="form-control" min="0" max="900" value="0"></td>' +
+            '<td class="text-center"><input type="checkbox" name="tasks[continue_on_failure][]" value="1"></td>' +
+            '<td><button type="button" class="btn btn-xs btn-danger" onclick="removeRow(this)">Remove</button></td>';
+        tbody.appendChild(tr);
+        resequence();
+    };
+
+    window.removeRow = function(btn) {
+        var tr = btn.parentNode.parentNode;
+        tr.parentNode.removeChild(tr);
+        resequence();
+    };
+
+    function resequence() {
+        var rows = document.querySelectorAll('#tasks-table tbody tr .seq');
+        rows.forEach(function(el, i) {
+            el.textContent = i + 1;
+        });
+    }
+    </script>
+@endsection
