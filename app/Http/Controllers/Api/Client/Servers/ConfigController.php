@@ -277,24 +277,21 @@ class ConfigController extends ClientApiController
         $files = [];
         
         // Common config file locations and patterns
-        $searchPaths = [
-            '/' => ['*.yml', '*.yaml'],
-            '/config/' => ['*.yml', '*.yaml'],
-            '/plugins/' => [], // We'll skip plugins for now as there could be hundreds
-        ];
+        $searchPaths = ['/', '/config/'];
 
-        foreach ($searchPaths as $directory => $patterns) {
+        foreach ($searchPaths as $directory) {
             try {
                 $dirContents = $this->fileRepository
                     ->setServer($server)
                     ->getDirectory($directory);
 
                 foreach ($dirContents as $item) {
-                    if (!$item->isFile()) {
+                    // Check if it's a file (not directory)
+                    if (!isset($item['file']) || !$item['file']) {
                         continue;
                     }
 
-                    $fileName = $item->name();
+                    $fileName = $item['name'];
                     $extension = strtolower(pathinfo($fileName, PATHINFO_EXTENSION));
                     
                     // Only include .yml and .yaml files

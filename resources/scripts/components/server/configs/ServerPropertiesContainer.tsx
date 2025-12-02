@@ -10,6 +10,7 @@ import updateServerProperties from '@/api/server/configs/updateServerProperties'
 import Spinner from '@/components/elements/Spinner';
 import Button from '@/components/elements/Button';
 import { useTranslation } from 'react-i18next';
+import MotdEditor from './MotdEditor';
 
 interface PropertyConfig {
     label: string;
@@ -23,7 +24,7 @@ const propertyConfigs: Record<string, PropertyConfig> = {
     // Server Settings
     'server-port': { label: 'Server Port', description: 'The port the server listens on', type: 'number', category: 'Server' },
     'server-ip': { label: 'Server IP', description: 'IP address to bind to (leave empty for all)', type: 'text', category: 'Server' },
-    'motd': { label: 'MOTD', description: 'Message of the day shown in server list', type: 'text', category: 'Server' },
+    'motd': { label: 'MOTD', description: 'Message of the day shown in server list', type: 'motd' as any, category: 'Server' },
     'max-players': { label: 'Max Players', description: 'Maximum number of players', type: 'number', category: 'Server' },
     'white-list': { label: 'Whitelist', description: 'Enable whitelist', type: 'boolean', category: 'Server' },
     'online-mode': { label: 'Online Mode', description: 'Verify player authenticity with Mojang', type: 'boolean', category: 'Server' },
@@ -166,13 +167,18 @@ export default () => {
                                     const value = properties[key];
                                     
                                     return (
-                                        <div key={key} css={tw`space-y-2`}>
+                                        <div key={key} css={[tw`space-y-2`, key === 'motd' && tw`col-span-full`]}>
                                             <label css={tw`block text-sm font-medium text-gray-200`}>
                                                 {config.label}
                                             </label>
                                             <p css={tw`text-xs text-gray-400`}>{config.description}</p>
                                             
-                                            {config.type === 'boolean' ? (
+                                            {key === 'motd' ? (
+                                                <MotdEditor
+                                                    value={value || ''}
+                                                    onChange={(newValue) => handleChange(key, newValue)}
+                                                />
+                                            ) : config.type === 'boolean' ? (
                                                 <label css={tw`flex items-center space-x-2`}>
                                                     <input
                                                         type="checkbox"
