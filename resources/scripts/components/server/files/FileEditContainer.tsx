@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import getFileContents from '@/api/server/files/getFileContents';
 import { httpErrorToHuman } from '@/api/http';
 import SpinnerOverlay from '@/components/elements/SpinnerOverlay';
@@ -8,8 +8,9 @@ import { useHistory, useLocation, useParams } from 'react-router';
 import FileNameModal from '@/components/server/files/FileNameModal';
 import Can from '@/components/elements/Can';
 import FlashMessageRender from '@/components/FlashMessageRender';
-import PageContentBlock from '@/components/elements/PageContentBlock';
+import ContentBlock from '@/witchyworlds/ui/ContentBlock';
 import { ServerError } from '@/components/elements/ScreenBlock';
+import tw from 'twin.macro';
 import Button from '@/components/elements/Button';
 import Select from '@/components/elements/Select';
 import modes from '@/modes';
@@ -18,59 +19,8 @@ import { ServerContext } from '@/state/server';
 import ErrorBoundary from '@/components/elements/ErrorBoundary';
 import { encodePathSegments, hashToPath } from '@/helpers';
 import { dirname } from 'path';
-import { Editor } from '@monaco-editor/react';
 import CodemirrorEditor from '@/components/elements/CodemirrorEditor';
-import tw from 'twin.macro';
-
-const isMobile = () => {
-    return /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
-};
-
-const getLanguageFromFilename = (filename: string) => {
-    const extension = filename.split('.').pop();
-    switch (extension) {
-        case 'js':
-            return 'javascript';
-        case 'ts':
-            return 'typescript';
-        case 'py':
-            return 'python';
-        case 'html':
-            return 'html';
-        case 'css':
-            return 'css';
-        case 'json':
-            return 'json';
-        case 'md':
-            return 'markdown';
-        case 'xml':
-            return 'xml';
-        case 'java':
-            return 'java';
-        case 'cpp':
-        case 'h':
-            return 'cpp';
-        case 'cs':
-            return 'csharp';
-        case 'go':
-            return 'go';
-        case 'php':
-            return 'php';
-        case 'rb':
-            return 'ruby';
-        case 'rs':
-            return 'rust';
-        case 'sh':
-            return 'shell';
-        case 'sql':
-            return 'sql';
-        case 'yaml':
-        case 'yml':
-            return 'yaml';
-        default:
-            return 'plaintext';
-    }
-};
+import Card from '@/witchyworlds/ui/Card';
 
 export default () => {
     const [error, setError] = useState('');
@@ -79,9 +29,9 @@ export default () => {
     const [content, setContent] = useState('');
     const [modalVisible, setModalVisible] = useState(false);
     const [mode, setMode] = useState('text/plain');
+
     const history = useHistory();
     const { hash } = useLocation();
-    const editorRef = useRef<any>(null);
 
     const id = ServerContext.useStoreState((state) => state.server.data!.id);
     const uuid = ServerContext.useStoreState((state) => state.server.data!.uuid);
@@ -98,7 +48,37 @@ export default () => {
         const path = hashToPath(hash);
         setDirectory(dirname(path));
         getFileContents(uuid, path)
-            .then(setContent)
+            .then((content) => {
+                setContent(content);
+                
+                // Track file view in recent files
+                const fileName = path.split('/').pop() || '';
+                const directory = dirname(path);
+                
+                try {
+                    const key = `recent_files_${id}`;
+                    const stored = localStorage.getItem(key);
+                    const recent = stored ? JSON.parse(stored) : [];
+                    
+                    // Remove duplicate if exists
+                    const filtered = recent.filter((f: any) => f.path !== path);
+                    
+                    // Add to front
+                    filtered.unshift({
+                        path,
+                        name: fileName,
+                        directory: directory === '.' ? '/' : directory,
+                        timestamp: Date.now(),
+                    });
+                    
+                    // Keep only 5 most recent
+                    const trimmed = filtered.slice(0, 5);
+                    
+                    localStorage.setItem(key, JSON.stringify(trimmed));
+                } catch (e) {
+                    console.error('Failed to track recent file:', e);
+                }
+            })
             .catch((error) => {
                 console.error(error);
                 setError(httpErrorToHuman(error));
@@ -107,24 +87,20 @@ export default () => {
     }, [action, uuid, hash]);
 
     const save = (name?: string) => {
-        if (!fetchFileContent && !editorRef.current) {
+        if (!fetchFileContent) {
             return;
         }
 
         setLoading(true);
         clearFlashes('files:view');
-        
-        const savePromise = isMobile()
-            ? fetchFileContent!()
-            : Promise.resolve(editorRef.current.getValue());
-
-        savePromise
+        fetchFileContent()
             .then((content) => saveFileContents(uuid, name || hashToPath(hash), content))
             .then(() => {
                 if (name) {
                     history.push(`/server/${id}/files/edit#/${encodePathSegments(name)}`);
                     return;
                 }
+
                 return Promise.resolve();
             })
             .catch((error) => {
@@ -139,23 +115,30 @@ export default () => {
     }
 
     return (
-        <PageContentBlock>
+        <ContentBlock title={'File Editor'}>
             <FlashMessageRender byKey={'files:view'} css={tw`mb-4`} />
             <ErrorBoundary>
-                <div css={tw`mb-4`}>
+                <Card css={tw`!rounded-b-none !px-2 !py-6 mb-1 mt-2`}>
                     <FileManagerBreadcrumbs withinFileEditor isNewFile={action !== 'edit'} />
-                </div>
+                </Card>
             </ErrorBoundary>
             {hash.replace(/^#/, '').endsWith('.pteroignore') && (
-                <div css={tw`mb-4 p-4 border-l-4 bg-neutral-900 rounded border-cyan-400`}>
-                    <p css={tw`text-neutral-300 text-sm`}>
-                        You&apos;re editing a <code css={tw`font-mono bg-black rounded py-px px-1`}>.pteroignore</code>{' '}
-                        file. Any files or directories listed in here will be excluded from backups. Wildcards are
-                        supported by using an asterisk (<code css={tw`font-mono bg-black rounded py-px px-1`}>*</code>).
-                        You can negate a prior rule by prepending an exclamation point (
-                        <code css={tw`font-mono bg-black rounded py-px px-1`}>!</code>).
-                    </p>
-                </div>
+                <Card className='!rounded-none mb-1'>
+                    <div css={tw`mb-4 p-4 rounded-ui border border-gray-600`}>
+                        <p css={tw`text-neutral-300 text-sm`}>
+                            You&apos;re editing a{' '}
+                            <code css={tw`font-mono bg-gray-900 rounded-ui border border-gray-600 py-px px-1`}>
+                                .pteroignore
+                            </code>{' '}
+                            file. Any files or directories listed in here will be excluded from backups. Wildcards are
+                            supported by using an asterisk (
+                            <code css={tw`font-mono bg-gray-900 rounded-ui border border-gray-600 py-px px-1`}>*</code>
+                            ). You can negate a prior rule by prepending an exclamation point (
+                            <code css={tw`font-mono bg-gray-900 rounded-ui border border-gray-600 py-px px-1`}>!</code>
+                            ).
+                        </p>
+                    </div>
+                </Card>
             )}
             <FileNameModal
                 visible={modalVisible}
@@ -165,39 +148,27 @@ export default () => {
                     save(name);
                 }}
             />
-            <div css={tw`relative`}>
+            <Card css={tw`relative !p-1 !rounded-none mb-1`}>
                 <SpinnerOverlay visible={loading} />
-                {isMobile() ? (
-                    <CodemirrorEditor
-                        mode={mode}
-                        filename={hash.replace(/^#/, '')}
-                        onModeChanged={setMode}
-                        initialContent={content}
-                        fetchContent={(value) => {
-                            fetchFileContent = value;
-                        }}
-                        onContentSaved={() => {
-                            if (action !== 'edit') {
-                                setModalVisible(true);
-                            } else {
-                                save();
-                            }
-                        }}
-                    />
-                ) : (
-                    <Editor
-                        height="75vh"
-                        theme="vs-dark"
-                        language={getLanguageFromFilename(hash.replace(/^#/, ''))}
-                        value={content}
-                        onMount={(editor) => {
-                            editorRef.current = editor;
-                        }}
-                    />
-                )}
-            </div>
-            <div css={tw`flex justify-end mt-4`}>
-                <div css={tw`flex-1 sm:flex-none rounded bg-neutral-900 mr-4`}>
+                <CodemirrorEditor
+                    mode={mode}
+                    filename={hash.replace(/^#/, '')}
+                    onModeChanged={setMode}
+                    initialContent={content}
+                    fetchContent={(value) => {
+                        fetchFileContent = value;
+                    }}
+                    onContentSaved={() => {
+                        if (action !== 'edit') {
+                            setModalVisible(true);
+                        } else {
+                            save();
+                        }
+                    }}
+                />
+            </Card>
+            <Card css={tw`flex justify-end !rounded-t-none !px-2 !py-3`}>
+                <div css={tw`flex-1 sm:flex-none rounded-ui bg-gray-700 border border-gray-600 mr-4`}>
                     <Select value={mode} onChange={(e) => setMode(e.currentTarget.value)}>
                         {modes.map((mode) => (
                             <option key={`${mode.name}_${mode.mime}`} value={mode.mime}>
@@ -219,7 +190,7 @@ export default () => {
                         </Button>
                     </Can>
                 )}
-            </div>
-        </PageContentBlock>
+            </Card>
+        </ContentBlock>
     );
 };
