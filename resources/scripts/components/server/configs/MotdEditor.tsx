@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import tw from 'twin.macro';
 
 interface MotdEditorProps {
@@ -6,7 +6,7 @@ interface MotdEditorProps {
     onChange: (value: string) => void;
 }
 
-// Minecraft formatting codes
+// Minecraft formatting codes with exact colors from Minecraft
 const formatCodes: Record<string, { name: string; color?: string; style?: string }> = {
     '0': { name: 'Black', color: '#000000' },
     '1': { name: 'Dark Blue', color: '#0000AA' },
@@ -24,7 +24,6 @@ const formatCodes: Record<string, { name: string; color?: string; style?: string
     'd': { name: 'Light Purple', color: '#FF55FF' },
     'e': { name: 'Yellow', color: '#FFFF55' },
     'f': { name: 'White', color: '#FFFFFF' },
-    'k': { name: 'Obfuscated', style: 'obfuscated' },
     'l': { name: 'Bold', style: 'bold' },
     'm': { name: 'Strikethrough', style: 'strikethrough' },
     'n': { name: 'Underline', style: 'underline' },
@@ -34,76 +33,126 @@ const formatCodes: Record<string, { name: string; color?: string; style?: string
 
 export default ({ value, onChange }: MotdEditorProps) => {
     const [motd, setMotd] = useState(value || '');
-    const [showCodes, setShowCodes] = useState(false);
+    const [plainText, setPlainText] = useState('');
+    const [selectedColor, setSelectedColor] = useState('f');
+    const [selectedStyles, setSelectedStyles] = useState<string[]>([]);
+    const textareaRef = useRef<HTMLTextAreaElement>(null);
 
     useEffect(() => {
         setMotd(value || '');
+        setPlainText(stripFormatting(value || ''));
     }, [value]);
 
-    const handleChange = (newValue: string) => {
-        setMotd(newValue);
-        onChange(newValue);
+    const stripFormatting = (text: string): string => {
+        return text.replace(/[§&][0-9a-fk-or]/gi, '');
     };
 
-    const insertCode = (code: string) => {
-        const newValue = motd + '§' + code;
-        handleChange(newValue);
+    const applyFormatting = (text: string): string => {
+        const textarea = textareaRef.current;
+        if (!textarea) return text;
+
+        const start = textarea.selectionStart;
+        const end = textarea.selectionEnd;
+
+        if (start === end) {
+            // No selection, apply formatting to entire text
+            let formatted = `§${selectedColor}`;
+            selectedStyles.forEach(style => {
+                formatted += `§${style}`;
+            });
+            formatted += text;
+            return formatted;
+        }
+
+        // Apply formatting to selection
+        const before = text.substring(0, start);
+        const selected = text.substring(start, end);
+        const after = text.substring(end);
+
+        let formatted = `§${selectedColor}`;
+        selectedStyles.forEach(style => {
+            formatted += `§${style}`;
+        });
+        
+        return before + formatted + selected + '§r' + after;
+    };
+
+    const handleTextChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
+        const newText = e.target.value;
+        setPlainText(newText);
+        
+        // Don't auto-apply formatting on every keystroke
+        // User will select text and click buttons to format
+        setMotd(newText);
+        onChange(newText);
+    };
+
+    const toggleStyle = (style: string) => {
+        setSelectedStyles(prev => 
+            prev.includes(style) ? prev.filter(s => s !== style) : [...prev, style]
+        );
+    };
+
+    const handleColorChange = (color: string) => {
+        setSelectedColor(color);
+    };
+
+    const applyCurrentFormatting = () => {
+        const formatted = applyFormatting(plainText);
+        setPlainText(formatted);
+        setMotd(formatted);
+        onChange(formatted);
     };
 
     const renderPreview = () => {
         const lines = motd.split('\\n');
         return (
-            <div css={tw`bg-[#1E1E1E] p-4 rounded border-2 border-gray-600 font-mono text-sm`}>
-                <div css={tw`text-center mb-2 text-gray-400 text-xs`}>Server List Preview</div>
-                {lines.slice(0, 2).map((line, idx) => (
-                    <div key={idx} css={tw`text-center`}>
-                        {renderFormattedText(line)}
-                    </div>
-                ))}
+            <div css={tw`bg-gray-900 p-6 rounded border border-gray-700`}>
+                <div css={tw`text-center mb-3 text-gray-500 text-xs uppercase tracking-wide`}>Server List Preview</div>
+                <div css={tw`bg-[#383838] p-4 rounded`}>
+                    {lines.slice(0, 2).map((line: string, idx: number) => (
+                        <div key={idx} css={tw`font-minecraft text-center leading-tight`} style={{ fontSize: '16px', textShadow: '2px 2px 0px rgba(0,0,0,0.5)' }}>
+                            {renderFormattedText(line)}
+                        </div>
+                    ))}
+                </div>
             </div>
         );
     };
 
     const renderFormattedText = (text: string) => {
-        const parts: JSX.Element[] = [];
+        const parts: React.ReactNode[] = [];
         let currentColor = '#FFFFFF';
-        let currentStyles: string[] = [];
+        let isBold = false;
+        let isItalic = false;
+        let isUnderline = false;
+        let isStrike = false;
         let buffer = '';
         let i = 0;
 
         const flushBuffer = () => {
             if (buffer) {
-                const styles: React.CSSProperties = {
+                const style: React.CSSProperties = {
                     color: currentColor,
-                    fontWeight: currentStyles.includes('bold') ? 'bold' : 'normal',
-                    fontStyle: currentStyles.includes('italic') ? 'italic' : 'normal',
+                    fontWeight: isBold ? 700 : 400,
+                    fontStyle: isItalic ? 'italic' : 'normal',
                     textDecoration: [
-                        currentStyles.includes('strikethrough') ? 'line-through' : '',
-                        currentStyles.includes('underline') ? 'underline' : '',
-                    ]
-                        .filter(Boolean)
-                        .join(' '),
+                        isStrike ? 'line-through' : '',
+                        isUnderline ? 'underline' : '',
+                    ].filter(Boolean).join(' ') || 'none',
                 };
 
-                if (currentStyles.includes('obfuscated')) {
-                    parts.push(
-                        <span key={i} style={styles} css={tw`animate-pulse`}>
-                            {buffer.replace(/./g, '?')}
-                        </span>
-                    );
-                } else {
-                    parts.push(
-                        <span key={i} style={styles}>
-                            {buffer}
-                        </span>
-                    );
-                }
+                parts.push(
+                    <span key={`part-${i}`} style={style}>
+                        {buffer}
+                    </span>
+                );
                 buffer = '';
             }
         };
 
         while (i < text.length) {
-            if (text[i] === '§' && i + 1 < text.length) {
+            if ((text[i] === '§' || text[i] === '&') && i + 1 < text.length) {
                 flushBuffer();
                 const code = text[i + 1].toLowerCase();
                 const format = formatCodes[code];
@@ -111,30 +160,25 @@ export default ({ value, onChange }: MotdEditorProps) => {
                 if (format) {
                     if (format.color) {
                         currentColor = format.color;
-                        currentStyles = []; // Reset styles on color change
+                        // Color codes reset formatting
+                        isBold = false;
+                        isItalic = false;
+                        isUnderline = false;
+                        isStrike = false;
+                    } else if (format.style === 'bold') {
+                        isBold = true;
+                    } else if (format.style === 'italic') {
+                        isItalic = true;
+                    } else if (format.style === 'underline') {
+                        isUnderline = true;
+                    } else if (format.style === 'strikethrough') {
+                        isStrike = true;
                     } else if (format.style === 'reset') {
                         currentColor = '#FFFFFF';
-                        currentStyles = [];
-                    } else if (format.style) {
-                        currentStyles.push(format.style);
-                    }
-                }
-                i += 2;
-            } else if (text[i] === '&' && i + 1 < text.length) {
-                // Support & as well as §
-                flushBuffer();
-                const code = text[i + 1].toLowerCase();
-                const format = formatCodes[code];
-
-                if (format) {
-                    if (format.color) {
-                        currentColor = format.color;
-                        currentStyles = [];
-                    } else if (format.style === 'reset') {
-                        currentColor = '#FFFFFF';
-                        currentStyles = [];
-                    } else if (format.style) {
-                        currentStyles.push(format.style);
+                        isBold = false;
+                        isItalic = false;
+                        isUnderline = false;
+                        isStrike = false;
                     }
                 }
                 i += 2;
@@ -153,67 +197,101 @@ export default ({ value, onChange }: MotdEditorProps) => {
             {/* Preview */}
             {renderPreview()}
 
-            {/* Editor */}
-            <div>
-                <label css={tw`block text-sm font-medium text-gray-200 mb-2`}>MOTD Text</label>
-                <textarea
-                    value={motd}
-                    onChange={(e) => handleChange(e.target.value)}
-                    rows={3}
-                    css={tw`w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded text-gray-100 font-mono text-sm focus:ring-2 focus:ring-primary-500 focus:border-transparent`}
-                    placeholder="Enter your MOTD here... Use \\n for new line"
-                />
-                <p css={tw`text-xs text-gray-400 mt-1`}>
-                    Use §[code] or &[code] for formatting. Use \n for line breaks (max 2 lines).
-                </p>
-            </div>
-
             {/* Formatting Toolbar */}
-            <div>
-                <button
-                    type="button"
-                    onClick={() => setShowCodes(!showCodes)}
-                    css={tw`text-sm text-primary-400 hover:text-primary-300 mb-2`}
-                >
-                    {showCodes ? 'Hide' : 'Show'} Formatting Codes
-                </button>
+            <div css={tw`bg-gray-800 p-4 rounded border border-gray-700`}>
+                <div css={tw`mb-3`}>
+                    <label css={tw`block text-sm font-medium mb-2 text-gray-300`}>Formatting Toolbar</label>
+                    <div css={tw`flex flex-wrap gap-2 mb-3`}>
+                        {/* Color buttons */}
+                        <div css={tw`flex flex-wrap gap-1`}>
+                            {Object.entries(formatCodes)
+                                .filter(([_, format]) => format.color)
+                                .map(([code, format]) => (
+                                    <button
+                                        key={code}
+                                        type="button"
+                                        onClick={() => handleColorChange(code)}
+                                        css={tw`w-8 h-8 rounded border-2 transition-all hover:scale-110`}
+                                        style={{
+                                            backgroundColor: format.color,
+                                            borderColor: selectedColor === code ? '#10b981' : '#374151',
+                                        }}
+                                        title={format.name}
+                                    />
+                                ))}
+                        </div>
 
-                {showCodes && (
-                    <div css={tw`grid grid-cols-4 sm:grid-cols-6 md:grid-cols-8 gap-2 p-3 bg-gray-800 rounded border border-gray-600`}>
-                        {/* Color Codes */}
-                        <div css={tw`col-span-full text-xs text-gray-400 mb-1`}>Colors</div>
-                        {Object.entries(formatCodes)
-                            .filter(([_, format]) => format.color)
-                            .map(([code, format]) => (
+                        {/* Style buttons */}
+                        <div css={tw`flex gap-1 ml-2 border-l border-gray-600 pl-2`}>
+                            {[
+                                { code: 'l', label: 'B', style: 'bold', title: 'Bold' },
+                                { code: 'm', label: 'S', style: 'strikethrough', title: 'Strikethrough' },
+                                { code: 'n', label: 'U', style: 'underline', title: 'Underline' },
+                                { code: 'o', label: 'I', style: 'italic', title: 'Italic' },
+                            ].map((btn) => (
                                 <button
-                                    key={code}
+                                    key={btn.code}
                                     type="button"
-                                    onClick={() => insertCode(code)}
-                                    css={tw`px-2 py-1 rounded text-xs font-medium transition-colors hover:bg-gray-700`}
-                                    style={{ backgroundColor: format.color, color: '#000' }}
-                                    title={format.name}
+                                    onClick={() => toggleStyle(btn.code)}
+                                    css={tw`w-8 h-8 rounded border-2 transition-all hover:scale-110 text-gray-100`}
+                                    style={{
+                                        backgroundColor: selectedStyles.includes(btn.code) ? '#374151' : '#1f2937',
+                                        borderColor: selectedStyles.includes(btn.code) ? '#10b981' : '#4b5563',
+                                        fontWeight: btn.style === 'bold' ? 700 : 400,
+                                        fontStyle: btn.style === 'italic' ? 'italic' : 'normal',
+                                        textDecoration: btn.style === 'strikethrough' ? 'line-through' : btn.style === 'underline' ? 'underline' : 'none',
+                                    }}
+                                    title={btn.title}
                                 >
-                                    §{code}
+                                    {btn.label}
                                 </button>
                             ))}
+                            <button
+                                type="button"
+                                onClick={() => {
+                                    setSelectedColor('f');
+                                    setSelectedStyles([]);
+                                }}
+                                css={tw`w-8 h-8 rounded border-2 bg-gray-700 border-gray-600 transition-all hover:scale-110 hover:border-red-500 text-gray-100`}
+                                title="Reset formatting"
+                            >
+                                R
+                            </button>
+                        </div>
 
-                        {/* Style Codes */}
-                        <div css={tw`col-span-full text-xs text-gray-400 mt-2 mb-1`}>Styles</div>
-                        {Object.entries(formatCodes)
-                            .filter(([_, format]) => format.style)
-                            .map(([code, format]) => (
-                                <button
-                                    key={code}
-                                    type="button"
-                                    onClick={() => insertCode(code)}
-                                    css={tw`px-2 py-1 bg-gray-700 rounded text-xs font-medium transition-colors hover:bg-gray-600 text-gray-200`}
-                                    title={format.name}
-                                >
-                                    §{code}
-                                </button>
-                            ))}
+                        {/* Apply button */}
+                        <button
+                            type="button"
+                            onClick={applyCurrentFormatting}
+                            css={tw`ml-2 px-4 h-8 rounded bg-blue-600 hover:bg-blue-700 text-white font-medium transition-colors`}
+                            title="Apply formatting to selected text"
+                        >
+                            Apply
+                        </button>
                     </div>
-                )}
+                </div>
+
+                {/* Text Editor */}
+                <div>
+                    <label css={tw`block text-sm font-medium mb-2 text-gray-300`}>MOTD Text (2 lines max)</label>
+                    <textarea
+                        ref={textareaRef}
+                        value={plainText}
+                        onChange={handleTextChange}
+                        rows={2}
+                        css={tw`w-full px-3 py-2 bg-gray-900 border border-gray-600 rounded focus:border-blue-500 focus:ring-1 focus:ring-blue-500 font-mono text-sm text-gray-100`}
+                        placeholder="Enter your MOTD here..."
+                    />
+                    <div css={tw`mt-2 text-xs text-gray-500`}>
+                        Select text, choose color/styles above, then click "Apply" to format. Use Shift+Enter for a new line.
+                    </div>
+                </div>
+
+                {/* Formatted Output */}
+                <div css={tw`mt-3 p-3 bg-gray-900 rounded border border-gray-700`}>
+                    <div css={tw`text-xs font-medium mb-1 text-gray-400`}>Formatted Output:</div>
+                    <code css={tw`text-xs text-green-400 break-all`}>{motd}</code>
+                </div>
             </div>
 
             {/* Quick Templates */}
@@ -222,28 +300,28 @@ export default ({ value, onChange }: MotdEditorProps) => {
                 <div css={tw`flex flex-wrap gap-2`}>
                     <button
                         type="button"
-                        onClick={() => handleChange('§6§lMy Server§r\\n§7Play now!')}
+                        onClick={() => onChange('§6§lMy Server§r\\n§7Play now!')}
                         css={tw`px-3 py-1 bg-gray-700 hover:bg-gray-600 rounded text-xs text-gray-200`}
                     >
                         Gold & Gray
                     </button>
                     <button
                         type="button"
-                        onClick={() => handleChange('§a§lSurvival§r §8|§r §bCreative\\n§7Join us today!')}
+                        onClick={() => onChange('§a§lSurvival§r §8|§r §bCreative\\n§7Join us today!')}
                         css={tw`px-3 py-1 bg-gray-700 hover:bg-gray-600 rounded text-xs text-gray-200`}
                     >
                         Multi-Color
                     </button>
                     <button
                         type="button"
-                        onClick={() => handleChange('§c§l♦ §6Epic Server §c♦\\n§e» §fVersion 1.20 §e«')}
+                        onClick={() => onChange('§c§l♦ §6Epic Server §c♦\\n§e» §fVersion 1.20 §e«')}
                         css={tw`px-3 py-1 bg-gray-700 hover:bg-gray-600 rounded text-xs text-gray-200`}
                     >
                         Fancy
                     </button>
                     <button
                         type="button"
-                        onClick={() => handleChange('')}
+                        onClick={() => onChange('')}
                         css={tw`px-3 py-1 bg-red-700 hover:bg-red-600 rounded text-xs text-white`}
                     >
                         Clear

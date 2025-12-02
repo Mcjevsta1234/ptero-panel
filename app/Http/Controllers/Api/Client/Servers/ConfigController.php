@@ -526,47 +526,4 @@ class ConfigController extends ClientApiController
         // Default description
         return 'Configuration option for ' . str_replace(['-', '_'], ' ', $key);
     }
-
-        // Check exact matches
-        $lowerKey = strtolower($key);
-        if (isset($descriptions[$lowerKey])) {
-            return $descriptions[$lowerKey];
-        }
-
-        // Check partial matches
-        foreach ($descriptions as $pattern => $desc) {
-            if (str_contains($lowerKey, $pattern)) {
-                return $desc;
-            }
-        }
-
-        // Generate based on key name
-        if (str_contains($lowerKey, 'enable') || str_contains($lowerKey, 'enabled')) {
-            return 'Enable or disable this feature';
-        }
-        if (str_contains($lowerKey, 'max')) {
-            return 'Maximum value for ' . str_replace(['-', '_'], ' ', $key);
-        }
-        if (str_contains($lowerKey, 'min')) {
-            return 'Minimum value for ' . str_replace(['-', '_'], ' ', $key);
-        }
-        if (str_contains($lowerKey, 'timeout')) {
-            return 'Timeout duration in seconds';
-        }
-        if (str_contains($lowerKey, 'delay')) {
-            return 'Delay in ticks or seconds';
-        }
-        if (str_contains($lowerKey, 'distance')) {
-            return 'Distance in blocks or chunks';
-        }
-        if (str_contains($lowerKey, 'radius')) {
-            return 'Radius in blocks';
-        }
-        if (str_contains($lowerKey, 'limit')) {
-            return 'Limit for ' . str_replace(['-', '_'], ' ', $key);
-        }
-
-        // Default description
-        return 'Configuration option for ' . str_replace(['-', '_'], ' ', $key);
-    }
 }
