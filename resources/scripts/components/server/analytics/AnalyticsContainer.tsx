@@ -32,7 +32,7 @@ export default () => {
     const [loading, setLoading] = useState(true);
     const [period, setPeriod] = useState('24h');
     const [analytics, setAnalytics] = useState<ServerAnalytics[]>([]);
-    const [countdown, setCountdown] = useState(60);
+    const [countdown, setCountdown] = useState(30);
     const { clearFlashes, clearAndAddHttpError } = useFlash();
 
     const fetchAnalytics = () => {
@@ -46,17 +46,17 @@ export default () => {
         setLoading(true);
         clearFlashes('analytics');
         fetchAnalytics();
-        setCountdown(60);
+        setCountdown(30);
 
-        // Refresh every 60 seconds to match cron collection rate
+        // Refresh every 30 seconds to match collection rate
         const interval = setInterval(() => {
             fetchAnalytics();
-            setCountdown(60);
-        }, 60000);
+            setCountdown(30);
+        }, 30000);
 
         // Countdown timer
         const countdownInterval = setInterval(() => {
-            setCountdown((prev) => (prev > 0 ? prev - 1 : 60));
+            setCountdown((prev) => (prev > 0 ? prev - 1 : 30));
         }, 1000);
 
         return () => {
@@ -102,7 +102,7 @@ export default () => {
                                         fill="none"
                                         stroke="currentColor"
                                         strokeWidth="2"
-                                        strokeDasharray={`${(countdown / 60) * 87.96} 87.96`}
+                                        strokeDasharray={`${(countdown / 30) * 87.96} 87.96`}
                                         css={tw`text-blue-500 transition-all duration-1000`}
                                     />
                                 </svg>

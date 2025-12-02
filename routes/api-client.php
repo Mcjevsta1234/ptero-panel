@@ -94,6 +94,14 @@ Route::group([
         Route::post('/', [Client\Servers\AnalyticsController::class, 'store']);
     });
 
+    Route::group(['prefix' => '/mods'], function () {
+        Route::get('/search', [Client\Servers\ModsController::class, 'search']);
+        Route::get('/{modId}/files', [Client\Servers\ModsController::class, 'files']);
+        Route::get('/', [Client\Servers\ModsController::class, 'index']);
+        Route::post('/', [Client\Servers\ModsController::class, 'install']);
+        Route::delete('/{modId}', [Client\Servers\ModsController::class, 'uninstall']);
+    });
+
     Route::group(['prefix' => '/databases'], function () {
         Route::get('/', [Client\Servers\DatabaseController::class, 'index']);
         Route::post('/', [Client\Servers\DatabaseController::class, 'store']);

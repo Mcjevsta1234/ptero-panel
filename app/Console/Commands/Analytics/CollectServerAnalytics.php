@@ -19,8 +19,13 @@ class CollectServerAnalytics extends Command
 
     public function handle(): int
     {
-        // Collect once per minute (matches cron schedule)
-        $this->collectOnce();
+        // Collect twice per minute (every 30 seconds)
+        for ($i = 0; $i < 2; $i++) {
+            if ($i > 0) {
+                sleep(30);
+            }
+            $this->collectOnce();
+        }
         return 0;
     }
 
@@ -45,6 +50,18 @@ class CollectServerAnalytics extends Command
                         'disk_usage' => $details['utilization']['disk_bytes'] ?? 0,
                         'network_rx' => $details['utilization']['network']['rx_bytes'] ?? ($details['utilization']['network_rx_bytes'] ?? 0),
                         'network_tx' => $details['utilization']['network']['tx_bytes'] ?? ($details['utilization']['network_tx_bytes'] ?? 0),
+                        'recorded_at' => now(),
+                    ]);
+                    $collected++;
+                } else {
+                    // Record zeros when server is offline to show flat line
+                    ServerAnalytic::create([
+                        'server_id' => $server->id,
+                        'cpu_usage' => 0,
+                        'memory_usage' => 0,
+                        'disk_usage' => 0,
+                        'network_rx' => 0,
+                        'network_tx' => 0,
                         'recorded_at' => now(),
                     ]);
                     $collected++;
