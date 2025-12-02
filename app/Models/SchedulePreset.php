@@ -23,6 +23,11 @@ class SchedulePreset extends Model
         'only_when_online' => 'boolean',
     ];
 
+    public function getRouteKeyName(): string
+    {
+        return 'id';
+    }
+
     public function tasks(): HasMany
     {
         return $this->hasMany(SchedulePresetTask::class, 'preset_id');
