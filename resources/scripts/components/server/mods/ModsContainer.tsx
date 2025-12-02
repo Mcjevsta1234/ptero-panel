@@ -5,7 +5,7 @@ import TitledGreyBox from '@/components/elements/TitledGreyBox';
 import Spinner from '@/components/elements/Spinner';
 import FlashMessageRender from '@/components/FlashMessageRender';
 import useFlash from '@/plugins/useFlash';
-import getServerMods from '@/api/server/mods/getServerMods';
+import getModsAndPlugins from '@/api/server/mods/getModsAndPlugins';
 import searchMods from '@/api/server/mods/searchMods';
 import installMod from '@/api/server/mods/installMod';
 import uninstallMod from '@/api/server/mods/uninstallMod';
@@ -59,9 +59,9 @@ export default () => {
         clearFlashes('mods');
         setLoading(true);
 
-        getServerMods(uuid, type)
-            .then((mods) => setInstalledMods(mods))
-            .catch((error) => clearAndAddHttpError({ key: 'mods', error }))
+        getModsAndPlugins(uuid, type)
+            .then((mods: any) => setInstalledMods(mods))
+            .catch((error: any) => clearAndAddHttpError({ key: 'mods', error }))
             .finally(() => setLoading(false));
     };
 
@@ -133,12 +133,12 @@ export default () => {
 
             {/* Type and Source Selection */}
             <div css={tw`flex gap-4 mb-4`}>
-                <Button onClick={() => setType('mod')} color={type === 'mod' ? 'primary' : 'secondary'} size="small">
+                <Button onClick={() => setType('mod')} color={type === 'mod' ? 'primary' : 'grey'} size="small">
                     Mods
                 </Button>
                 <Button
                     onClick={() => setType('plugin')}
-                    color={type === 'plugin' ? 'primary' : 'secondary'}
+                    color={type === 'plugin' ? 'primary' : 'grey'}
                     size="small"
                 >
                     Plugins
@@ -148,14 +148,14 @@ export default () => {
                     <>
                         <Button
                             onClick={() => setSource('curseforge')}
-                            color={source === 'curseforge' ? 'primary' : 'secondary'}
+                            color={source === 'curseforge' ? 'primary' : 'grey'}
                             size="small"
                         >
                             CurseForge
                         </Button>
                         <Button
                             onClick={() => setSource('spigot')}
-                            color={source === 'spigot' ? 'primary' : 'secondary'}
+                            color={source === 'spigot' ? 'primary' : 'grey'}
                             size="small"
                         >
                             Spigot
