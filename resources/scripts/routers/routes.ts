@@ -11,6 +11,7 @@ import SettingsContainer from '@/components/server/settings/SettingsContainer';
 import ServerPropertiesContainer from '@/components/server/configs/ServerPropertiesContainer';
 import AdvancedConfigContainer from '@/components/server/configs/AdvancedConfigContainer';
 import AnalyticsContainer from '@/components/server/analytics/AnalyticsContainer';
+import ModsContainer from '@/components/server/mods/ModsContainer';
 import AccountOverviewContainer from '@/components/dashboard/AccountOverviewContainer';
 import AccountApiContainer from '@/components/dashboard/AccountApiContainer';
 import AccountSSHContainer from '@/components/dashboard/ssh/AccountSSHContainer';
@@ -19,7 +20,7 @@ import DedicatedServersContainer from '@/components/dashboard/dedicated/Dedicate
 import DedicatedServerDetailContainer from '@/components/dashboard/dedicated/DedicatedServerDetailContainer';
 import CreateDedicatedServerContainer from '@/components/dashboard/dedicated/CreateDedicatedServerContainer';
 import ServerActivityLogContainer from '@/components/server/ServerActivityLogContainer';
-import { FaBoltLightning, FaBoxArchive, FaCalendar, FaDatabase, FaEye, FaFolder, FaGear, FaKey, FaLock, FaPlay, FaTerminal, FaUser, FaUsers, FaServer, FaWrench, FaChartLine, FaScrewdriverWrench } from 'react-icons/fa6';
+import { FaBoltLightning, FaBoxArchive, FaCalendar, FaDatabase, FaEye, FaFolder, FaGear, FaKey, FaLock, FaPlay, FaTerminal, FaUser, FaUsers, FaServer, FaWrench, FaChartLine, FaScrewdriverWrench, FaPuzzlePiece } from 'react-icons/fa6';
 
 // Each of the router files is already code split out appropriately — so
 // all of the items above will only be loaded in when that router is loaded.
@@ -122,6 +123,13 @@ export default {
                 name: 'server.analytics',
                 component: AnalyticsContainer,
                 icon: FaChartLine,
+            },
+            {
+                path: '/mods',
+                permission: null,
+                name: 'server.mods',
+                component: ModsContainer,
+                icon: FaPuzzlePiece,
             },
         ],
         management: [

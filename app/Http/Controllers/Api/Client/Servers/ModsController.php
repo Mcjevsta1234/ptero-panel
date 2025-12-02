@@ -15,6 +15,7 @@ class ModsController extends ClientApiController
 {
     public function __construct(
         private CurseForgeService $curseForge,
+        private SpigotService $spigot,
         private ModInstallerService $installer
     ) {
         parent::__construct();
@@ -27,13 +28,18 @@ class ModsController extends ClientApiController
     {
         $query = $request->input('query', '');
         $type = $request->input('type', 'mod'); // mod or plugin
+        $source = $request->input('source', 'curseforge'); // curseforge or spigot
         $gameVersion = $request->input('game_version');
 
+        if ($source === 'spigot' && $type === 'plugin') {
+            $results = $this->spigot->search($query);
+            return new JsonResponse(['data' => $results, 'source' => 'spigot']);
+        }
+
         $classId = $type === 'plugin' ? 5 : 6; // 5 = Bukkit Plugins, 6 = Mods
-        
         $results = $this->curseForge->search($query, $gameVersion, $classId);
 
-        return new JsonResponse($results);
+        return new JsonResponse(['data' => $results, 'source' => 'curseforge']);
     }
 
     /**
@@ -41,10 +47,17 @@ class ModsController extends ClientApiController
      */
     public function files(GetServerRequest $request, int $modId): JsonResponse
     {
+        $source = $request->input('source', 'curseforge');
+        
+        if ($source === 'spigot') {
+            $versions = $this->spigot->getVersions($modId);
+            return new JsonResponse(['data' => $versions, 'source' => 'spigot']);
+        }
+
         $gameVersion = $request->input('game_version');
         $files = $this->curseForge->getModFiles($modId, $gameVersion);
 
-        return new JsonResponse($files);
+        return new JsonResponse(['data' => $files, 'source' => 'curseforge']);
     }
 
     /**
@@ -77,14 +90,18 @@ class ModsController extends ClientApiController
             'mod_id' => 'required|integer',
             'file_id' => 'required|integer',
             'type' => 'required|in:mod,plugin',
+            'source' => 'nullable|in:curseforge,spigot',
         ]);
+
+        $source = $validated['source'] ?? 'curseforge';
 
         try {
             $serverMod = $this->installer->install(
                 $server,
                 $validated['mod_id'],
                 $validated['file_id'],
-                $validated['type']
+                $validated['type'],
+                $source
             );
 
             return new JsonResponse($serverMod, 201);
