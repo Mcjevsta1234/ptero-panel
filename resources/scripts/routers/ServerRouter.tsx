@@ -223,7 +223,7 @@ export default () => {
                                             <MaintenanceAlert />
                                             <TransitionRouter>
                                                 <Switch location={location}>
-                                                    {routes.server.control.map(
+                                                    {routes.server.overview.map(
                                                         ({
                                                             path,
                                                             permission,
@@ -283,7 +283,37 @@ export default () => {
                                                             );
                                                         }
                                                     )}
-                                                    {routes.server.administration.map(
+                                                    {routes.server.tools.map(
+                                                        ({
+                                                            path,
+                                                            permission,
+                                                            component: Component,
+                                                            nestIds,
+                                                            eggIds,
+                                                            nestId,
+                                                            eggId,
+                                                        }) => {
+                                                            return (
+                                                                ((nestIds && nestIds.includes(serverNestId ?? 0)) ||
+                                                                    (eggIds && eggIds.includes(serverEggId ?? 0)) ||
+                                                                    (nestId && serverNestId === nestId) ||
+                                                                    (eggId && serverEggId === eggId) ||
+                                                                    (!eggIds && !nestIds && !nestId && !eggId)) && (
+                                                                    <PermissionRoute
+                                                                        key={path}
+                                                                        permission={permission}
+                                                                        path={to(path)}
+                                                                        exact
+                                                                    >
+                                                                        <Spinner.Suspense>
+                                                                            <Component />
+                                                                        </Spinner.Suspense>
+                                                                    </PermissionRoute>
+                                                                )
+                                                            );
+                                                        }
+                                                    )}
+                                                    {routes.server.advanced.map(
                                                         ({
                                                             path,
                                                             permission,

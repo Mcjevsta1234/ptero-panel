@@ -323,10 +323,20 @@ print_success "Permissions updated"
 print_step "Building frontend assets"
 if [ -f "package.json" ]; then
     if command -v yarn &> /dev/null; then
+        # Install recharts for analytics charts
+        print_step "Installing recharts dependency"
+        yarn add recharts
+        print_success "Recharts installed"
+        
         yarn install
         yarn build:production
         print_success "Frontend assets built with yarn"
     elif command -v npm &> /dev/null; then
+        # Install recharts for analytics charts
+        print_step "Installing recharts dependency"
+        npm install recharts --save
+        print_success "Recharts installed"
+        
         npm install
         npm run build
         print_success "Frontend assets built with npm"
