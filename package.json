@@ -142,8 +142,7 @@
         "watch": "cross-env NODE_ENV=development NODE_OPTIONS=--openssl-legacy-provider ./node_modules/.bin/webpack --watch --progress",
         "build": "cross-env NODE_ENV=development NODE_OPTIONS=--openssl-legacy-provider ./node_modules/.bin/webpack --progress",
         "build:production": "yarn run clean && cross-env NODE_ENV=production NODE_OPTIONS=--openssl-legacy-provider ./node_modules/.bin/webpack --mode production",
-        "serve": "yarn run clean && cross-env WEBPACK_PUBLIC_PATH=/webpack@hmr/ NODE_ENV=development NODE_OPTIONS=--openssl-legacy-provider webpack-dev-server --host 0.0.0.0 --port 8080 --public https://reviactyl.test --hot",
-        "postinstall": "yarn add --dev @babel/plugin-proposal-nullish-coalescing-operator @babel/plugin-proposal-optional-chaining"
+        "serve": "yarn run clean && cross-env WEBPACK_PUBLIC_PATH=/webpack@hmr/ NODE_ENV=development NODE_OPTIONS=--openssl-legacy-provider webpack-dev-server --host 0.0.0.0 --port 8080 --public https://reviactyl.test --hot"
     },
     "browserslist": [
         "> 0.5%",
