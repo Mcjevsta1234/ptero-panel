@@ -13,7 +13,23 @@ const Container = styled.div`
 `;
 
 const Title = styled.h3`
-    ${tw`text-sm font-semibold text-gray-300 uppercase tracking-wide mb-3 flex items-center gap-2`}
+    ${tw`text-sm font-semibold text-gray-300 uppercase tracking-wide mb-3 flex items-center gap-2 justify-between`}
+`;
+
+const TitleLeft = styled.div`
+    ${tw`flex items-center gap-2`}
+`;
+
+const CopyAllButton = styled.button`
+    ${tw`flex items-center gap-2 px-3 py-1.5 bg-gray-600 hover:bg-gray-500 text-white rounded text-xs font-medium transition-all duration-150`}
+    
+    svg {
+        ${tw`w-4 h-4`}
+    }
+
+    &:disabled {
+        ${tw`bg-gray-500 cursor-not-allowed`}
+    }
 `;
 
 const LogEntry = styled.div`
@@ -206,11 +222,39 @@ const CrashDiagnostics = ({ className }: { className?: string }) => {
         }
     };
 
+    const copyAllLogs = () => {
+        const logsWithUrls = logs.filter(log => log.mclogsUrl);
+        
+        if (logsWithUrls.length === 0) {
+            return;
+        }
+
+        const formattedLogs = logsWithUrls.map(log => {
+            const logName = log.filename
+                .replace('crash-reports/', '')
+                .replace('latest.log', 'Latest Log')
+                .replace('.txt', '')
+                .replace('.log', '');
+            
+            return `${logName}\n${log.mclogsUrl}`;
+        }).join('\n\n');
+
+        navigator.clipboard.writeText(formattedLogs);
+    };
+
     return (
         <Container className={className}>
             <Title>
-                <ExclamationCircleIcon css={tw`w-5 h-5 text-yellow-400`} />
-                Crash Diagnostics
+                <TitleLeft>
+                    <ExclamationCircleIcon css={tw`w-5 h-5 text-yellow-400`} />
+                    Crash Diagnostics
+                </TitleLeft>
+                {logs.some(log => log.mclogsUrl) && (
+                    <CopyAllButton onClick={copyAllLogs}>
+                        <ClipboardCopyIcon />
+                        Copy All
+                    </CopyAllButton>
+                )}
             </Title>
 
             {logs.length === 0 ? (
