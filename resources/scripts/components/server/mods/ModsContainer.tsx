@@ -1,224 +1,257 @@
 import React, { useState, useEffect } from 'react';
-import { ServerContext } from '@/state/server';
-import ContentBlock from '@/witchyworlds/ui/ContentBlock';
-import Card from '@/witchyworlds/ui/Card';
 import tw from 'twin.macro';
+import { ServerContext } from '@/state/server';
+import TitledGreyBox from '@/components/elements/TitledGreyBox';
+import Spinner from '@/components/elements/Spinner';
 import FlashMessageRender from '@/components/FlashMessageRender';
 import useFlash from '@/plugins/useFlash';
-import Spinner from '@/components/elements/Spinner';
-import getModsAndPlugins from '@/api/server/mods/getModsAndPlugins';
+import getServerMods from '@/api/server/mods/getServerMods';
 import searchMods from '@/api/server/mods/searchMods';
 import installMod from '@/api/server/mods/installMod';
 import uninstallMod from '@/api/server/mods/uninstallMod';
 import Button from '@/components/elements/Button';
 import Input from '@/components/elements/Input';
 
+interface Mod {
+    id: number;
+    name: string;
+    slug?: string;
+    summary?: string;
+    downloadCount?: number;
+    logo?: {
+        url: string;
+    };
+    latestFiles?: any[];
+}
+
+interface InstalledMod {
+    id: number;
+    mod_id: number;
+    file_id: number;
+    name: string;
+    version: string;
+    filename: string;
+    type: string;
+    status: string;
+    error_message?: string;
+}
+
 export default () => {
     const uuid = ServerContext.useStoreState((state) => state.server.data!.uuid);
-    const [loading, setLoading] = useState(true);
-    const [searching, setSearching] = useState(false);
-    const [installedMods, setInstalledMods] = useState<any[]>([]);
-    const [searchResults, setSearchResults] = useState<any[]>([]);
-    const [searchQuery, setSearchQuery] = useState('');
-    const [selectedType, setSelectedType] = useState<'mod' | 'plugin'>('plugin');
-    const [selectedSource, setSelectedSource] = useState<'curseforge' | 'spigot'>('spigot');
     const { clearFlashes, clearAndAddHttpError } = useFlash();
 
-    const loadInstalled = () => {
-        getModsAndPlugins(uuid, selectedType)
-            .then((data) => setInstalledMods(data))
+    const [loading, setLoading] = useState(false);
+    const [installedMods, setInstalledMods] = useState<InstalledMod[]>([]);
+    const [searchResults, setSearchResults] = useState<Mod[]>([]);
+    const [searchQuery, setSearchQuery] = useState('');
+    const [type, setType] = useState<'mod' | 'plugin'>('plugin');
+    const [source, setSource] = useState<'curseforge' | 'spigot'>('spigot');
+    const [searching, setSearching] = useState(false);
+    const [activeTab, setActiveTab] = useState<'install' | 'installed'>('install');
+
+    useEffect(() => {
+        if (activeTab === 'installed') {
+            loadInstalledMods();
+        }
+    }, [type, activeTab]);
+
+    const loadInstalledMods = () => {
+        clearFlashes('mods');
+        setLoading(true);
+
+        getServerMods(uuid, type)
+            .then((mods) => setInstalledMods(mods))
             .catch((error) => clearAndAddHttpError({ key: 'mods', error }))
             .finally(() => setLoading(false));
     };
 
-    useEffect(() => {
-        loadInstalled();
-    }, [uuid, selectedType]);
-
     const handleSearch = () => {
         if (!searchQuery.trim()) return;
 
+        clearFlashes('mods');
         setSearching(true);
-        searchMods(uuid, searchQuery, selectedType, selectedSource)
-            .then((data) => setSearchResults(data.data || []))
+
+        searchMods(uuid, searchQuery, type, source)
+            .then((results) => setSearchResults(results.data || []))
             .catch((error) => clearAndAddHttpError({ key: 'mods', error }))
             .finally(() => setSearching(false));
     };
 
     const handleInstall = (modId: number, fileId: number) => {
-        installMod(uuid, modId, fileId, selectedType, selectedSource)
+        clearFlashes('mods');
+        setLoading(true);
+
+        installMod(uuid, modId, fileId, type, source)
             .then(() => {
-                loadInstalled();
-                setSearchResults([]);
-                setSearchQuery('');
+                setActiveTab('installed');
             })
-            .catch((error) => clearAndAddHttpError({ key: 'mods', error }));
+            .catch((error) => clearAndAddHttpError({ key: 'mods', error }))
+            .finally(() => setLoading(false));
     };
 
     const handleUninstall = (modId: number) => {
+        clearFlashes('mods');
+        setLoading(true);
+
         uninstallMod(uuid, modId)
-            .then(() => loadInstalled())
-            .catch((error) => clearAndAddHttpError({ key: 'mods', error }));
+            .then(() => {
+                loadInstalledMods();
+            })
+            .catch((error) => clearAndAddHttpError({ key: 'mods', error }))
+            .finally(() => setLoading(false));
     };
 
     return (
-        <ContentBlock title={'Mods & Plugins'}>
+        <div css={tw`w-full`}>
             <FlashMessageRender byKey={'mods'} css={tw`mb-4`} />
 
-            {/* Type and Source Selector */}
-            <Card css={tw`p-4 mb-4`}>
-                <div css={tw`flex flex-wrap gap-4`}>
-                    <div>
-                        <label css={tw`block text-sm font-medium text-gray-300 mb-2`}>Type</label>
-                        <div css={tw`flex gap-2`}>
-                            <button
-                                onClick={() => setSelectedType('mod')}
-                                css={[
-                                    tw`px-4 py-2 rounded font-medium transition-colors`,
-                                    selectedType === 'mod'
-                                        ? tw`bg-blue-600 text-white`
-                                        : tw`bg-gray-700 text-gray-300 hover:bg-gray-600`,
-                                ]}
-                            >
-                                Mods
-                            </button>
-                            <button
-                                onClick={() => setSelectedType('plugin')}
-                                css={[
-                                    tw`px-4 py-2 rounded font-medium transition-colors`,
-                                    selectedType === 'plugin'
-                                        ? tw`bg-blue-600 text-white`
-                                        : tw`bg-gray-700 text-gray-300 hover:bg-gray-600`,
-                                ]}
-                            >
-                                Plugins
-                            </button>
-                        </div>
+            {/* Tab Navigation */}
+            <div css={tw`flex gap-2 mb-4 border-b border-neutral-700`}>
+                <button
+                    onClick={() => setActiveTab('install')}
+                    css={[
+                        tw`px-4 py-2 font-medium transition-colors`,
+                        activeTab === 'install'
+                            ? tw`text-blue-400 border-b-2 border-blue-400`
+                            : tw`text-neutral-400 hover:text-neutral-200`,
+                    ]}
+                >
+                    Install
+                </button>
+                <button
+                    onClick={() => setActiveTab('installed')}
+                    css={[
+                        tw`px-4 py-2 font-medium transition-colors`,
+                        activeTab === 'installed'
+                            ? tw`text-blue-400 border-b-2 border-blue-400`
+                            : tw`text-neutral-400 hover:text-neutral-200`,
+                    ]}
+                >
+                    Installed
+                </button>
+            </div>
+
+            {/* Type and Source Selection */}
+            <div css={tw`flex gap-4 mb-4`}>
+                <Button onClick={() => setType('mod')} color={type === 'mod' ? 'primary' : 'secondary'} size="small">
+                    Mods
+                </Button>
+                <Button
+                    onClick={() => setType('plugin')}
+                    color={type === 'plugin' ? 'primary' : 'secondary'}
+                    size="small"
+                >
+                    Plugins
+                </Button>
+
+                {type === 'plugin' && activeTab === 'install' && (
+                    <>
+                        <Button
+                            onClick={() => setSource('curseforge')}
+                            color={source === 'curseforge' ? 'primary' : 'secondary'}
+                            size="small"
+                        >
+                            CurseForge
+                        </Button>
+                        <Button
+                            onClick={() => setSource('spigot')}
+                            color={source === 'spigot' ? 'primary' : 'secondary'}
+                            size="small"
+                        >
+                            Spigot
+                        </Button>
+                    </>
+                )}
+            </div>
+
+            {activeTab === 'install' ? (
+                <TitledGreyBox title={'Search ' + (type === 'mod' ? 'Mods' : 'Plugins')}>
+                    <div css={tw`flex gap-2 mb-4`}>
+                        <Input
+                            value={searchQuery}
+                            onChange={(e) => setSearchQuery(e.target.value)}
+                            placeholder={`Search ${type === 'mod' ? 'mods' : 'plugins'}...`}
+                            onKeyPress={(e) => e.key === 'Enter' && handleSearch()}
+                        />
+                        <Button onClick={handleSearch} disabled={searching || !searchQuery.trim()} size="small">
+                            {searching ? <Spinner size={'small'} /> : 'Search'}
+                        </Button>
                     </div>
 
-                    {selectedType === 'plugin' && (
-                        <div>
-                            <label css={tw`block text-sm font-medium text-gray-300 mb-2`}>Source</label>
-                            <div css={tw`flex gap-2`}>
-                                <button
-                                    onClick={() => setSelectedSource('spigot')}
-                                    css={[
-                                        tw`px-4 py-2 rounded font-medium transition-colors`,
-                                        selectedSource === 'spigot'
-                                            ? tw`bg-blue-600 text-white`
-                                            : tw`bg-gray-700 text-gray-300 hover:bg-gray-600`,
-                                    ]}
+                    {searching ? (
+                        <Spinner size={'large'} centered />
+                    ) : searchResults.length > 0 ? (
+                        <div css={tw`space-y-2`}>
+                            {searchResults.map((mod) => (
+                                <div
+                                    key={mod.id}
+                                    css={tw`p-4 bg-neutral-700 rounded flex justify-between items-center`}
                                 >
-                                    Spigot
-                                </button>
-                                <button
-                                    onClick={() => setSelectedSource('curseforge')}
-                                    css={[
-                                        tw`px-4 py-2 rounded font-medium transition-colors`,
-                                        selectedSource === 'curseforge'
-                                            ? tw`bg-blue-600 text-white`
-                                            : tw`bg-gray-700 text-gray-300 hover:bg-gray-600`,
-                                    ]}
+                                    <div css={tw`flex items-center gap-4`}>
+                                        {mod.logo?.url && <img src={mod.logo.url} css={tw`w-12 h-12 rounded`} />}
+                                        <div>
+                                            <div css={tw`font-bold`}>{mod.name}</div>
+                                            {mod.summary && (
+                                                <div css={tw`text-sm text-neutral-400`}>{mod.summary}</div>
+                                            )}
+                                            {mod.downloadCount && (
+                                                <div css={tw`text-xs text-neutral-500`}>
+                                                    {mod.downloadCount.toLocaleString()} downloads
+                                                </div>
+                                            )}
+                                        </div>
+                                    </div>
+                                    {mod.latestFiles && mod.latestFiles.length > 0 && (
+                                        <Button
+                                            onClick={() => handleInstall(mod.id, mod.latestFiles![0].id)}
+                                            size="small"
+                                            disabled={loading}
+                                        >
+                                            Install
+                                        </Button>
+                                    )}
+                                </div>
+                            ))}
+                        </div>
+                    ) : (
+                        <p css={tw`text-center text-neutral-400 py-8`}>
+                            Search for {type === 'mod' ? 'mods' : 'plugins'} to install
+                        </p>
+                    )}
+                </TitledGreyBox>
+            ) : (
+                <TitledGreyBox title={'Installed ' + (type === 'mod' ? 'Mods' : 'Plugins')}>
+                    {loading ? (
+                        <Spinner size={'large'} centered />
+                    ) : installedMods.length === 0 ? (
+                        <p css={tw`text-center text-neutral-400 py-8`}>
+                            No {type === 'mod' ? 'mods' : 'plugins'} installed.
+                        </p>
+                    ) : (
+                        <div css={tw`space-y-2`}>
+                            {installedMods.map((mod) => (
+                                <div
+                                    key={mod.id}
+                                    css={tw`p-4 bg-neutral-700 rounded flex justify-between items-center`}
                                 >
-                                    CurseForge
-                                </button>
-                            </div>
+                                    <div>
+                                        <div css={tw`font-bold`}>{mod.name}</div>
+                                        <div css={tw`text-sm text-neutral-400`}>
+                                            Version: {mod.version} | Status: {mod.status}
+                                        </div>
+                                        {mod.error_message && (
+                                            <div css={tw`text-xs text-red-400`}>{mod.error_message}</div>
+                                        )}
+                                    </div>
+                                    <Button onClick={() => handleUninstall(mod.id)} color={'red'} size="small">
+                                        Uninstall
+                                    </Button>
+                                </div>
+                            ))}
                         </div>
                     )}
-                </div>
-            </Card>
-
-            {/* Search */}
-            <Card css={tw`p-4 mb-4`}>
-                <div css={tw`flex gap-2`}>
-                    <Input
-                        type="text"
-                        value={searchQuery}
-                        onChange={(e) => setSearchQuery(e.target.value)}
-                        onKeyPress={(e) => e.key === 'Enter' && handleSearch()}
-                        placeholder={`Search ${selectedSource === 'spigot' ? 'Spigot' : 'CurseForge'}...`}
-                        css={tw`flex-1`}
-                    />
-                    <Button onClick={handleSearch} disabled={searching || !searchQuery.trim()}>
-                        {searching ? 'Searching...' : 'Search'}
-                    </Button>
-                </div>
-
-                {searchResults.length > 0 && (
-                    <div css={tw`mt-4 space-y-2`}>
-                        {searchResults.map((result) => (
-                            <div
-                                key={result.id}
-                                css={tw`p-3 bg-gray-700 rounded flex items-center justify-between`}
-                            >
-                                <div>
-                                    <h4 css={tw`font-medium text-gray-100`}>{result.name || result.title}</h4>
-                                    <p css={tw`text-sm text-gray-400`}>
-                                        {selectedSource === 'spigot'
-                                            ? `${result.downloads?.toLocaleString() || 0} downloads`
-                                            : `By ${result.author?.name || 'Unknown'}`}
-                                    </p>
-                                </div>
-                                <Button
-                                    size="small"
-                                    onClick={() =>
-                                        handleInstall(
-                                            result.id,
-                                            selectedSource === 'spigot'
-                                                ? result.latest_version?.id || 0
-                                                : result.latestFiles?.[0]?.id || 0
-                                        )
-                                    }
-                                >
-                                    Install
-                                </Button>
-                            </div>
-                        ))}
-                    </div>
-                )}
-            </Card>
-
-            {/* Installed Mods/Plugins */}
-            <Card css={tw`p-4`}>
-                <h3 css={tw`text-lg font-bold text-gray-100 mb-4`}>
-                    Installed {selectedType === 'mod' ? 'Mods' : 'Plugins'}
-                </h3>
-
-                {loading ? (
-                    <Spinner size="large" centered />
-                ) : installedMods.length === 0 ? (
-                    <p css={tw`text-center text-gray-400 py-8`}>
-                        No {selectedType === 'mod' ? 'mods' : 'plugins'} installed
-                    </p>
-                ) : (
-                    <div css={tw`space-y-2`}>
-                        {installedMods.map((mod) => (
-                            <div
-                                key={mod.id}
-                                css={tw`p-3 bg-gray-700 rounded flex items-center justify-between`}
-                            >
-                                <div>
-                                    <h4 css={tw`font-medium text-gray-100`}>{mod.name}</h4>
-                                    <p css={tw`text-sm text-gray-400`}>
-                                        {mod.version} • {mod.filename}
-                                    </p>
-                                    {mod.status === 'downloading' && (
-                                        <span css={tw`text-xs text-blue-400`}>Downloading...</span>
-                                    )}
-                                    {mod.status === 'failed' && (
-                                        <span css={tw`text-xs text-red-400`}>
-                                            Failed: {mod.error_message}
-                                        </span>
-                                    )}
-                                </div>
-                                <Button size="small" color="red" onClick={() => handleUninstall(mod.id)}>
-                                    Uninstall
-                                </Button>
-                            </div>
-                        ))}
-                    </div>
-                )}
-            </Card>
-        </ContentBlock>
+                </TitledGreyBox>
+            )}
+        </div>
     );
 };
