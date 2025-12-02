@@ -24,7 +24,8 @@ import { hashToPath } from '@/helpers';
 import style from './style.module.css';
 import Card from '@/witchyworlds/ui/Card';
 import { useTranslation } from 'react-i18next';
-import { MagnifyingGlassIcon } from '@heroicons/react/24/outline';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faSearch } from '@fortawesome/free-solid-svg-icons';
 
 const sortFiles = (files: FileObject[]): FileObject[] => {
     const sortedFiles: FileObject[] = files
@@ -100,7 +101,7 @@ export default () => {
                 </Card>
                 <Card className={'mb-1 !rounded-t-none !rounded-b-none !px-3 !py-2'}>
                     <div className={'relative'}>
-                        <MagnifyingGlassIcon className={'absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400'} />
+                        <FontAwesomeIcon icon={faSearch} className={'absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400'} />
                         <input
                             type="text"
                             placeholder={t('search-files', { defaultValue: 'Search files...' })}
