@@ -27,6 +27,13 @@ import { useTranslation } from 'react-i18next';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faSearch } from '@fortawesome/free-solid-svg-icons';
 
+interface RecentFile {
+    name: string;
+    path: string;
+    directory: string;
+    timestamp: number;
+}
+
 const sortFiles = (files: FileObject[]): FileObject[] => {
     const sortedFiles: FileObject[] = files
         .sort((a, b) => a.name.localeCompare(b.name))
@@ -47,13 +54,50 @@ export default () => {
     const selectedFilesLength = ServerContext.useStoreState((state) => state.files.selectedFiles.length);
 
     const [searchQuery, setSearchQuery] = useState('');
+    const [showRecent, setShowRecent] = useState(false);
+    const [recentFiles, setRecentFiles] = useState<RecentFile[]>([]);
 
     useEffect(() => {
         clearFlashes('files');
         setSelectedFiles([]);
         setDirectory(hashToPath(hash));
         setSearchQuery('');
+        setShowRecent(false);
+        loadRecentFiles();
     }, [hash]);
+
+    const loadRecentFiles = () => {
+        try {
+            const stored = localStorage.getItem(`recent_files_${id}`);
+            if (stored) {
+                const parsed: RecentFile[] = JSON.parse(stored);
+                setRecentFiles(parsed.filter(f => Date.now() - f.timestamp < 7 * 24 * 60 * 60 * 1000).slice(0, 5));
+            }
+        } catch (e) {
+            console.error('Failed to load recent files', e);
+        }
+    };
+
+    const trackFileView = (file: FileObject) => {
+        if (!file.isFile) return;
+        try {
+            const recent: RecentFile = {
+                name: file.name,
+                path: `${directory}/${file.name}`.replace(/\/+/g, '/'),
+                directory: directory,
+                timestamp: Date.now(),
+            };
+            const stored = localStorage.getItem(`recent_files_${id}`);
+            let recents: RecentFile[] = stored ? JSON.parse(stored) : [];
+            recents = recents.filter(r => r.path !== recent.path);
+            recents.unshift(recent);
+            recents = recents.slice(0, 5);
+            localStorage.setItem(`recent_files_${id}`, JSON.stringify(recents));
+            setRecentFiles(recents);
+        } catch (e) {
+            console.error('Failed to track file view', e);
+        }
+    };
 
     useEffect(() => {
         mutate();
@@ -100,15 +144,33 @@ export default () => {
                     </Can>
                 </Card>
                 <Card className={'mb-1 !rounded-t-none !rounded-b-none !px-3 !py-2'}>
-                    <div className={'relative'}>
-                        <FontAwesomeIcon icon={faSearch} className={'absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400'} />
-                        <input
-                            type="text"
-                            placeholder={t('search-files', { defaultValue: 'Search files...' })}
-                            value={searchQuery}
-                            onChange={(e) => setSearchQuery(e.target.value)}
-                            className={'w-full pl-10 pr-4 py-2 bg-gray-700 border border-gray-600 rounded-lg text-gray-100 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent'}
-                        />
+                    <div className={'flex items-center gap-2'}>
+                        <button
+                            type={'button'}
+                            onClick={() => setShowRecent(false)}
+                            className={`px-3 py-1 rounded ${!showRecent ? 'bg-primary-500 text-white' : 'bg-gray-600 text-gray-300 hover:bg-gray-500'}`}
+                        >
+                            Current
+                        </button>
+                        <button
+                            type={'button'}
+                            onClick={() => setShowRecent(true)}
+                            className={`px-3 py-1 rounded ${showRecent ? 'bg-primary-500 text-white' : 'bg-gray-600 text-gray-300 hover:bg-gray-500'}`}
+                        >
+                            Recent ({recentFiles.length})
+                        </button>
+                        {!showRecent && (
+                            <div className={'relative flex-1'}>
+                                <FontAwesomeIcon icon={faSearch} className={'absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400'} />
+                                <input
+                                    type="text"
+                                    placeholder={t('search-files', { defaultValue: 'Search files...' })}
+                                    value={searchQuery}
+                                    onChange={(e) => setSearchQuery(e.target.value)}
+                                    className={'w-full pl-10 pr-4 py-2 bg-gray-700 border border-gray-600 rounded-lg text-gray-100 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent'}
+                                />
+                            </div>
+                        )}
                     </div>
                 </Card>
             </ErrorBoundary>
@@ -116,7 +178,35 @@ export default () => {
                 <Spinner size={'large'} centered />
             ) : (
                 <Card className='!rounded-t-none !p-3'>
-                    {!filteredFiles.length ? (
+                    {showRecent ? (
+                        recentFiles.length === 0 ? (
+                            <p css={tw`text-sm text-neutral-400 text-center`}>
+                                {t('no-recent', { defaultValue: 'No recently viewed files.' })}
+                            </p>
+                        ) : (
+                            <div>
+                                <p css={tw`text-neutral-300 text-xs mb-2`}>Recently viewed files (last 7 days)</p>
+                                {recentFiles.map((rf, idx) => (
+                                    <NavLink
+                                        key={idx}
+                                        to={`/server/${id}/files/edit#${encodeURIComponent(rf.path)}`}
+                                        onClick={() => {
+                                            setShowRecent(false);
+                                        }}
+                                        css={tw`flex items-center justify-between p-2 mb-1 rounded bg-neutral-700 hover:bg-neutral-600 text-neutral-100 no-underline`}
+                                    >
+                                        <div>
+                                            <div css={tw`font-medium`}>{rf.name}</div>
+                                            <div css={tw`text-xs text-neutral-400`}>{rf.directory || '/'}</div>
+                                        </div>
+                                        <div css={tw`text-xs text-neutral-500`}>
+                                            {new Date(rf.timestamp).toLocaleDateString()}
+                                        </div>
+                                    </NavLink>
+                                ))}
+                            </div>
+                        )
+                    ) : !filteredFiles.length ? (
                         <p css={tw`text-sm text-neutral-400 text-center`}>
                             {searchQuery ? t('no-results', { defaultValue: 'No files match your search.' }) : t('empty')}
                         </p>

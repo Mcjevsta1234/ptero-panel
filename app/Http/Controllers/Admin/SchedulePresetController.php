@@ -73,7 +73,7 @@ class SchedulePresetController extends Controller
 
     protected function validatePreset(Request $request): array
     {
-        return $request->validate([
+        $validated = $request->validate([
             'name' => 'required|string|max:191',
             'description' => 'nullable|string',
             'cron_minute' => 'required|string',
@@ -83,6 +83,11 @@ class SchedulePresetController extends Controller
             'cron_day_of_week' => 'required|string',
             'only_when_online' => 'sometimes|boolean',
         ]);
+        
+        // Ensure checkbox is properly handled
+        $validated['only_when_online'] = $request->has('only_when_online') ? 1 : 0;
+        
+        return $validated;
     }
 
     protected function syncTasks(SchedulePreset $preset, Request $request): void
