@@ -43,6 +43,12 @@ class ServerInstalled extends Notification implements ShouldQueue, ReceivesEvent
      */
     public function via(): array
     {
+        // Don't send mail if SMTP isn't properly configured
+        $mailer = config('mail.default');
+        if ($mailer === 'smtp' && (!config('mail.mailers.smtp.host') || !config('mail.mailers.smtp.username'))) {
+            return [];
+        }
+        
         return ['mail'];
     }
 
