@@ -7,6 +7,7 @@ import FlashMessageRender from '@/components/FlashMessageRender';
 import useFlash from '@/plugins/useFlash';
 import getModsAndPlugins from '@/api/server/mods/getModsAndPlugins';
 import searchMods from '@/api/server/mods/searchMods';
+import getPopularMods from '@/api/server/mods/getPopularMods';
 import installMod from '@/api/server/mods/installMod';
 import uninstallMod from '@/api/server/mods/uninstallMod';
 import Button from '@/components/elements/Button';
@@ -52,8 +53,20 @@ export default () => {
     useEffect(() => {
         if (activeTab === 'installed') {
             loadInstalledMods();
+        } else {
+            loadPopularMods();
         }
-    }, [type, activeTab]);
+    }, [type, source, activeTab]);
+
+    const loadPopularMods = () => {
+        clearFlashes('mods');
+        setSearching(true);
+
+        getPopularMods(uuid, type, source)
+            .then((results: any) => setSearchResults(results.data || []))
+            .catch((error: any) => clearAndAddHttpError({ key: 'mods', error }))
+            .finally(() => setSearching(false));
+    };
 
     const loadInstalledMods = () => {
         clearFlashes('mods');
@@ -66,14 +79,17 @@ export default () => {
     };
 
     const handleSearch = () => {
-        if (!searchQuery.trim()) return;
+        if (!searchQuery.trim()) {
+            loadPopularMods();
+            return;
+        }
 
         clearFlashes('mods');
         setSearching(true);
 
         searchMods(uuid, searchQuery, type, source)
-            .then((results) => setSearchResults(results.data || []))
-            .catch((error) => clearAndAddHttpError({ key: 'mods', error }))
+            .then((results: any) => setSearchResults(results.data || []))
+            .catch((error: any) => clearAndAddHttpError({ key: 'mods', error }))
             .finally(() => setSearching(false));
     };
 

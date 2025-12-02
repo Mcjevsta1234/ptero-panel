@@ -62,6 +62,25 @@ class ModsController extends ClientApiController
     }
 
     /**
+     * Get popular mods/plugins
+     */
+    public function popular(GetServerRequest $request): JsonResponse
+    {
+        $type = $request->input('type', 'plugin'); // mod or plugin
+        $source = $request->input('source', 'spigot'); // curseforge or spigot
+
+        if ($source === 'spigot' && $type === 'plugin') {
+            $results = $this->spigot->getPopular(50);
+            return new JsonResponse(['data' => $results, 'source' => 'spigot']);
+        }
+
+        $classId = $type === 'plugin' ? 5 : 6; // 5 = Bukkit Plugins, 6 = Mods
+        $results = $this->curseForge->getPopular($classId, 50);
+
+        return new JsonResponse(['data' => $results, 'source' => 'curseforge']);
+    }
+
+    /**
      * Get installed mods/plugins
      */
     public function index(GetServerRequest $request, Server $server): JsonResponse

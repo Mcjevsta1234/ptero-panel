@@ -51,6 +51,30 @@ class CurseForgeService
     }
 
     /**
+     * Get popular mods/plugins
+     */
+    public function getPopular(int $classId = 6, int $pageSize = 50): array
+    {
+        try {
+            $params = [
+                'gameId' => 432, // Minecraft
+                'classId' => $classId, // 6 = Mods, 5 = Bukkit Plugins
+                'pageSize' => $pageSize,
+                'sortField' => 2, // 2 = Popularity
+                'sortOrder' => 'desc',
+            ];
+
+            $response = $this->client->get('/mods/search', ['query' => $params]);
+            $data = json_decode($response->getBody()->getContents(), true);
+
+            return $data['data'] ?? [];
+        } catch (\Exception $e) {
+            Log::error('CurseForge getPopular failed: ' . $e->getMessage());
+            return [];
+        }
+    }
+
+    /**
      * Get mod details
      */
     public function getMod(int $modId): array

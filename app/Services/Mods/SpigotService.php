@@ -57,6 +57,43 @@ class SpigotService
     }
 
     /**
+     * Get popular plugins
+     */
+    public function getPopular(int $size = 50): array
+    {
+        try {
+            // Get resources sorted by downloads
+            $response = $this->client->get('/resources', [
+                'query' => [
+                    'size' => $size,
+                    'sort' => '-downloads',
+                ]
+            ]);
+            
+            $results = json_decode($response->getBody()->getContents(), true);
+            
+            // Transform to match our format
+            $plugins = [];
+            foreach ($results ?? [] as $resource) {
+                $plugins[] = [
+                    'id' => $resource['id'],
+                    'name' => $resource['name'] ?? $resource['title'] ?? 'Unknown',
+                    'tag' => $resource['tag'] ?? '',
+                    'downloads' => $resource['downloads'] ?? 0,
+                    'rating' => $resource['rating']['average'] ?? 0,
+                    'author' => $resource['author']['name'] ?? 'Unknown',
+                    'icon' => isset($resource['icon']['url']) ? 'https://www.spigotmc.org/' . $resource['icon']['url'] : null,
+                    'latestFiles' => [['id' => 0]], // Placeholder for install button
+                ];
+            }
+            
+            return $plugins;
+        } catch (\Exception $e) {
+            Log::error('Spigot getPopular failed: ' . $e->getMessage());
+            return [];
+        }
+
+    /**
      * Get resource details
      */
     public function getResource(int $resourceId): ?array

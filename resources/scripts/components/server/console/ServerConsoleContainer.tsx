@@ -6,7 +6,7 @@ import Spinner from '@/components/elements/Spinner';
 import Features from '@feature/Features';
 import ConsoleBlock from '@/components/server/console/ConsoleBlock';
 import ConsoleSidebar from '@/components/server/console/ConsoleSidebar';
-import SocialsSection from '@/components/server/console/SocialsSection';
+import CrashDiagnostics from '@/components/server/console/CrashDiagnostics';
 import { Alert } from '@/components/elements/alert';
 import { useTranslation } from 'react-i18next';
 
@@ -36,7 +36,7 @@ const ServerConsoleContainer = () => {
                     <Spinner.Suspense>
                         <ConsoleBlock />
                     </Spinner.Suspense>
-                    <SocialsSection />
+                    <CrashDiagnostics />
                     <Features enabled={eggFeatures} />
                 </div>
                 <div className='order-1 lg:order-2 flex'>
