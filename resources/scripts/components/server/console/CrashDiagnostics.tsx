@@ -72,7 +72,6 @@ const CrashDiagnostics = ({ className }: { className?: string }) => {
     const uuid = ServerContext.useStoreState((state) => state.server.data!.uuid);
     const { clearFlashes, clearAndAddHttpError } = useFlash();
     const [logs, setLogs] = useState<CrashLog[]>([]);
-    const [uploading, setUploading] = useState<string | null>(null);
 
     const status = ServerContext.useStoreState((state) => state.status.value);
     const prevStatusRef = React.useRef<string | null>(null);
@@ -96,63 +95,88 @@ const CrashDiagnostics = ({ className }: { className?: string }) => {
 
     const autoUploadLatestLog = async () => {
         try {
-            // Read latest.log immediately
-            const fileResponse = await http.get(`/api/client/servers/${uuid}/files/contents`, {
-                params: { file: '/logs/latest.log' }
-            });
+            const logList: CrashLog[] = [];
 
-            // Upload to mclo.gs
-            const mclogsResponse = await fetch('https://api.mclo.gs/1/log', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/x-www-form-urlencoded',
-                },
-                body: `content=${encodeURIComponent(fileResponse.data)}`
-            });
+            // Upload latest.log
+            try {
+                const fileResponse = await http.get(`/api/client/servers/${uuid}/files/contents`, {
+                    params: { file: '/logs/latest.log' }
+                });
 
-            const mclogsData = await mclogsResponse.json();
+                const mclogsResponse = await fetch('https://api.mclo.gs/1/log', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/x-www-form-urlencoded',
+                    },
+                    body: `content=${encodeURIComponent(fileResponse.data)}`
+                });
 
-            if (mclogsData.success) {
-                // Create log entry with URL already set
-                const latestLog: CrashLog = {
-                    type: 'log',
-                    filename: 'latest.log',
-                    timestamp: new Date().toLocaleString(),
-                    mclogsUrl: mclogsData.url,
-                };
+                const mclogsData = await mclogsResponse.json();
 
-                const logList = [latestLog];
-
-                // Try to get recent crash reports (within last 5 minutes)
-                try {
-                    const crashResponse = await http.get(`/api/client/servers/${uuid}/files/list`, {
-                        params: { directory: '/crash-reports' }
+                if (mclogsData.success) {
+                    logList.push({
+                        type: 'log',
+                        filename: 'latest.log',
+                        timestamp: new Date().toLocaleString(),
+                        mclogsUrl: mclogsData.url,
                     });
-                    
-                    const fiveMinutesAgo = Date.now() - (5 * 60 * 1000);
-                    
-                    const recentCrashReports = crashResponse.data
-                        .filter((file: any) => {
-                            const fileTime = new Date(file.modified_at).getTime();
-                            return fileTime >= fiveMinutesAgo && 
-                                   (file.name.endsWith('.txt') || file.name.endsWith('.log'));
-                        })
-                        .slice(0, 1) // Only get the most recent one
-                        .map((file: any) => ({
-                            type: 'crash' as const,
-                            filename: `crash-reports/${file.name}`,
-                            timestamp: new Date(file.modified_at).toLocaleString(),
-                        }));
-
-                    logList.push(...recentCrashReports);
-                } catch (error) {
-                    // No crash reports, that's fine
                 }
-
-                setLogs(logList);
+            } catch (error) {
+                console.log('Could not upload latest.log:', error);
             }
+
+            // Try to get and upload recent crash reports (within last 5 minutes)
+            try {
+                const crashResponse = await http.get(`/api/client/servers/${uuid}/files/list`, {
+                    params: { directory: '/crash-reports' }
+                });
+                
+                const fiveMinutesAgo = Date.now() - (5 * 60 * 1000);
+                
+                const recentCrashFiles = crashResponse.data
+                    .filter((file: any) => {
+                        const fileTime = new Date(file.modified_at).getTime();
+                        return fileTime >= fiveMinutesAgo && 
+                               (file.name.endsWith('.txt') || file.name.endsWith('.log'));
+                    })
+                    .slice(0, 2);
+
+                // Upload each crash report
+                for (const crashFile of recentCrashFiles) {
+                    try {
+                        const crashContent = await http.get(`/api/client/servers/${uuid}/files/contents`, {
+                            params: { file: `/crash-reports/${crashFile.name}` }
+                        });
+
+                        const mclogsResponse = await fetch('https://api.mclo.gs/1/log', {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/x-www-form-urlencoded',
+                            },
+                            body: `content=${encodeURIComponent(crashContent.data)}`
+                        });
+
+                        const mclogsData = await mclogsResponse.json();
+
+                        if (mclogsData.success) {
+                            logList.push({
+                                type: 'crash',
+                                filename: `crash-reports/${crashFile.name}`,
+                                timestamp: new Date(crashFile.modified_at).toLocaleString(),
+                                mclogsUrl: mclogsData.url,
+                            });
+                        }
+                    } catch (error) {
+                        console.log(`Could not upload crash report ${crashFile.name}:`, error);
+                    }
+                }
+            } catch (error) {
+                // No crash reports, that's fine
+            }
+
+            setLogs(logList);
         } catch (error) {
-            console.log('Could not auto-upload latest.log:', error);
+            console.log('Could not auto-upload logs:', error);
             // Fall back to normal fetch
             fetchRecentLogs();
         }
@@ -160,14 +184,14 @@ const CrashDiagnostics = ({ className }: { className?: string }) => {
 
     const fetchRecentLogs = async () => {
         try {
-            // Always get latest.log first
-            const latestLog: CrashLog = {
+            const logList: CrashLog[] = [];
+
+            // Get latest.log (without uploading)
+            logList.push({
                 type: 'log',
                 filename: 'latest.log',
                 timestamp: new Date().toLocaleString(),
-            };
-
-            const logList = [latestLog];
+            });
 
             // Try to get crash reports from crash-reports directory (only recent ones)
             try {
@@ -201,55 +225,6 @@ const CrashDiagnostics = ({ className }: { className?: string }) => {
         }
     };
 
-    const uploadToMcLogs = async (filename: string) => {
-        setUploading(filename);
-        clearFlashes('crash-diagnostics');
-
-        try {
-            // Read the log file - handle both root directory and subdirectory files
-            const filePath = filename.startsWith('logs/') || filename.startsWith('crash-reports/') 
-                ? `/${filename}` 
-                : `/logs/${filename}`;
-
-            const fileResponse = await http.get(`/api/client/servers/${uuid}/files/contents`, {
-                params: { file: filePath }
-            });
-
-            // Upload to mclo.gs
-            const mclogsResponse = await fetch('https://api.mclo.gs/1/log', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/x-www-form-urlencoded',
-                },
-                body: `content=${encodeURIComponent(fileResponse.data)}`
-            });
-
-            const mclogsData = await mclogsResponse.json();
-
-            if (mclogsData.success) {
-                // Update the log entry with mclo.gs URL
-                setLogs(prevLogs => prevLogs.map(log => 
-                    log.filename === filename 
-                        ? { ...log, mclogsUrl: mclogsData.url }
-                        : log
-                ));
-
-                // Copy to clipboard
-                navigator.clipboard.writeText(mclogsData.url);
-            } else {
-                throw new Error('Failed to upload to mclo.gs');
-            }
-        } catch (error: any) {
-            clearAndAddHttpError({ key: 'crash-diagnostics', error });
-        } finally {
-            setUploading(null);
-        }
-    };
-
-    const copyUrl = (url: string) => {
-        navigator.clipboard.writeText(url);
-    };
-
     return (
         <Container className={className}>
             <Title>
@@ -280,12 +255,9 @@ const CrashDiagnostics = ({ className }: { className?: string }) => {
                                 Open Log
                             </CopyButton>
                         ) : (
-                            <CopyButton 
-                                onClick={() => uploadToMcLogs(log.filename)}
-                                disabled={uploading === log.filename}
-                            >
+                            <CopyButton disabled>
                                 <ClipboardCopyIcon />
-                                {uploading === log.filename ? 'Uploading...' : 'Upload'}
+                                Waiting...
                             </CopyButton>
                         )}
                     </LogEntry>
