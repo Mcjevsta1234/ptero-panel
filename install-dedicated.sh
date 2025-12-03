@@ -209,9 +209,10 @@ if [ ! -d ".git" ]; then
         git fetch origin experimental || print_error "Failed to fetch 'experimental' from origin"
         # Force sync to origin/experimental; clean untracked if running non-interactively
         git reset --hard origin/experimental || print_error "Failed to sync files to origin/experimental"
-        if [ "$AUTO_GIT" -eq 1 ] || [ "$ASSUME_YES" -eq 1 ]; then
-            git clean -fdx || true
-        fi
+        # Disabled: git clean to preserve .env and other untracked files
+        # if [ "$AUTO_GIT" -eq 1 ] || [ "$ASSUME_YES" -eq 1 ]; then
+        #     git clean -fdx || true
+        # fi
         git checkout -B experimental >/dev/null 2>&1 || true
         print_success "Repository initialized and synced to experimental"
     else
@@ -229,7 +230,8 @@ if [ ! -d ".git" ]; then
                 read -r clean_choice
                 if [[ "$clean_choice" =~ ^[Yy]$ ]]; then
                     git reset --hard origin/experimental || print_error "Failed to reset to origin/experimental"
-                    git clean -fdx || true
+                    # Disabled: git clean to preserve .env and other untracked files
+                    # git clean -fdx || true
                     git checkout -B experimental >/dev/null 2>&1 || true
                     print_success "Repository initialized and synced to experimental"
                 else
@@ -260,10 +262,10 @@ else
         git checkout -B experimental || print_error "Failed to switch to experimental"
     fi
     git reset --hard origin/experimental || print_error "Failed to sync to origin/experimental"
-    # Optionally clean untracked files if running non-interactively
-    if [ "$ASSUME_YES" -eq 1 ]; then
-        git clean -fdx || true
-    fi
+    # Disabled: git clean to preserve .env and other untracked files
+    # if [ "$ASSUME_YES" -eq 1 ]; then
+    #     git clean -fdx || true
+    # fi
     print_success "Code synced to origin/experimental"
 fi
 
