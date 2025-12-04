@@ -16,6 +16,7 @@ use Pterodactyl\Repositories\Wings\DaemonServerRepository;
 use Pterodactyl\Services\Servers\ReinstallServerService;
 use Pterodactyl\Services\Servers\StartupModificationService;
 use Pterodactyl\Services\JavaVersionService;
+use Pterodactyl\Services\ModpackConfigurationService;
 
 class InstallModpackJob extends Job implements ShouldQueue
 {
@@ -41,6 +42,7 @@ class InstallModpackJob extends Job implements ShouldQueue
         ReinstallServerService $reinstallServerService,
         DaemonPowerRepository $daemonPowerRepository,
         DaemonServerRepository $daemonServerRepository,
+        ModpackConfigurationService $modpackConfigurationService,
     ): void {
         // Kill server if running
         $daemonPowerRepository->setServer($this->server)->send('kill');
@@ -131,46 +133,14 @@ class InstallModpackJob extends Job implements ShouldQueue
         // Wait for server to start up before setting Java version
         sleep(10);
 
-        // Set Java version based on Minecraft version if provided
-        if ($this->minecraftVersion) {
-            try {
-                JavaVersionService::setJavaVersionForServer($this->server, $this->minecraftVersion);
-                \Log::info('Java version set for modpack installation', [
-                    'server_id' => $this->server->id,
-                    'minecraft_version' => $this->minecraftVersion,
-                ]);
-            } catch (\Exception $e) {
-                \Log::error('Failed to set Java version', ['error' => $e->getMessage()]);
-            }
+        // Configure modpack with correct Java version and startup arguments
+        try {
+            $modpackConfigurationService->configureModpack($this->server, $this->minecraftVersion);
+            \Log::info('Modpack configuration completed', [
+                'server_id' => $this->server->id,
+                'minecraft_version' => $this->minecraftVersion,
+            ]);
+        } catch (\Exception $e) {
+            \Log::error('Failed to configure modpack', ['error' => $e->getMessage()]);
         }
     }
-
-    /**
-     * Detect Java version based on Minecraft version.
-     */
-    private function getJavaVersionForMinecraft(string $minecraftVersion): string
-    {
-        // Parse version number
-        $versionParts = explode('.', $minecraftVersion);
-        $majorVersion = (int) ($versionParts[0] ?? 0);
-        $minorVersion = (int) ($versionParts[1] ?? 0);
-
-        // Java version recommendations for Minecraft
-        // 1.20+ -> Java 21
-        // 1.17-1.19 -> Java 17
-        // 1.12-1.16 -> Java 11
-        // 1.8-1.11 -> Java 8
-        
-        if ($majorVersion >= 1) {
-            if ($minorVersion >= 20) {
-                return 'java21';
-            } elseif ($minorVersion >= 17) {
-                return 'java17';
-            } elseif ($minorVersion >= 12) {
-                return 'java11';
-            }
-        }
-
-        return 'java8';
-    }
-}
