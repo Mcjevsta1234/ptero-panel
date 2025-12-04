@@ -26,5 +26,6 @@ return [
         'settings' => 'Settings',
         'activity' => 'Activity',
         'modpacks' => 'Modpack Installer',
+        'cheatsheet' => 'Cheat Sheet',
     ],
 ];

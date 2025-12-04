@@ -5,6 +5,8 @@ export interface ModpackVersion {
     name: string;
     gameVersions: string[];
     fileDate: string;
+    minecraftVersion: string | null;
+    javaVersion: string | null;
 }
 
 export default (uuid: string, modpackId: string): Promise<ModpackVersion[]> => {

@@ -54,16 +54,42 @@ class CurseForgeModpackService
 
             $data = $response->json();
             
+            // Filter modpacks
+            $filteredModpacks = collect($data['data'] ?? [])->filter(function ($modpack) {
+                // Filter out FTB modpacks (they use custom installers)
+                $authors = collect($modpack['authors'] ?? []);
+                if ($authors->contains(fn($author) => strtolower($author['name'] ?? '') === 'ftb')) {
+                    return false;
+                }
+                
+                // Filter out modpacks without server versions
+                // Check if any file has server-compatible gameVersionTypeId
+                $latestFiles = $modpack['latestFiles'] ?? [];
+                $hasServerVersion = false;
+                
+                foreach ($latestFiles as $file) {
+                    $gameVersionTypeIds = $file['gameVersionTypeIds'] ?? [];
+                    // gameVersionTypeId: 1 = Client, 2 = Server, 4 = Server (alternative)
+                    // We want modpacks that have server files (2 or 4)
+                    if (in_array(2, $gameVersionTypeIds) || in_array(4, $gameVersionTypeIds)) {
+                        $hasServerVersion = true;
+                        break;
+                    }
+                }
+                
+                return $hasServerVersion;
+            });
+            
             return [
-                'data' => collect($data['data'] ?? [])->map(fn($modpack) => [
+                'data' => $filteredModpacks->map(fn($modpack) => [
                     'id' => (string) $modpack['id'],
                     'name' => $modpack['name'],
                     'description' => $modpack['summary'] ?? '',
                     'iconUrl' => $modpack['logo']['url'] ?? null,
                     'url' => $modpack['links']['websiteUrl'] ?? null,
                     'downloadCount' => $modpack['downloadCount'] ?? 0,
-                ])->toArray(),
-                'total' => $data['pagination']['totalCount'] ?? 0,
+                ])->values()->toArray(),
+                'total' => $filteredModpacks->count(),
             ];
         } catch (\Exception $e) {
             Log::error('CurseForge API search exception', ['error' => $e->getMessage()]);
@@ -94,12 +120,34 @@ class CurseForgeModpackService
 
             $data = $response->json();
             
-            return collect($data['data'] ?? [])->map(fn($file) => [
-                'id' => (string) $file['id'],
-                'name' => $file['displayName'],
-                'gameVersions' => $file['gameVersions'] ?? [],
-                'fileDate' => $file['fileDate'],
-            ])->toArray();
+            // Only include server-compatible versions
+            return collect($data['data'] ?? [])->filter(function ($file) {
+                $gameVersionTypeIds = $file['gameVersionTypeIds'] ?? [];
+                // gameVersionTypeId: 2 = Server, 4 = Server (alternative)
+                return in_array(2, $gameVersionTypeIds) || in_array(4, $gameVersionTypeIds);
+            })->map(function ($file) {
+                $gameVersions = $file['gameVersions'] ?? [];
+                $minecraftVersion = null;
+                $javaVersion = null;
+                
+                // Find Minecraft version (format like "1.20.1")
+                foreach ($gameVersions as $version) {
+                    if (preg_match('/^1\.\d+/', $version)) {
+                        $minecraftVersion = $version;
+                        $javaVersion = self::getJavaVersionForMinecraft($version);
+                        break;
+                    }
+                }
+                
+                return [
+                    'id' => (string) $file['id'],
+                    'name' => $file['displayName'],
+                    'gameVersions' => $gameVersions,
+                    'fileDate' => $file['fileDate'],
+                    'minecraftVersion' => $minecraftVersion,
+                    'javaVersion' => $javaVersion,
+                ];
+            })->values()->toArray();
         } catch (\Exception $e) {
             Log::error('CurseForge versions exception', ['error' => $e->getMessage()]);
             return [];
@@ -138,5 +186,40 @@ class CurseForgeModpackService
             Log::error('CurseForge details exception', ['error' => $e->getMessage()]);
             return null;
         }
+    }
+
+    /**
+     * Get recommended Java version for a Minecraft version.
+     */
+    public static function getJavaVersionForMinecraft(string $minecraftVersion): string
+    {
+        // Extract version number (e.g., "1.20.1" -> 1.20)
+        if (preg_match('/^(\d+)\.(\d+)/', $minecraftVersion, $matches)) {
+            $major = (int) $matches[1];
+            $minor = (int) $matches[2];
+            
+            // Minecraft 1.20.5+ requires Java 21
+            if ($major === 1 && $minor >= 20 && version_compare($minecraftVersion, '1.20.5', '>=')) {
+                return '21';
+            }
+            
+            // Minecraft 1.18-1.20.4 requires Java 17
+            if ($major === 1 && $minor >= 18) {
+                return '17';
+            }
+            
+            // Minecraft 1.17-1.17.1 requires Java 16
+            if ($major === 1 && $minor === 17) {
+                return '16';
+            }
+            
+            // Minecraft 1.12-1.16 works with Java 11 (recommended) or Java 8
+            if ($major === 1 && $minor >= 12 && $minor <= 16) {
+                return '11';
+            }
+        }
+        
+        // Minecraft 1.11 and below requires Java 8
+        return '8';
     }
 }

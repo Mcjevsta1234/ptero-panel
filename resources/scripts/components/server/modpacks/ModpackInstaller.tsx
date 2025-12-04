@@ -262,6 +262,28 @@ export default () => {
                                     ))}
                                 </select>
 
+                                {selectedVersion && selectedVersion.javaVersion && (
+                                    <div css={tw`bg-purple-900/20 border border-purple-700 rounded p-4 mb-4`}>
+                                        <div css={tw`flex items-start`}>
+                                            <svg css={tw`w-5 h-5 text-purple-400 mt-0.5 mr-3 flex-shrink-0`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                            </svg>
+                                            <div>
+                                                <div css={tw`font-medium text-purple-300 mb-1`}>Java Version Required</div>
+                                                <div css={tw`text-sm text-purple-200`}>
+                                                    Minecraft {selectedVersion.minecraftVersion || 'this version'} requires <strong>Java {selectedVersion.javaVersion}</strong>.
+                                                </div>
+                                                <div css={tw`text-xs text-purple-300 mt-2`}>
+                                                    ⚠️ Please set the correct Java Docker image in the <strong>Startup</strong> tab after installation:
+                                                    <code css={tw`block mt-1 bg-black/30 px-2 py-1 rounded font-mono`}>
+                                                        ghcr.io/pterodactyl/yolks:java_{selectedVersion.javaVersion}
+                                                    </code>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                )}
+
                                 <div css={tw`bg-neutral-800 border border-neutral-700 rounded p-4 mb-4`}>
                                     <label css={tw`flex items-center cursor-pointer`}>
                                         <input
