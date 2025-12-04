@@ -8,16 +8,17 @@ import FlashMessageRender from '@/components/FlashMessageRender';
 import { useFlashKey } from '@/plugins/useFlash';
 import { Dialog } from '@/components/elements/dialog';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faDownload, faSearch } from '@fortawesome/free-solid-svg-icons';
+import { faDownload, faSearch, faGamepad } from '@fortawesome/free-solid-svg-icons';
 import Spinner from '@/components/elements/Spinner';
-import Pagination from '@/components/elements/Pagination';
 import { useStoreActions, Actions } from 'easy-peasy';
 import { ApplicationStore } from '@/state';
+import { useHistory } from 'react-router-dom';
 
 export default () => {
     const uuid = ServerContext.useStoreState((state) => state.server.data!.uuid);
     const { clearFlashes, clearAndAddHttpError } = useFlashKey('modpacks');
     const addFlash = useStoreActions((actions: Actions<ApplicationStore>) => actions.flashes.addFlash);
+    const history = useHistory();
 
     const [searchQuery, setSearchQuery] = useState('');
     const [modpacks, setModpacks] = useState<Modpack[]>([]);
@@ -85,10 +86,15 @@ export default () => {
             addFlash({
                 type: 'success',
                 key: 'modpacks',
-                message: `${selectedModpack.name} installation has started! Check the console for progress.`,
+                message: `${selectedModpack.name} installation has started! Redirecting to console...`,
             });
             setDialogOpen(false);
             setSelectedModpack(null);
+            
+            // Redirect to console after 2 seconds
+            setTimeout(() => {
+                history.push(`/server/${uuid}`);
+            }, 2000);
         } catch (error) {
             clearAndAddHttpError(error as Error);
         } finally {
@@ -99,6 +105,17 @@ export default () => {
     return (
         <div css={tw`w-full`}>
             <FlashMessageRender byKey={'modpacks'} css={tw`mb-4`} />
+
+            {/* Header */}
+            <div css={tw`mb-6`}>
+                <h1 css={tw`text-3xl font-bold text-neutral-100 flex items-center gap-3`}>
+                    <FontAwesomeIcon icon={faGamepad} css={tw`text-primary-400`} />
+                    Modpack Installer
+                </h1>
+                <p css={tw`text-neutral-400 mt-2`}>
+                    Browse and install modpacks from CurseForge. Installing a modpack will stop your server and may take several minutes.
+                </p>
+            </div>
 
             {/* Search Bar */}
             <form onSubmit={handleSearch} css={tw`mb-6 flex gap-3`}>
@@ -126,31 +143,51 @@ export default () => {
 
             {/* Modpacks Grid */}
             {loading ? (
-                <Spinner size={'large'} centered />
+                <div css={tw`flex justify-center items-center py-20`}>
+                    <Spinner size={'large'} />
+                </div>
+            ) : modpacks.length === 0 ? (
+                <div css={tw`text-center py-20`}>
+                    <p css={tw`text-neutral-400 text-lg`}>No modpacks found. Try a different search term.</p>
+                </div>
             ) : (
                 <>
-                    <div css={tw`grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 mb-6`}>
+                    <div css={tw`grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4 mb-6`}>
                         {modpacks.map((modpack) => (
                             <div
                                 key={modpack.id}
-                                css={tw`bg-neutral-700 rounded-lg overflow-hidden hover:bg-neutral-600 transition-all duration-200 cursor-pointer shadow-md hover:shadow-lg`}
+                                css={tw`bg-neutral-800 rounded-lg overflow-hidden hover:ring-2 hover:ring-primary-400 transition-all duration-200 cursor-pointer group relative`}
                                 onClick={() => selectModpack(modpack)}
                             >
-                                {modpack.iconUrl && (
-                                    <div css={tw`w-full h-48 bg-neutral-800 flex items-center justify-center`}>
+                                {/* Image Container */}
+                                <div css={tw`w-full aspect-square bg-neutral-900 flex items-center justify-center overflow-hidden relative`}>
+                                    {modpack.iconUrl ? (
                                         <img
                                             src={modpack.iconUrl}
                                             alt={modpack.name}
-                                            css={tw`max-w-full max-h-full object-contain p-4`}
+                                            css={tw`w-full h-full object-cover group-hover:scale-110 transition-transform duration-200`}
+                                        />
+                                    ) : (
+                                        <FontAwesomeIcon icon={faGamepad} css={tw`text-6xl text-neutral-700`} />
+                                    )}
+                                    {/* Overlay on hover */}
+                                    <div css={tw`absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-50 transition-all duration-200 flex items-center justify-center`}>
+                                        <FontAwesomeIcon
+                                            icon={faDownload}
+                                            css={tw`text-white text-3xl opacity-0 group-hover:opacity-100 transition-opacity duration-200`}
                                         />
                                     </div>
-                                )}
-                                <div css={tw`p-4`}>
-                                    <h3 css={tw`text-lg font-bold mb-2 text-neutral-100 truncate`}>{modpack.name}</h3>
-                                    <p css={tw`text-sm text-neutral-300 mb-3 line-clamp-2 h-10`}>{modpack.description}</p>
-                                    <div css={tw`flex items-center justify-between text-xs text-neutral-400`}>
-                                        <span>{modpack.downloadCount.toLocaleString()} downloads</span>
-                                        <FontAwesomeIcon icon={faDownload} css={tw`text-primary-400`} />
+                                </div>
+                                
+                                {/* Info Container */}
+                                <div css={tw`p-3`}>
+                                    <h3 css={tw`text-sm font-bold text-neutral-100 truncate mb-1`} title={modpack.name}>
+                                        {modpack.name}
+                                    </h3>
+                                    <div css={tw`flex items-center justify-between text-xs`}>
+                                        <span css={tw`text-neutral-400`}>
+                                            {(modpack.downloadCount / 1000000).toFixed(1)}M downloads
+                                        </span>
                                     </div>
                                 </div>
                             </div>
@@ -233,9 +270,24 @@ export default () => {
                                     </label>
                                 </div>
 
+                                <div css={tw`bg-blue-900/20 border border-blue-700 rounded p-4 mb-4`}>
+                                    <p css={tw`text-sm text-blue-300`}>
+                                        <strong>Minecraft EULA:</strong> By clicking "Install Modpack", you agree to the{' '}
+                                        <a
+                                            href="https://www.minecraft.net/en-us/eula"
+                                            target="_blank"
+                                            rel="noopener noreferrer"
+                                            css={tw`underline hover:text-blue-200`}
+                                        >
+                                            Minecraft End User License Agreement
+                                        </a>
+                                        . The EULA will be automatically accepted (eula=true) and the server will start automatically after installation.
+                                    </p>
+                                </div>
+
                                 <p css={tw`text-sm text-yellow-400 bg-yellow-900/20 border border-yellow-700 rounded p-3`}>
-                                    <strong>Warning:</strong> The server will be stopped and the modpack will be installed.
-                                    This may take several minutes depending on the modpack size.
+                                    <strong>Note:</strong> The server will be stopped and the modpack will be installed.
+                                    Installation may take several minutes. You will be redirected to the console when complete.
                                 </p>
                             </>
                         ) : (
