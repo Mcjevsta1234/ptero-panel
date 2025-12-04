@@ -20,19 +20,14 @@ class ModpackConfigurationService
     }
 
     /**
-     * Configure modpack server with correct Java version and startup arguments.
-     * Detects modpack type and sets appropriate JVM flags.
+     * Configure modpack server with correct startup arguments.
+     * Sets up proper JVM argument handling via unix_args.txt.
      */
     public function configureModpack(Server $server, ?string $minecraftVersion = null): void
     {
         $this->fileRepository->setServer($server);
 
         try {
-            // Set Java version based on Minecraft version
-            if ($minecraftVersion) {
-                $this->setJavaVersionForServer($server, $minecraftVersion);
-            }
-
             // Update startup arguments to use unix_args.txt properly
             $this->updateStartupCommand($server);
 
@@ -45,39 +40,6 @@ class ModpackConfigurationService
                 'server_id' => $server->id,
                 'error' => $e->getMessage(),
             ]);
-        }
-    }
-
-    /**
-     * Set Java version for a server based on Minecraft version.
-     */
-    protected function setJavaVersionForServer(Server $server, string $minecraftVersion): void
-    {
-        $javaVersion = $this->getJavaVersionForMinecraft($minecraftVersion);
-        $javaVarName = $this->findJavaVersionVariable($server);
-
-        if ($javaVarName) {
-            \Log::info('Setting Java version for modpack server', [
-                'server_id' => $server->id,
-                'java_version' => $javaVersion,
-                'minecraft_version' => $minecraftVersion,
-                'variable' => $javaVarName,
-            ]);
-
-            try {
-                $this->startupModificationService->setUserLevel(User::USER_LEVEL_ADMIN);
-                $this->startupModificationService->handle($server, [
-                    'environment' => [
-                        $javaVarName => $javaVersion,
-                    ],
-                ]);
-            } catch (\Exception $e) {
-                \Log::error('Failed to set Java version', [
-                    'server_id' => $server->id,
-                    'error' => $e->getMessage(),
-                ]);
-                throw $e;
-            }
         }
     }
 
@@ -138,68 +100,18 @@ class ModpackConfigurationService
     }
 
     /**
-     * Determine the appropriate Java version based on Minecraft version.
+     * Get startup command that is Unix-aware (uses unix_args.txt if available).
+     * This supports NeoForge, Forge, and Fabric servers.
      */
-    protected function getJavaVersionForMinecraft(string $minecraftVersion): string
+    protected function getUnixAwareStartup(Server $server): string
     {
-        // Parse version number
-        $versionParts = explode('.', $minecraftVersion);
-        $majorVersion = (int) ($versionParts[0] ?? 0);
-        $minorVersion = (int) ($versionParts[1] ?? 0);
+        // Get memory setting from server or default
+        $memoryVariable = '{{server.build.memory}}';
 
-        // Java version recommendations for Minecraft
-        // 1.20.5+ (NeoForge requires Java 17+) -> Java 21
-        // 1.20-1.20.4 -> Java 17
-        // 1.17-1.19 -> Java 17
-        // 1.12-1.16 -> Java 11
-        // 1.8-1.11 -> Java 8
-
-        if ($majorVersion >= 1) {
-            if ($minorVersion >= 20) {
-                return 'java21';
-            } elseif ($minorVersion >= 17) {
-                return 'java17';
-            } elseif ($minorVersion >= 12) {
-                return 'java11';
-            }
-        }
-
-        return 'java8';
-    }
-
-    /**
-     * Find Java version variable for the server's egg.
-     */
-    protected function findJavaVersionVariable(Server $server): ?string
-    {
-        $egg = $server->egg;
-
-        // Look for common Java version variable names
-        $javaVarNames = [
-            'JAVA_VERSION',
-            'JAVA_Ver',
-            'Java_Version',
-            'java_version',
-            'SERVER_JAVA_VERSION',
-        ];
-
-        foreach ($javaVarNames as $varName) {
-            $variable = $egg->variables()
-                ->where('env_variable', $varName)
-                ->first();
-
-            if ($variable) {
-                return $varName;
-            }
-        }
-
-        // If not found by exact name, search for variables containing 'java' and 'version'
-        $variable = $egg->variables()
-            ->whereRaw('LOWER(env_variable) LIKE ?', ['%java%'])
-            ->whereRaw('LOWER(env_variable) LIKE ?', ['%version%'])
-            ->first();
-
-        return $variable?->env_variable;
+        // Startup command that checks for unix_args.txt and uses it if available
+        // This allows modpacks to specify their own JVM arguments
+        return "java -Xms{$memoryVariable}M -XX:MaxRAMPercentage=95.0 -Dterminal.jline=false -Dterminal.ansi=true \$( [[ ! -f unix_args.txt ]] && printf %s \"-jar server.jar\" || printf %s \"@unix_args.txt\" )";
     }
 }
+
 
