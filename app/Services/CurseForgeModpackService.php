@@ -193,14 +193,9 @@ class CurseForgeModpackService
             if ($major === 1 && $minor === 17) {
                 return '16';
             }
-            
-            // Minecraft 1.12-1.16 works with Java 11 (recommended) or Java 8
-            if ($major === 1 && $minor >= 12 && $minor <= 16) {
-                return '11';
-            }
         }
         
-        // Minecraft 1.11 and below requires Java 8
+        // Minecraft 1.16.5 and below uses Java 8
         return '8';
     }
 }

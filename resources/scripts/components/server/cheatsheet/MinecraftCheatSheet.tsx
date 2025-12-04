@@ -50,12 +50,8 @@ const MinecraftCheatSheet = () => {
                                     <td css={tw`px-4 py-3 font-semibold text-purple-400`}>Java 16</td>
                                 </tr>
                                 <tr css={tw`hover:bg-neutral-800/50`}>
-                                    <td css={tw`px-4 py-3 text-neutral-300`}>1.12 - 1.16</td>
-                                    <td css={tw`px-4 py-3 font-semibold text-yellow-400`}>Java 11</td>
-                                </tr>
-                                <tr css={tw`hover:bg-neutral-800/50`}>
-                                    <td css={tw`px-4 py-3 text-neutral-300`}>1.11 and below</td>
-                                    <td css={tw`px-4 py-3 font-semibold text-red-400`}>Java 8</td>
+                                    <td css={tw`px-4 py-3 text-neutral-300`}>1.16.5 and below</td>
+                                    <td css={tw`px-4 py-3 font-semibold text-yellow-400`}>Java 8</td>
                                 </tr>
                             </tbody>
                         </table>
