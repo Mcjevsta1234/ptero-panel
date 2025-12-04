@@ -11,10 +11,13 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faDownload, faSearch } from '@fortawesome/free-solid-svg-icons';
 import Spinner from '@/components/elements/Spinner';
 import Pagination from '@/components/elements/Pagination';
+import { useStoreActions, Actions } from 'easy-peasy';
+import { ApplicationStore } from '@/state';
 
 export default () => {
     const uuid = ServerContext.useStoreState((state) => state.server.data!.uuid);
-    const { clearFlashes, clearAndAddHttpError, addFlash } = useFlashKey('modpacks');
+    const { clearFlashes, clearAndAddHttpError } = useFlashKey('modpacks');
+    const addFlash = useStoreActions((actions: Actions<ApplicationStore>) => actions.flashes.addFlash);
 
     const [searchQuery, setSearchQuery] = useState('');
     const [modpacks, setModpacks] = useState<Modpack[]>([]);
