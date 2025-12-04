@@ -91,20 +91,63 @@ export default () => {
             addFlash({
                 type: 'success',
                 key: 'modpacks',
-                message: `${selectedModpack.name} installation has started! Redirecting to console...`,
+                message: `${selectedModpack.name} installation has started! Waiting for installation to complete...`,
             });
             setDialogOpen(false);
             setSelectedModpack(null);
             
-            // Redirect to console after 2 seconds
-            setTimeout(() => {
-                history.push(`/server/${uuid}`);
-            }, 2000);
+            // Poll for server to come online, then redirect
+            pollServerStatus(uuid);
         } catch (error) {
             clearAndAddHttpError(error as Error);
         } finally {
             setInstalling(false);
         }
+    };
+
+    const pollServerStatus = async (serverUuid: string) => {
+        let pollAttempts = 0;
+        const maxAttempts = 360; // 6 minutes max polling time
+        
+        const pollInterval = setInterval(async () => {
+            pollAttempts++;
+            
+            try {
+                // Try to fetch server status via the API
+                const response = await fetch(`/api/client/servers/${serverUuid}/resources`);
+                
+                if (response.ok) {
+                    const data = await response.json();
+                    // When server is online, redirect
+                    if (data.resources?.cpu_absolute > 0 || data.resources?.memory_bytes >= 0) {
+                        clearInterval(pollInterval);
+                        addFlash({
+                            type: 'success',
+                            key: 'modpacks',
+                            message: 'Modpack installation complete! Redirecting to console...',
+                        });
+                        setTimeout(() => {
+                            history.push(`/server/${serverUuid}`);
+                        }, 1000);
+                    }
+                }
+            } catch (error) {
+                // Ignore polling errors
+            }
+            
+            // Stop polling after max attempts
+            if (pollAttempts >= maxAttempts) {
+                clearInterval(pollInterval);
+                addFlash({
+                    type: 'warning',
+                    key: 'modpacks',
+                    message: 'Installation may still be running. Redirecting to console...',
+                });
+                setTimeout(() => {
+                    history.push(`/server/${serverUuid}`);
+                }, 1000);
+            }
+        }, 5000); // Poll every 5 seconds
     };
 
     return (

@@ -2,9 +2,8 @@
 
 namespace Pterodactyl\Services;
 
-use Pterodactyl\Models\EggVariable;
-use Pterodactyl\Models\ServerVariable;
 use Pterodactyl\Models\Server;
+use Pterodactyl\Services\Servers\StartupModificationService;
 
 class JavaVersionService
 {
@@ -38,50 +37,75 @@ class JavaVersionService
     }
 
     /**
-     * Get the Java memory/startup variable names for this egg.
+     * Find Java version variable for the server's egg.
      */
-    public static function getJavaVariableNames(Server $server): array
+    public static function findJavaVersionVariable(Server $server): ?string
     {
         $egg = $server->egg;
         
-        $variables = [
-            'java_version' => null,
-            'startup_memory' => null,
+        // Look for common Java version variable names
+        $javaVarNames = [
+            'JAVA_VERSION',
+            'JAVA_Ver',
+            'Java_Version',
+            'java_version',
+            'SERVER_JAVA_VERSION',
         ];
 
-        // Find common Java version and memory variables
-        $egg->variables->each(function ($var) use (&$variables) {
-            $envVar = strtolower($var->env_variable);
+        foreach ($javaVarNames as $varName) {
+            $variable = $egg->variables()
+                ->where('env_variable', $varName)
+                ->first();
             
-            if (str_contains($envVar, 'java') && str_contains($envVar, 'version')) {
-                $variables['java_version'] = $var->env_variable;
-            } elseif (str_contains($envVar, 'memory') || str_contains($envVar, '_xmx')) {
-                $variables['startup_memory'] = $var->env_variable;
+            if ($variable) {
+                return $varName;
             }
-        });
+        }
 
-        return $variables;
+        // If not found by exact name, search for variables containing 'java' and 'version'
+        $variable = $egg->variables()
+            ->whereRaw('LOWER(env_variable) LIKE ?', ['%java%'])
+            ->whereRaw('LOWER(env_variable) LIKE ?', ['%version%'])
+            ->first();
+
+        return $variable?->env_variable;
     }
 
     /**
      * Set Java version for a server based on Minecraft version.
+     * Uses StartupModificationService to properly persist the change.
      */
     public static function setJavaVersionForServer(Server $server, string $minecraftVersion): void
     {
         $javaVersion = self::getJavaVersionForMinecraft($minecraftVersion);
-        $variables = self::getJavaVariableNames($server);
+        $javaVarName = self::findJavaVersionVariable($server);
 
-        if ($variables['java_version']) {
-            ServerVariable::query()->updateOrCreate(
-                [
+        if ($javaVarName) {
+            \Log::info('Setting Java version for server', [
+                'server_id' => $server->id,
+                'java_version' => $javaVersion,
+                'variable' => $javaVarName,
+            ]);
+
+            try {
+                $service = app(StartupModificationService::class);
+                $service->setUserLevel(\Pterodactyl\Models\User::USER_LEVEL_ADMIN);
+                $service->handle($server, [
+                    'environment' => [
+                        $javaVarName => $javaVersion,
+                    ],
+                ]);
+            } catch (\Exception $e) {
+                \Log::error('Failed to set Java version', [
                     'server_id' => $server->id,
-                    'variable_id' => EggVariable::query()
-                        ->where('egg_id', $server->egg_id)
-                        ->where('env_variable', $variables['java_version'])
-                        ->first()?->id,
-                ],
-                ['variable_value' => $javaVersion]
-            );
+                    'error' => $e->getMessage(),
+                ]);
+            }
+        } else {
+            \Log::warning('Could not find Java version variable for egg', [
+                'server_id' => $server->id,
+                'egg_id' => $server->egg_id,
+            ]);
         }
     }
 }

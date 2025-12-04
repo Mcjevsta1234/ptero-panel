@@ -85,8 +85,23 @@ class InstallModpackJob extends Job implements ShouldQueue
             $reinstallServerService->handle($this->server);
         });
 
-        // Wait for installation to start
-        sleep(10);
+        // Wait for installation to complete (up to 5 minutes)
+        $installAttempts = 0;
+        $installerOnline = false;
+        
+        while ($installAttempts < 300) {  // 300 seconds = 5 minutes
+            try {
+                $state = $daemonServerRepository->getDetails()['state'];
+                if ($state === 'offline') {
+                    $installerOnline = true;
+                    break;
+                }
+            } catch (\Exception $e) {
+                // Ignore errors while checking state
+            }
+            sleep(1);
+            $installAttempts++;
+        }
 
         // Revert the egg back to original
         $startupModificationService->handle($this->server, [
@@ -113,10 +128,17 @@ class InstallModpackJob extends Job implements ShouldQueue
             \Log::error('Failed to start server after modpack installation', ['error' => $e->getMessage()]);
         }
 
+        // Wait for server to start up before setting Java version
+        sleep(10);
+
         // Set Java version based on Minecraft version if provided
         if ($this->minecraftVersion) {
             try {
                 JavaVersionService::setJavaVersionForServer($this->server, $this->minecraftVersion);
+                \Log::info('Java version set for modpack installation', [
+                    'server_id' => $this->server->id,
+                    'minecraft_version' => $this->minecraftVersion,
+                ]);
             } catch (\Exception $e) {
                 \Log::error('Failed to set Java version', ['error' => $e->getMessage()]);
             }
