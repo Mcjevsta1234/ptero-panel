@@ -161,7 +161,7 @@ export default () => {
                                 onClick={() => selectModpack(modpack)}
                             >
                                 {/* Image Container */}
-                                <div css={tw`w-full aspect-square bg-neutral-900 flex items-center justify-center overflow-hidden relative`}>
+                                <div css={tw`w-full h-48 bg-neutral-900 flex items-center justify-center overflow-hidden relative`}>
                                     {modpack.iconUrl ? (
                                         <img
                                             src={modpack.iconUrl}
