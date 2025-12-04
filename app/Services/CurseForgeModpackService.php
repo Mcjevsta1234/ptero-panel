@@ -62,22 +62,7 @@ class CurseForgeModpackService
                     return false;
                 }
                 
-                // Filter out modpacks without server versions
-                // Check if any file has server-compatible gameVersionTypeId
-                $latestFiles = $modpack['latestFiles'] ?? [];
-                $hasServerVersion = false;
-                
-                foreach ($latestFiles as $file) {
-                    $gameVersionTypeIds = $file['gameVersionTypeIds'] ?? [];
-                    // gameVersionTypeId: 1 = Client, 2 = Server, 4 = Server (alternative)
-                    // We want modpacks that have server files (2 or 4)
-                    if (in_array(2, $gameVersionTypeIds) || in_array(4, $gameVersionTypeIds)) {
-                        $hasServerVersion = true;
-                        break;
-                    }
-                }
-                
-                return $hasServerVersion;
+                return true;
             });
             
             return [
@@ -120,12 +105,8 @@ class CurseForgeModpackService
 
             $data = $response->json();
             
-            // Only include server-compatible versions
-            return collect($data['data'] ?? [])->filter(function ($file) {
-                $gameVersionTypeIds = $file['gameVersionTypeIds'] ?? [];
-                // gameVersionTypeId: 2 = Server, 4 = Server (alternative)
-                return in_array(2, $gameVersionTypeIds) || in_array(4, $gameVersionTypeIds);
-            })->map(function ($file) {
+            // Map versions with Java detection (no filtering - let users choose)
+            return collect($data['data'] ?? [])->map(function ($file) {
                 $gameVersions = $file['gameVersions'] ?? [];
                 $minecraftVersion = null;
                 $javaVersion = null;

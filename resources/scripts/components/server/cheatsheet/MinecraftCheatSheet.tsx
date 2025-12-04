@@ -34,34 +34,28 @@ const MinecraftCheatSheet = () => {
                                 <tr>
                                     <th css={tw`px-4 py-3 text-left text-sm font-semibold text-neutral-100`}>Minecraft Version</th>
                                     <th css={tw`px-4 py-3 text-left text-sm font-semibold text-neutral-100`}>Required Java</th>
-                                    <th css={tw`px-4 py-3 text-left text-sm font-semibold text-neutral-100`}>Docker Image</th>
                                 </tr>
                             </thead>
                             <tbody css={tw`divide-y divide-neutral-800`}>
                                 <tr css={tw`hover:bg-neutral-800/50`}>
                                     <td css={tw`px-4 py-3 text-neutral-300`}>1.20.5+</td>
                                     <td css={tw`px-4 py-3 font-semibold text-green-400`}>Java 21</td>
-                                    <td css={tw`px-4 py-3 font-mono text-xs text-neutral-400`}>ghcr.io/pterodactyl/yolks:java_21</td>
                                 </tr>
                                 <tr css={tw`hover:bg-neutral-800/50`}>
                                     <td css={tw`px-4 py-3 text-neutral-300`}>1.18 - 1.20.4</td>
                                     <td css={tw`px-4 py-3 font-semibold text-blue-400`}>Java 17</td>
-                                    <td css={tw`px-4 py-3 font-mono text-xs text-neutral-400`}>ghcr.io/pterodactyl/yolks:java_17</td>
                                 </tr>
                                 <tr css={tw`hover:bg-neutral-800/50`}>
                                     <td css={tw`px-4 py-3 text-neutral-300`}>1.17 - 1.17.1</td>
                                     <td css={tw`px-4 py-3 font-semibold text-purple-400`}>Java 16</td>
-                                    <td css={tw`px-4 py-3 font-mono text-xs text-neutral-400`}>ghcr.io/pterodactyl/yolks:java_16</td>
                                 </tr>
                                 <tr css={tw`hover:bg-neutral-800/50`}>
                                     <td css={tw`px-4 py-3 text-neutral-300`}>1.12 - 1.16</td>
                                     <td css={tw`px-4 py-3 font-semibold text-yellow-400`}>Java 11</td>
-                                    <td css={tw`px-4 py-3 font-mono text-xs text-neutral-400`}>ghcr.io/pterodactyl/yolks:java_11</td>
                                 </tr>
                                 <tr css={tw`hover:bg-neutral-800/50`}>
                                     <td css={tw`px-4 py-3 text-neutral-300`}>1.11 and below</td>
                                     <td css={tw`px-4 py-3 font-semibold text-red-400`}>Java 8</td>
-                                    <td css={tw`px-4 py-3 font-mono text-xs text-neutral-400`}>ghcr.io/pterodactyl/yolks:java_8</td>
                                 </tr>
                             </tbody>
                         </table>
@@ -75,7 +69,7 @@ const MinecraftCheatSheet = () => {
             ),
         },
         serverTypes: {
-            title: 'Server Types (Vanilla, Paper, Forge, Fabric)',
+            title: 'Server Types (Vanilla, Paper, Forge, NeoForge, Fabric)',
             content: (
                 <div css={tw`space-y-4`}>
                     <div css={tw`grid grid-cols-1 md:grid-cols-2 gap-4`}>
@@ -99,11 +93,22 @@ const MinecraftCheatSheet = () => {
                         </div>
                         <div css={tw`bg-neutral-800 border border-neutral-700 rounded-lg p-4`}>
                             <h3 css={tw`text-lg font-semibold text-neutral-100 mb-2`}>Forge</h3>
-                            <p css={tw`text-sm text-neutral-300 mb-2`}>Mod loader for heavily modded servers.</p>
+                            <p css={tw`text-sm text-neutral-300 mb-2`}>Classic mod loader for heavily modded servers.</p>
                             <ul css={tw`text-sm text-neutral-400 space-y-1 list-disc list-inside`}>
                                 <li>Supports Forge mods</li>
-                                <li>Required for modpacks (CurseForge)</li>
+                                <li>Required for many CurseForge modpacks</li>
                                 <li>Clients need matching mods</li>
+                                <li>Available for older MC versions</li>
+                            </ul>
+                        </div>
+                        <div css={tw`bg-neutral-800 border border-neutral-700 rounded-lg p-4`}>
+                            <h3 css={tw`text-lg font-semibold text-neutral-100 mb-2`}>NeoForge</h3>
+                            <p css={tw`text-sm text-neutral-300 mb-2`}>Modern fork of Forge for newer versions.</p>
+                            <ul css={tw`text-sm text-neutral-400 space-y-1 list-disc list-inside`}>
+                                <li>Supports NeoForge mods</li>
+                                <li>Used in modern modpacks (1.20+)</li>
+                                <li>Better performance than Forge</li>
+                                <li>Backward compatible with some Forge mods</li>
                             </ul>
                         </div>
                         <div css={tw`bg-neutral-800 border border-neutral-700 rounded-lg p-4`}>
@@ -111,8 +116,18 @@ const MinecraftCheatSheet = () => {
                             <p css={tw`text-sm text-neutral-300 mb-2`}>Lightweight modern mod loader.</p>
                             <ul css={tw`text-sm text-neutral-400 space-y-1 list-disc list-inside`}>
                                 <li>Supports Fabric mods</li>
-                                <li>Faster updates than Forge</li>
+                                <li>Faster updates than Forge/NeoForge</li>
                                 <li>Better performance, fewer mods</li>
+                            </ul>
+                        </div>
+                        <div css={tw`bg-neutral-800 border border-neutral-700 rounded-lg p-4`}>
+                            <h3 css={tw`text-lg font-semibold text-neutral-100 mb-2`}>Velocity (Proxy)</h3>
+                            <p css={tw`text-sm text-neutral-300 mb-2`}>Modern proxy for multi-server networks.</p>
+                            <ul css={tw`text-sm text-neutral-400 space-y-1 list-disc list-inside`}>
+                                <li>Connects multiple servers together</li>
+                                <li>Better performance than BungeeCord</li>
+                                <li>Modern API and security features</li>
+                                <li>Required for server networks</li>
                             </ul>
                         </div>
                     </div>

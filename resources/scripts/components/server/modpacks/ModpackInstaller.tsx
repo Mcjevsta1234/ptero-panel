@@ -274,10 +274,7 @@ export default () => {
                                                     Minecraft {selectedVersion.minecraftVersion || 'this version'} requires <strong>Java {selectedVersion.javaVersion}</strong>.
                                                 </div>
                                                 <div css={tw`text-xs text-purple-300 mt-2`}>
-                                                    ⚠️ Please set the correct Java Docker image in the <strong>Startup</strong> tab after installation:
-                                                    <code css={tw`block mt-1 bg-black/30 px-2 py-1 rounded font-mono`}>
-                                                        ghcr.io/pterodactyl/yolks:java_{selectedVersion.javaVersion}
-                                                    </code>
+                                                    ⚠️ Please set <strong>Java {selectedVersion.javaVersion}</strong> in the <strong>Startup</strong> tab after installation.
                                                 </div>
                                             </div>
                                         </div>
