@@ -13,15 +13,10 @@ use Pterodactyl\Services\Servers\StartupModificationService;
  */
 class ModpackConfigurationService
 {
-    protected DaemonFileRepository $fileRepository;
-    protected StartupModificationService $startupModificationService;
-
     public function __construct(
-        DaemonFileRepository $fileRepository,
-        StartupModificationService $startupModificationService
+        protected DaemonFileRepository $fileRepository,
+        protected StartupModificationService $startupModificationService
     ) {
-        $this->fileRepository = $fileRepository;
-        $this->startupModificationService = $startupModificationService;
     }
 
     /**
@@ -33,78 +28,23 @@ class ModpackConfigurationService
         $this->fileRepository->setServer($server);
 
         try {
-            // Detect modpack type
-            $modpackType = $this->detectModpackType($server);
-            
-            \Log::info('Detected modpack type', [
-                'server_id' => $server->id,
-                'modpack_type' => $modpackType,
-            ]);
-
             // Set Java version based on Minecraft version
             if ($minecraftVersion) {
                 $this->setJavaVersionForServer($server, $minecraftVersion);
             }
 
-            // Update startup arguments based on modpack type
-            $this->updateStartupArguments($server, $modpackType);
+            // Update startup arguments to use unix_args.txt properly
+            $this->updateStartupCommand($server);
 
+            \Log::info('Modpack configuration completed', [
+                'server_id' => $server->id,
+                'minecraft_version' => $minecraftVersion,
+            ]);
         } catch (\Exception $e) {
             \Log::error('Failed to configure modpack', [
                 'server_id' => $server->id,
                 'error' => $e->getMessage(),
             ]);
-        }
-    }
-
-    /**
-     * Detect the modpack type by examining server files.
-     */
-    protected function detectModpackType(Server $server): string
-    {
-        try {
-            $files = collect($this->fileRepository->getDirectory('/'))->pluck('name')->toArray();
-
-            // Check for NeoForge (newer versions)
-            if ($this->fileExists($files, 'neoforge-server.jar') || 
-                $this->fileExists($files, 'neoforge-*-server.jar')) {
-                return 'neoforge';
-            }
-
-            // Check for Forge
-            if ($this->fileExists($files, 'forge-*-server.jar') ||
-                $this->fileExists($files, 'minecraft_server.*.jar')) {
-                return 'forge';
-            }
-
-            // Check for Fabric
-            if ($this->fileExists($files, 'fabric-server-launch.jar')) {
-                return 'fabric';
-            }
-
-            // Check for Quilt
-            if ($this->fileExists($files, 'quilt-server-launch.jar')) {
-                return 'quilt';
-            }
-
-            // Check for unix_args.txt (generic modpack indicator)
-            if ($this->fileExists($files, 'unix_args.txt')) {
-                return 'generic_modpack';
-            }
-
-            // Check for Vanilla or Paper
-            if ($this->fileExists($files, 'server.jar') || 
-                $this->fileExists($files, 'paper-*.jar')) {
-                return 'vanilla';
-            }
-
-            return 'unknown';
-        } catch (\Exception $e) {
-            \Log::warning('Could not detect modpack type', [
-                'server_id' => $server->id,
-                'error' => $e->getMessage(),
-            ]);
-            return 'unknown';
         }
     }
 
@@ -136,8 +76,65 @@ class ModpackConfigurationService
                     'server_id' => $server->id,
                     'error' => $e->getMessage(),
                 ]);
+                throw $e;
             }
         }
+    }
+
+    /**
+     * Update startup command to properly use unix_args.txt for modpack JVM arguments.
+     */
+    protected function updateStartupCommand(Server $server): void
+    {
+        try {
+            // Check if unix_args.txt exists (indicates modpack with custom JVM args)
+            $files = collect($this->fileRepository->getDirectory('/'))->pluck('name')->toArray();
+            $hasUnixArgs = in_array('unix_args.txt', $files);
+
+            if (!$hasUnixArgs) {
+                \Log::debug('No unix_args.txt found, skipping startup update', [
+                    'server_id' => $server->id,
+                ]);
+                return;
+            }
+
+            // Update startup to check for unix_args.txt and use it if present
+            $newStartup = $this->getUnixAwareStartup($server);
+            $currentStartup = $server->startup;
+
+            if ($newStartup !== $currentStartup) {
+                \Log::info('Updating startup command for modpack', [
+                    'server_id' => $server->id,
+                    'old_startup' => substr($currentStartup, 0, 100),
+                    'new_startup' => substr($newStartup, 0, 100),
+                ]);
+
+                $this->startupModificationService->setUserLevel(User::USER_LEVEL_ADMIN);
+                $this->startupModificationService->handle($server, [
+                    'startup' => $newStartup,
+                ]);
+            }
+        } catch (\Exception $e) {
+            \Log::warning('Could not update startup command', [
+                'server_id' => $server->id,
+                'error' => $e->getMessage(),
+            ]);
+            // Don't throw - this is not critical
+        }
+    }
+
+    /**
+     * Get startup command that is Unix-aware (uses unix_args.txt if available).
+     * This supports NeoForge, Forge, and Fabric servers.
+     */
+    protected function getUnixAwareStartup(Server $server): string
+    {
+        // Get memory setting from server or default
+        $memoryVariable = '{{server.build.memory}}';
+
+        // Startup command that checks for unix_args.txt and uses it if available
+        // This allows modpacks to specify their own JVM arguments
+        return "java -Xms{$memoryVariable}M -XX:MaxRAMPercentage=95.0 -Dterminal.jline=false -Dterminal.ansi=true \$( [[ ! -f unix_args.txt ]] && printf %s \"-jar server.jar\" || printf %s \"@unix_args.txt\" )";
     }
 
     /**
@@ -156,7 +153,7 @@ class ModpackConfigurationService
         // 1.17-1.19 -> Java 17
         // 1.12-1.16 -> Java 11
         // 1.8-1.11 -> Java 8
-        
+
         if ($majorVersion >= 1) {
             if ($minorVersion >= 20) {
                 return 'java21';
@@ -176,7 +173,7 @@ class ModpackConfigurationService
     protected function findJavaVersionVariable(Server $server): ?string
     {
         $egg = $server->egg;
-        
+
         // Look for common Java version variable names
         $javaVarNames = [
             'JAVA_VERSION',
@@ -190,7 +187,7 @@ class ModpackConfigurationService
             $variable = $egg->variables()
                 ->where('env_variable', $varName)
                 ->first();
-            
+
             if ($variable) {
                 return $varName;
             }
@@ -204,85 +201,5 @@ class ModpackConfigurationService
 
         return $variable?->env_variable;
     }
-
-    /**
-     * Update startup arguments based on modpack type.
-     * Handles both Unix-style arguments (unix_args.txt) and Windows batch files.
-     */
-    protected function updateStartupArguments(Server $server, string $modpackType): void
-    {
-        // Get current startup command
-        $currentStartup = $server->startup;
-        
-        // Determine the appropriate startup command based on modpack type
-        $newStartup = match($modpackType) {
-            'neoforge', 'forge', 'fabric', 'quilt', 'generic_modpack' => 
-                $this->getUnixAwareStartup($server),
-            default => $currentStartup,
-        };
-
-        // Only update if different
-        if ($newStartup !== $currentStartup) {
-            try {
-                \Log::info('Updating startup command for modpack', [
-                    'server_id' => $server->id,
-                    'modpack_type' => $modpackType,
-                    'old_startup' => substr($currentStartup, 0, 100),
-                    'new_startup' => substr($newStartup, 0, 100),
-                ]);
-
-                $this->startupModificationService->setUserLevel(User::USER_LEVEL_ADMIN);
-                $this->startupModificationService->handle($server, [
-                    'startup' => $newStartup,
-                ]);
-            } catch (\Exception $e) {
-                \Log::error('Failed to update startup arguments', [
-                    'server_id' => $server->id,
-                    'error' => $e->getMessage(),
-                ]);
-            }
-        }
-    }
-
-    /**
-     * Get startup command that is Unix-aware (uses unix_args.txt if available).
-     * This supports both NeoForge and modern Forge versions.
-     */
-    protected function getUnixAwareStartup(Server $server): string
-    {
-        // Get the memory variable from the server or use default
-        $memoryVariable = '{{server.build.memory}}';
-        
-        // Modern Pterodactyl startup command that checks for unix_args.txt
-        // This works with NeoForge, Forge 1.20.1+, and Fabric servers
-        $startup = "java -Xms{$memoryVariable}M -XX:MaxRAMPercentage=95.0 -Dterminal.jline=false -Dterminal.ansi=true \$( [[ ! -f unix_args.txt ]] && printf %s \"-jar server.jar\" || printf %s \"@unix_args.txt\" )";
-        
-        return $startup;
-    }
-
-    /**
-     * Check if a file exists in the given files array (supports wildcards).
-     */
-    protected function fileExists(array $files, string $pattern): bool
-    {
-        if (strpos($pattern, '*') === false) {
-            // Exact match
-            return in_array($pattern, $files);
-        }
-
-        // Wildcard match
-        $regex = '/^' . str_replace(
-            ['*', '.'],
-            ['.*', '\.'],
-            $pattern
-        ) . '$/i';
-
-        foreach ($files as $file) {
-            if (preg_match($regex, $file)) {
-                return true;
-            }
-        }
-
-        return false;
-    }
 }
+

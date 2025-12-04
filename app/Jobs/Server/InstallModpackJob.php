@@ -42,7 +42,6 @@ class InstallModpackJob extends Job implements ShouldQueue
         ReinstallServerService $reinstallServerService,
         DaemonPowerRepository $daemonPowerRepository,
         DaemonServerRepository $daemonServerRepository,
-        ModpackConfigurationService $modpackConfigurationService,
     ): void {
         // Kill server if running
         $daemonPowerRepository->setServer($this->server)->send('kill');
@@ -135,7 +134,8 @@ class InstallModpackJob extends Job implements ShouldQueue
 
         // Configure modpack with correct Java version and startup arguments
         try {
-            $modpackConfigurationService->configureModpack($this->server, $this->minecraftVersion);
+            $modpackConfig = app(ModpackConfigurationService::class);
+            $modpackConfig->configureModpack($this->server, $this->minecraftVersion);
             \Log::info('Modpack configuration completed', [
                 'server_id' => $this->server->id,
                 'minecraft_version' => $this->minecraftVersion,
