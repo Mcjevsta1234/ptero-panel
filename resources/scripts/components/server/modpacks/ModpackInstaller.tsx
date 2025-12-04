@@ -156,7 +156,8 @@ export default () => {
                         {modpacks.map((modpack) => (
                             <div
                                 key={modpack.id}
-                                css={tw`bg-neutral-800 rounded-lg overflow-hidden hover:ring-2 hover:ring-primary-400 transition-all duration-200 cursor-pointer group relative`}
+                                className="group"
+                                css={tw`bg-neutral-800 rounded-lg overflow-hidden hover:ring-2 hover:ring-primary-400 transition-all duration-200 cursor-pointer relative`}
                                 onClick={() => selectModpack(modpack)}
                             >
                                 {/* Image Container */}
