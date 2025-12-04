@@ -82,7 +82,12 @@ export default () => {
         setInstalling(true);
         clearFlashes();
         try {
-            await installModpack(uuid, selectedModpack.id, selectedVersion.id, deleteFiles);
+            // Extract minecraft version from gameVersions if available
+            const minecraftVersion = selectedVersion.gameVersions?.length > 0 
+                ? selectedVersion.gameVersions[0] 
+                : undefined;
+
+            await installModpack(uuid, selectedModpack.id, selectedVersion.id, deleteFiles, minecraftVersion);
             addFlash({
                 type: 'success',
                 key: 'modpacks',
@@ -185,6 +190,9 @@ export default () => {
                                     <h3 css={tw`text-sm font-bold text-neutral-100 truncate mb-1`} title={modpack.name}>
                                         {modpack.name}
                                     </h3>
+                                    <p css={tw`text-xs text-neutral-300 line-clamp-2 mb-2 h-8`}>
+                                        {modpack.description}
+                                    </p>
                                     <div css={tw`flex items-center justify-between text-xs`}>
                                         <span css={tw`text-neutral-400`}>
                                             {(modpack.downloadCount / 1000000).toFixed(1)}M downloads

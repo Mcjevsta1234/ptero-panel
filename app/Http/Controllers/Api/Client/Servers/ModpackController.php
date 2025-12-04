@@ -89,14 +89,16 @@ class ModpackController extends ClientApiController
             'modpack_id' => 'required|string',
             'modpack_version_id' => 'required|string',
             'delete_server_files' => 'required|boolean',
+            'minecraft_version' => 'nullable|string',
         ]);
 
         $modpackId = $validated['modpack_id'];
         $modpackVersionId = $validated['modpack_version_id'];
         $deleteServerFiles = (bool) $validated['delete_server_files'];
+        $minecraftVersion = $validated['minecraft_version'] ?? null;
 
         // Dispatch the installation job
-        InstallModpackJob::dispatch($server, $modpackId, $modpackVersionId, $deleteServerFiles);
+        InstallModpackJob::dispatch($server, $modpackId, $modpackVersionId, $deleteServerFiles, $minecraftVersion);
 
         // Log activity
         $activity = Activity::event('server:modpack.install')
