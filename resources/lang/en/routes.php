@@ -25,5 +25,6 @@ return [
         'users' => 'Users',
         'settings' => 'Settings',
         'activity' => 'Activity',
+        'modpacks' => 'Modpack Installer',
     ],
 ];
