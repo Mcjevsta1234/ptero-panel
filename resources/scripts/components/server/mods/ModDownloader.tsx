@@ -92,20 +92,21 @@ export default () => {
     ];
 
     useEffect(() => {
-        loadMods();
-    }, [page]);
+        // Only load on initial mount
+        loadMods(1, '', '', undefined);
+    }, []);  // Empty dependency array - only run on mount
 
-    const loadMods = async () => {
+    const loadMods = async (pageNum: number = page, query: string = searchQuery, version: string = gameVersion, loader: number | undefined = categoryId) => {
         setLoading(true);
         clearFlashes();
         try {
             const data = await searchMods(
                 uuid,
-                searchQuery,
+                query,
                 pageSize,
-                page,
-                gameVersion || undefined,
-                categoryId || undefined
+                pageNum,
+                version || undefined,
+                loader || undefined
             );
             setMods(data.data);
             setTotalPages(data.meta.pagination.total_pages);
@@ -119,12 +120,12 @@ export default () => {
     const handleSearch = (e: React.FormEvent) => {
         e.preventDefault();
         setPage(1);
-        loadMods();
+        loadMods(1, searchQuery, gameVersion, categoryId);
     };
 
-    const handleFilterChange = () => {
+    const handleFilterChange = (newGameVersion?: string, newCategoryId?: number) => {
         setPage(1);
-        loadMods();
+        loadMods(1, searchQuery, newGameVersion || gameVersion, newCategoryId !== undefined ? newCategoryId : categoryId);
     };
 
     const selectMod = async (mod: Mod) => {
@@ -215,9 +216,9 @@ export default () => {
                         <select
                             value={gameVersion}
                             onChange={(e) => {
-                                setGameVersion(e.target.value);
-                                setPage(1);
-                                handleFilterChange();
+                                const newVersion = e.target.value;
+                                setGameVersion(newVersion);
+                                handleFilterChange(newVersion, categoryId);
                             }}
                             css={tw`w-full px-4 py-2 bg-neutral-800 border border-neutral-700 rounded-lg text-neutral-100 focus:border-primary-500 focus:outline-none`}
                         >
@@ -237,9 +238,9 @@ export default () => {
                             value={categoryId || 0}
                             onChange={(e) => {
                                 const value = parseInt(e.target.value);
-                                setCategoryId(value === 0 ? undefined : value);
-                                setPage(1);
-                                handleFilterChange();
+                                const newCategoryId = value === 0 ? undefined : value;
+                                setCategoryId(newCategoryId);
+                                handleFilterChange(gameVersion, newCategoryId);
                             }}
                             css={tw`w-full px-4 py-2 bg-neutral-800 border border-neutral-700 rounded-lg text-neutral-100 focus:border-primary-500 focus:outline-none`}
                         >
@@ -293,7 +294,11 @@ export default () => {
                     {/* Pagination */}
                     <div css={tw`flex justify-center gap-2 mb-6`}>
                         <button
-                            onClick={() => setPage(Math.max(1, page - 1))}
+                            onClick={() => {
+                                const newPage = Math.max(1, page - 1);
+                                setPage(newPage);
+                                loadMods(newPage, searchQuery, gameVersion, categoryId);
+                            }}
                             disabled={page === 1 || loading}
                             css={tw`px-4 py-2 bg-neutral-800 border border-neutral-700 rounded-lg text-neutral-100 disabled:opacity-50 disabled:cursor-not-allowed hover:bg-neutral-700 transition-colors`}
                         >
@@ -303,7 +308,11 @@ export default () => {
                             <span>Page {page} of {totalPages}</span>
                         </div>
                         <button
-                            onClick={() => setPage(Math.min(totalPages, page + 1))}
+                            onClick={() => {
+                                const newPage = Math.min(totalPages, page + 1);
+                                setPage(newPage);
+                                loadMods(newPage, searchQuery, gameVersion, categoryId);
+                            }}
                             disabled={page === totalPages || loading}
                             css={tw`px-4 py-2 bg-neutral-800 border border-neutral-700 rounded-lg text-neutral-100 disabled:opacity-50 disabled:cursor-not-allowed hover:bg-neutral-700 transition-colors`}
                         >
