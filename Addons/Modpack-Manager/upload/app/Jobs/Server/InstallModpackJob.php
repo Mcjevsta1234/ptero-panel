@@ -103,5 +103,8 @@ class InstallModpackJob extends Job implements ShouldQueue
         $startupModificationService->handle($this->server, [
             'egg_id' => $currentEgg->id,
         ]);
+
+        // Clear the installing status
+        $this->server->update(['status' => null]);
     }
 }

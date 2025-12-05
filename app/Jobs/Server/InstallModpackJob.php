@@ -125,5 +125,8 @@ class InstallModpackJob extends Job implements ShouldQueue
         } catch (\Exception $e) {
             \Log::error('Failed to start server after modpack installation', ['error' => $e->getMessage()]);
         }
+
+        // Clear the installing status
+        $this->server->update(['status' => null]);
     }
 }
