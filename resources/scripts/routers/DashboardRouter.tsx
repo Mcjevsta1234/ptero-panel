@@ -69,7 +69,16 @@ export default () => {
                         <div className='lg:hidden'>
                             <button
                                 onClick={() => setSidebarOpen(!isSidebarOpen)}
-                                className='text-gray-500 bg-gray-700 p-2 rounded-ui'
+                                style={{
+                                    color: 'rgba(167, 139, 250, 0.6)',
+                                    background: 'linear-gradient(135deg, rgba(15, 40, 24, 0.3), rgba(10, 14, 39, 0.5))',
+                                    padding: '0.5rem',
+                                    borderRadius: '0.375rem',
+                                    border: '1px solid rgba(167, 139, 250, 0.2)',
+                                    transition: 'all 0.3s'
+                                }}
+                                onMouseEnter={(e) => e.currentTarget.style.borderColor = 'rgba(167, 139, 250, 0.4)'}
+                                onMouseLeave={(e) => e.currentTarget.style.borderColor = 'rgba(167, 139, 250, 0.2)'}
                             >
                                 {isSidebarOpen ? <XIcon className='w-6 h-6' /> : <MenuIcon className='w-6 h-6' />}
                             </button>

@@ -20,7 +20,7 @@ type Stats = Record<'memory' | 'cpu' | 'disk', number>;
 const Limit = ({ limit, children }: { limit: string | null; children: React.ReactNode }) => (
     <>
         {children}
-        <span className={'text-xs text-gray-300'}>/ {limit || <>&infin;</>}</span>
+        <span style={{ fontSize: '0.75rem', color: 'rgba(167, 139, 250, 0.6)' }}>/ {limit || <>&infin;</>}</span>
     </>
 );
 

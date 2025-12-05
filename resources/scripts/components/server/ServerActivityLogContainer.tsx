@@ -48,9 +48,9 @@ export default () => {
             {!data && isValidating ? (
                 <Spinner centered />
             ) : !data?.items.length ? (
-                <p className={'text-sm text-center text-gray-400'}>No activity logs available for this server.</p>
+                <p style={{ fontSize: '0.875rem', textAlign: 'center', color: 'rgba(167, 139, 250, 0.6)' }}>No activity logs available for this server.</p>
             ) : (
-                <div className={'bg-gray-700 rounded-ui border border-gray-600'}>
+                <div style={{ background: 'linear-gradient(135deg, rgba(15, 40, 24, 0.3), rgba(10, 14, 39, 0.5))', borderRadius: '0.5rem', border: '1px solid rgba(167, 139, 250, 0.2)' }}>
                     {data?.items.map((activity) => (
                         <ActivityLogEntry key={activity.id} activity={activity}>
                             <span />
