@@ -265,15 +265,15 @@ export default () => {
                 </div>
             ) : (
                 <>
-                    <div css={tw`grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-6`}>
+                    <div css={tw`grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4 mb-6`}>
                         {mods.map((mod) => (
                             <div
                                 key={mod.id}
-                                css={tw`bg-neutral-800 border border-neutral-700 rounded-lg p-4 hover:border-primary-500 transition-colors cursor-pointer`}
+                                css={tw`bg-neutral-800 border border-neutral-700 rounded-lg p-3 hover:border-primary-500 transition-colors cursor-pointer flex flex-col`}
                                 onClick={() => selectMod(mod)}
                             >
                                 {mod.icon && (
-                                    <div css={tw`w-full mb-3 bg-neutral-700 rounded-md overflow-hidden`} style={{ paddingBottom: '100%', position: 'relative' }}>
+                                    <div css={tw`w-full mb-2 bg-neutral-700 rounded-md overflow-hidden flex-shrink-0`} style={{ paddingBottom: '100%', position: 'relative' }}>
                                         <img
                                             src={mod.icon}
                                             alt={mod.name}
@@ -281,11 +281,11 @@ export default () => {
                                         />
                                     </div>
                                 )}
-                                <h3 css={tw`font-semibold text-neutral-100 truncate mb-2`}>{mod.name}</h3>
-                                <p css={tw`text-sm text-neutral-400 line-clamp-2 mb-3`}>{mod.description}</p>
-                                <div css={tw`flex justify-between items-center text-xs text-neutral-500`}>
-                                    <span>{mod.downloadCount.toLocaleString()} downloads</span>
-                                    <FontAwesomeIcon icon={faDownload} css={tw`text-primary-400`} />
+                                <h3 css={tw`font-semibold text-neutral-100 truncate text-sm mb-1`}>{mod.name}</h3>
+                                <p css={tw`text-xs text-neutral-400 line-clamp-1 mb-2 flex-grow`}>{mod.description}</p>
+                                <div css={tw`text-xs text-neutral-500 flex items-center justify-between`}>
+                                    <span css={tw`truncate`}>{(mod.downloadCount / 1000).toFixed(0)}k</span>
+                                    <FontAwesomeIcon icon={faDownload} css={tw`text-primary-400 flex-shrink-0`} />
                                 </div>
                             </div>
                         ))}
