@@ -21,8 +21,13 @@ class CurseForgeModService
     /**
      * Search for mods on CurseForge.
      */
-    public function search(string $searchQuery = '', int $pageSize = 20, int $page = 1): array
-    {
+    public function search(
+        string $searchQuery = '',
+        int $pageSize = 20,
+        int $page = 1,
+        ?string $gameVersion = null,
+        ?int $categoryId = null
+    ): array {
         if (empty($this->apiKey)) {
             Log::warning('CurseForge API key not configured');
             return ['data' => [], 'total' => 0];
@@ -31,18 +36,30 @@ class CurseForgeModService
         try {
             $index = ($page - 1) * $pageSize;
 
-            $response = Http::withHeaders([
-                'Accept' => 'application/json',
-                'x-api-key' => $this->apiKey,
-            ])->get(self::BASE_URL . '/mods/search', [
+            $params = [
                 'gameId' => self::MINECRAFT_GAME_ID,
                 'classId' => self::MOD_CLASS_ID,
                 'searchFilter' => $searchQuery,
                 'pageSize' => $pageSize,
                 'index' => $index,
-                'sortField' => 2,
+                'sortField' => 6,  // Featured = 6
                 'sortOrder' => 'desc',
-            ]);
+            ];
+
+            // Filter by game version if provided
+            if ($gameVersion) {
+                $params['gameVersion'] = $gameVersion;
+            }
+
+            // Filter by category if provided
+            if ($categoryId) {
+                $params['categoryId'] = $categoryId;
+            }
+
+            $response = Http::withHeaders([
+                'Accept' => 'application/json',
+                'x-api-key' => $this->apiKey,
+            ])->get(self::BASE_URL . '/mods/search', $params);
 
             if (!$response->successful()) {
                 Log::error('CurseForge API search failed', [

@@ -26,13 +26,17 @@ class ModController extends ClientApiController
             'page' => 'required|numeric|integer|min:1',
             'page_size' => 'required|numeric|integer|max:50',
             'search_query' => 'nullable|string',
+            'game_version' => 'nullable|string',
+            'category_id' => 'nullable|integer',
         ]);
 
         $page = (int) $validated['page'];
         $pageSize = (int) $validated['page_size'];
         $searchQuery = $validated['search_query'] ?? '';
+        $gameVersion = $validated['game_version'] ?? null;
+        $categoryId = $validated['category_id'] ?? null;
 
-        $data = $this->curseForgeService->search($searchQuery, $pageSize, $page);
+        $data = $this->curseForgeService->search($searchQuery, $pageSize, $page, $gameVersion, $categoryId);
 
         return new JsonResponse([
             'object' => 'list',

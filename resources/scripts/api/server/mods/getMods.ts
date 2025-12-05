@@ -40,7 +40,9 @@ export const searchMods = (
     uuid: string,
     searchQuery: string,
     pageSize: number,
-    page: number
+    page: number,
+    gameVersion?: string,
+    categoryId?: number
 ): Promise<ModsResponse> => {
     return new Promise((resolve, reject) => {
         http.get(`/api/client/servers/${uuid}/mods`, {
@@ -48,6 +50,8 @@ export const searchMods = (
                 search_query: searchQuery,
                 page_size: pageSize,
                 page,
+                ...(gameVersion && { game_version: gameVersion }),
+                ...(categoryId && { category_id: categoryId }),
             },
         })
             .then(({ data }) => resolve(data))

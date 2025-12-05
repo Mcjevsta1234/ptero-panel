@@ -17,6 +17,8 @@ export default () => {
     const addFlash = useStoreActions((actions: Actions<ApplicationStore>) => actions.flashes.addFlash);
 
     const [searchQuery, setSearchQuery] = useState('');
+    const [gameVersion, setGameVersion] = useState<string>('');
+    const [categoryId, setCategoryId] = useState<number | undefined>();
     const [mods, setMods] = useState<Mod[]>([]);
     const [loading, setLoading] = useState(false);
     const [page, setPage] = useState(1);
@@ -29,6 +31,25 @@ export default () => {
     const [downloading, setDownloading] = useState(false);
     const [dialogOpen, setDialogOpen] = useState(false);
 
+    // Common Minecraft versions for filter
+    const minecraftVersions = [
+        { label: 'All Versions', value: '' },
+        { label: '1.20.1', value: '1.20.1' },
+        { label: '1.20', value: '1.20' },
+        { label: '1.19.2', value: '1.19.2' },
+        { label: '1.18.2', value: '1.18.2' },
+        { label: '1.16.5', value: '1.16.5' },
+    ];
+
+    // CurseForge mod loaders (categories)
+    const modLoaders = [
+        { label: 'All Loaders', value: 0 },
+        { label: 'Forge', value: 5 },
+        { label: 'Fabric', value: 12 },
+        { label: 'Quilt', value: 58 },
+        { label: 'NeoForge', value: 61 },
+    ];
+
     useEffect(() => {
         loadMods();
     }, [page]);
@@ -37,7 +58,14 @@ export default () => {
         setLoading(true);
         clearFlashes();
         try {
-            const data = await searchMods(uuid, searchQuery, pageSize, page);
+            const data = await searchMods(
+                uuid,
+                searchQuery,
+                pageSize,
+                page,
+                gameVersion || undefined,
+                categoryId || undefined
+            );
             setMods(data.data);
             setTotalPages(data.meta.pagination.total_pages);
         } catch (error) {
@@ -49,6 +77,11 @@ export default () => {
 
     const handleSearch = (e: React.FormEvent) => {
         e.preventDefault();
+        setPage(1);
+        loadMods();
+    };
+
+    const handleFilterChange = () => {
         setPage(1);
         loadMods();
     };
@@ -108,27 +141,75 @@ export default () => {
             </div>
 
             {/* Search Bar */}
-            <form onSubmit={handleSearch} css={tw`mb-6 flex gap-3`}>
-                <div css={tw`flex-1 relative`}>
-                    <FontAwesomeIcon
-                        icon={faSearch}
-                        css={tw`absolute left-4 top-1/2 transform -translate-y-1/2 text-neutral-400`}
-                    />
-                    <input
-                        type="text"
-                        placeholder="Search mods..."
-                        value={searchQuery}
-                        onChange={(e) => setSearchQuery(e.target.value)}
-                        css={tw`w-full pl-12 pr-4 py-3 bg-neutral-800 border border-neutral-700 rounded-lg text-neutral-100 placeholder-neutral-500 focus:border-primary-500 focus:outline-none transition-colors`}
-                    />
+            <form onSubmit={handleSearch} css={tw`mb-6 flex flex-col gap-4`}>
+                <div css={tw`flex gap-3`}>
+                    <div css={tw`flex-1 relative`}>
+                        <FontAwesomeIcon
+                            icon={faSearch}
+                            css={tw`absolute left-4 top-1/2 transform -translate-y-1/2 text-neutral-400`}
+                        />
+                        <input
+                            type="text"
+                            placeholder="Search mods..."
+                            value={searchQuery}
+                            onChange={(e) => setSearchQuery(e.target.value)}
+                            css={tw`w-full pl-12 pr-4 py-3 bg-neutral-800 border border-neutral-700 rounded-lg text-neutral-100 placeholder-neutral-500 focus:border-primary-500 focus:outline-none transition-colors`}
+                        />
+                    </div>
+                    <button
+                        type="submit"
+                        disabled={loading}
+                        css={tw`px-6 py-3 bg-primary-500 hover:bg-primary-600 rounded-lg text-white font-medium disabled:opacity-50 disabled:cursor-not-allowed transition-colors`}
+                    >
+                        {loading ? 'Searching...' : 'Search'}
+                    </button>
                 </div>
-                <button
-                    type="submit"
-                    disabled={loading}
-                    css={tw`px-6 py-3 bg-primary-500 hover:bg-primary-600 rounded-lg text-white font-medium disabled:opacity-50 disabled:cursor-not-allowed transition-colors`}
-                >
-                    {loading ? 'Searching...' : 'Search'}
-                </button>
+
+                {/* Filters */}
+                <div css={tw`flex flex-col md:flex-row gap-3`}>
+                    <div css={tw`flex-1`}>
+                        <label css={tw`block text-sm font-medium text-neutral-300 mb-2`}>
+                            Minecraft Version
+                        </label>
+                        <select
+                            value={gameVersion}
+                            onChange={(e) => {
+                                setGameVersion(e.target.value);
+                                setPage(1);
+                                handleFilterChange();
+                            }}
+                            css={tw`w-full px-4 py-2 bg-neutral-800 border border-neutral-700 rounded-lg text-neutral-100 focus:border-primary-500 focus:outline-none`}
+                        >
+                            {minecraftVersions.map((version) => (
+                                <option key={version.value} value={version.value}>
+                                    {version.label}
+                                </option>
+                            ))}
+                        </select>
+                    </div>
+
+                    <div css={tw`flex-1`}>
+                        <label css={tw`block text-sm font-medium text-neutral-300 mb-2`}>
+                            Mod Loader
+                        </label>
+                        <select
+                            value={categoryId || 0}
+                            onChange={(e) => {
+                                const value = parseInt(e.target.value);
+                                setCategoryId(value === 0 ? undefined : value);
+                                setPage(1);
+                                handleFilterChange();
+                            }}
+                            css={tw`w-full px-4 py-2 bg-neutral-800 border border-neutral-700 rounded-lg text-neutral-100 focus:border-primary-500 focus:outline-none`}
+                        >
+                            {modLoaders.map((loader) => (
+                                <option key={loader.value} value={loader.value}>
+                                    {loader.label}
+                                </option>
+                            ))}
+                        </select>
+                    </div>
+                </div>
             </form>
 
             {/* Mods Grid */}
@@ -153,7 +234,7 @@ export default () => {
                                     <img
                                         src={mod.icon}
                                         alt={mod.name}
-                                        css={tw`w-full h-32 object-cover rounded-md mb-3`}
+                                        css={tw`w-full aspect-square object-cover rounded-md mb-3`}
                                     />
                                 )}
                                 <h3 css={tw`font-semibold text-neutral-100 truncate mb-2`}>{mod.name}</h3>
