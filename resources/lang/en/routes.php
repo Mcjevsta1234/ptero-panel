@@ -25,7 +25,7 @@ return [
         'users' => 'Users',
         'settings' => 'Settings',
         'activity' => 'Activity',
-        'modpacks' => 'Modpack Installer',
+        'modpacks' => 'Modpacks',
         'cheatsheet' => 'Cheat Sheet',
     ],
 ];
