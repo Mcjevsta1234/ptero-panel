@@ -231,7 +231,7 @@ export default () => {
                                 onClick={() => selectMod(mod)}
                             >
                                 {mod.icon && (
-                                    <div css={tw`w-full pb-full mb-3 bg-neutral-700 rounded-md overflow-hidden`} style={{ paddingBottom: '100%', position: 'relative' }}>
+                                    <div css={tw`w-full mb-3 bg-neutral-700 rounded-md overflow-hidden`} style={{ paddingBottom: '100%', position: 'relative' }}>
                                         <img
                                             src={mod.icon}
                                             alt={mod.name}
