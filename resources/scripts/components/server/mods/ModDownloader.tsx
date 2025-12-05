@@ -10,6 +10,7 @@ import { faDownload, faSearch, faBox } from '@fortawesome/free-solid-svg-icons';
 import Spinner from '@/components/elements/Spinner';
 import { useStoreActions, Actions } from 'easy-peasy';
 import { ApplicationStore } from '@/state';
+import { BubbleButton, BubbleCard, BubbleInput, BubbleSelect, BubbleModal } from '@/witchyworlds/ui';
 
 export default () => {
     const uuid = ServerContext.useStoreState((state) => state.server.data!.uuid);
@@ -108,26 +109,25 @@ export default () => {
 
             {/* Search Bar */}
             <form onSubmit={handleSearch} css={tw`mb-6 flex gap-3`}>
-                <div css={tw`flex-1 relative`}>
-                    <FontAwesomeIcon
-                        icon={faSearch}
-                        css={tw`absolute left-4 top-1/2 transform -translate-y-1/2 text-neutral-400`}
-                    />
-                    <input
+                <div css={tw`flex-1`}>
+                    <BubbleInput
                         type="text"
                         placeholder="Search mods..."
                         value={searchQuery}
                         onChange={(e) => setSearchQuery(e.target.value)}
-                        css={tw`w-full pl-12 pr-4 py-3 bg-neutral-800 border border-neutral-700 rounded-lg text-neutral-100 placeholder-neutral-500 focus:border-primary-500 focus:outline-none transition-colors`}
+                        icon={<FontAwesomeIcon icon={faSearch} css={tw`w-5 h-5`} />}
                     />
                 </div>
-                <button
-                    type="submit"
-                    disabled={loading}
-                    css={tw`px-6 py-3 bg-primary-500 hover:bg-primary-600 rounded-lg text-white font-medium disabled:opacity-50 disabled:cursor-not-allowed transition-colors`}
-                >
-                    {loading ? 'Searching...' : 'Search'}
-                </button>
+                <div css={tw`flex items-end`}>
+                    <BubbleButton
+                        type="submit"
+                        disabled={loading}
+                        variant="primary"
+                        size="md"
+                    >
+                        {loading ? 'Searching...' : 'Search'}
+                    </BubbleButton>
+                </div>
             </form>
 
             {/* Mods Grid */}
@@ -143,13 +143,13 @@ export default () => {
                 <>
                     <div css={tw`grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4 mb-6`}>
                         {mods.map((mod) => (
-                            <div
+                            <BubbleCard
                                 key={mod.id}
-                                css={tw`bg-neutral-800 border border-neutral-700 rounded-lg p-3 hover:border-primary-500 transition-colors cursor-pointer flex flex-col`}
                                 onClick={() => selectMod(mod)}
+                                css={tw`cursor-pointer flex flex-col h-full`}
                             >
                                 {mod.icon && (
-                                    <div css={tw`w-full mb-2 bg-neutral-700 rounded-md overflow-hidden flex-shrink-0`} style={{ paddingBottom: '100%', position: 'relative' }}>
+                                    <div css={tw`w-full mb-2 bg-white/5 rounded-lg overflow-hidden flex-shrink-0`} style={{ paddingBottom: '100%', position: 'relative' }}>
                                         <img
                                             src={mod.icon}
                                             alt={mod.name}
@@ -163,29 +163,31 @@ export default () => {
                                     <span css={tw`truncate`}>{(mod.downloadCount / 1000).toFixed(0)}k</span>
                                     <FontAwesomeIcon icon={faDownload} css={tw`text-primary-400 flex-shrink-0`} />
                                 </div>
-                            </div>
+                            </BubbleCard>
                         ))}
                     </div>
 
                     {/* Pagination */}
                     <div css={tw`flex justify-center gap-2 mb-6`}>
-                        <button
+                        <BubbleButton
                             onClick={() => setPage(Math.max(1, page - 1))}
                             disabled={page === 1 || loading}
-                            css={tw`px-4 py-2 bg-neutral-800 border border-neutral-700 rounded-lg text-neutral-100 disabled:opacity-50 disabled:cursor-not-allowed hover:bg-neutral-700 transition-colors`}
+                            variant="secondary"
+                            size="md"
                         >
                             Previous
-                        </button>
-                        <div css={tw`flex items-center gap-2 text-neutral-400`}>
+                        </BubbleButton>
+                        <div css={tw`flex items-center gap-2 text-neutral-400 px-4 py-2`}>
                             <span>Page {page} of {totalPages}</span>
                         </div>
-                        <button
+                        <BubbleButton
                             onClick={() => setPage(Math.min(totalPages, page + 1))}
                             disabled={page === totalPages || loading}
-                            css={tw`px-4 py-2 bg-neutral-800 border border-neutral-700 rounded-lg text-neutral-100 disabled:opacity-50 disabled:cursor-not-allowed hover:bg-neutral-700 transition-colors`}
+                            variant="secondary"
+                            size="md"
                         >
                             Next
-                        </button>
+                        </BubbleButton>
                     </div>
                 </>
             )}
@@ -205,31 +207,25 @@ export default () => {
                         </p>
 
                         <div css={tw`mb-6`}>
-                            <label css={tw`block text-sm font-medium text-neutral-300 mb-2`}>
-                                Select Version
-                            </label>
-                            {versions.length === 0 ? (
-                                <div css={tw`text-neutral-500 text-sm`}>Loading versions...</div>
-                            ) : (
-                                <select
-                                    value={selectedVersion?.id || ''}
-                                    onChange={(e) => {
-                                        const version = versions.find((v) => v.id === e.target.value);
-                                        setSelectedVersion(version || null);
-                                    }}
-                                    css={tw`w-full px-4 py-2 bg-neutral-800 border border-neutral-700 rounded-lg text-neutral-100 focus:border-primary-500 focus:outline-none`}
-                                >
-                                    {versions.map((version) => (
-                                        <option key={version.id} value={version.id}>
-                                            {version.name} ({version.fileName})
-                                        </option>
-                                    ))}
-                                </select>
+                            <BubbleSelect
+                                label="Select Version"
+                                value={selectedVersion?.id || ''}
+                                onChange={(e) => {
+                                    const version = versions.find((v) => v.id === e.target.value);
+                                    setSelectedVersion(version || null);
+                                }}
+                                options={versions.map((v) => ({
+                                    value: v.id,
+                                    label: `${v.name} (${v.fileName})`,
+                                }))}
+                            />
+                            {versions.length === 0 && (
+                                <div css={tw`text-neutral-500 text-sm mt-2`}>Loading versions...</div>
                             )}
                         </div>
 
                         {selectedVersion && (
-                            <div css={tw`p-3 bg-neutral-800 rounded-lg text-sm text-neutral-300`}>
+                            <BubbleCard css={tw`text-sm text-neutral-300 mb-6`}>
                                 <p css={tw`mb-2`}>
                                     <strong>File:</strong> {selectedVersion.fileName}
                                 </p>
@@ -241,7 +237,7 @@ export default () => {
                                         <strong>Minecraft Versions:</strong> {selectedVersion.gameVersions.join(', ')}
                                     </p>
                                 )}
-                            </div>
+                            </BubbleCard>
                         )}
                     </div>
                 )}
