@@ -72,11 +72,11 @@ const TopServerDetails = () => {
 
     return (
         <Container>
-            <Card className='!p-4 !px-6 mx-auto w-full max-w-[1200px]' style={{ background: 'linear-gradient(135deg, rgba(15, 40, 24, 0.4), rgba(10, 14, 39, 0.6))', border: '1px solid rgba(167, 139, 250, 0.2)' }}>
+            <Card className='!p-4 !px-6 mx-auto w-full max-w-[1200px]' css={tw`bg-cover`} style={{ background: 'linear-gradient(135deg, rgba(15, 40, 24, 0.4), rgba(10, 14, 39, 0.6))', border: '1px solid rgba(167, 139, 250, 0.2)' }}>
                 <div className='flex items-center justify-between gap-4 flex-wrap mb-2'>
                     <div className='flex items-center gap-3 flex-wrap'>
                         <Title className='text-2xl'>{name}</Title>
-                        <span style={{ ...statusBadge.style, padding: '0.125rem 0.5rem', fontSize: '10px', fontWeight: '600', borderRadius: '0.375rem', letterSpacing: '0.05em', textTransform: 'uppercase' }}>{statusBadge.text}</span>
+                        <span style={{ ...statusBadge.style, padding: '0.125rem 0.5rem', fontSize: '10px', fontWeight: 600, borderRadius: '0.375rem', letterSpacing: '0.05em', textTransform: 'uppercase' } as React.CSSProperties}>{statusBadge.text}</span>
                         {rootAdmin && (
                             // eslint-disable-next-line react/jsx-no-target-blank
                             <a href={`/admin/servers/view/${serverId}`} target='_blank' style={{ height: '1.25rem', width: '1.25rem', color: 'rgba(167, 139, 250, 0.6)', transition: 'color 0.3s' }} onMouseEnter={(e) => e.currentTarget.style.color = 'rgba(6, 182, 212, 1)'} onMouseLeave={(e) => e.currentTarget.style.color = 'rgba(167, 139, 250, 0.6)'}>

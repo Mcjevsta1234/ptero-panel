@@ -74,8 +74,8 @@ export default () => {
                             border: '1px solid rgba(167, 139, 250, 0.2)',
                             color: 'rgba(255, 255, 255, 0.8)',
                             fontSize: isMac ? '0.875rem' : undefined,
-                            fontWeight: isMac ? '500' : undefined
-                        }}
+                            fontWeight: isMac ? 500 : undefined
+                        } as React.CSSProperties}
                     >
                         {isMac ? '⌘' : 'Ctrl'}
                     </kbd>
