@@ -8,7 +8,14 @@ import ConsoleBlock from '@/components/server/console/ConsoleBlock';
 import ConsoleSidebar from '@/components/server/console/ConsoleSidebar';
 import CrashDiagnostics from '@/components/server/console/CrashDiagnostics';
 import { Alert } from '@/components/elements/alert';
+import { FlowingTitle } from '@/witchyworlds/theme/WitchyDesignSystem';
 import { useTranslation } from 'react-i18next';
+import styled from 'styled-components/macro';
+import tw from 'twin.macro';
+
+const TitleContainer = styled.div`
+    ${tw`mb-4`}
+`;
 
 export type PowerAction = 'start' | 'stop' | 'restart' | 'kill';
 
@@ -21,6 +28,10 @@ const ServerConsoleContainer = () => {
 
     return (
         <ServerContentBlock title={t('title')}>
+            <TitleContainer>
+                <FlowingTitle>{t('title')}</FlowingTitle>
+            </TitleContainer>
+
             {(isNodeUnderMaintenance || isInstalling || isTransferring) && (
                 <Alert type={'warning'} className={'mb-4'}>
                     {isNodeUnderMaintenance
