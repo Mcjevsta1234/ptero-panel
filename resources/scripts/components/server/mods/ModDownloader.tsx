@@ -231,11 +231,13 @@ export default () => {
                                 onClick={() => selectMod(mod)}
                             >
                                 {mod.icon && (
-                                    <img
-                                        src={mod.icon}
-                                        alt={mod.name}
-                                        css={tw`w-full aspect-square object-cover rounded-md mb-3`}
-                                    />
+                                    <div css={tw`w-full pb-full mb-3 bg-neutral-700 rounded-md overflow-hidden`} style={{ paddingBottom: '100%', position: 'relative' }}>
+                                        <img
+                                            src={mod.icon}
+                                            alt={mod.name}
+                                            css={tw`absolute inset-0 w-full h-full object-cover`}
+                                        />
+                                    </div>
                                 )}
                                 <h3 css={tw`font-semibold text-neutral-100 truncate mb-2`}>{mod.name}</h3>
                                 <p css={tw`text-sm text-neutral-400 line-clamp-2 mb-3`}>{mod.description}</p>
