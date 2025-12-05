@@ -41,10 +41,12 @@ export const BubbleSelect: React.FC<BubbleSelectProps> = ({
                         transition-all duration-300
                         focus:bg-white/10 dark:focus:bg-black/30
                         focus:border-blue-500/50
-                        focus:shadow-lg focus:shadow-blue-500/20
                         focus:outline-none
                         cursor-pointer
                     `}
+                    style={{
+                        boxShadow: '0 0 20px rgba(59, 130, 246, 0.2)',
+                    }}
                     className={className}
                     {...props}
                 >

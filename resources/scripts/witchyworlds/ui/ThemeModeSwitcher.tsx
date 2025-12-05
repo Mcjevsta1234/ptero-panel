@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
-import { MoonIcon, SunIcon } from '@heroicons/react/solid';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faMoon, faSun } from '@fortawesome/free-solid-svg-icons';
 import tw from 'twin.macro';
 
 type ThemeMode = 'dark' | 'light';
@@ -75,38 +76,22 @@ export const ThemeModeSwitcher = () => {
         <button
             onClick={toggleMode}
             css={tw`
-                relative inline-flex items-center justify-center
-                w-12 h-12 rounded-full
-                bg-white/10 hover:bg-white/20 dark:bg-black/20 dark:hover:bg-black/30
-                border border-white/20 dark:border-white/10
+                p-2 rounded-full
+                bg-white/5 dark:bg-black/20
+                border border-white/10 dark:border-white/5
                 backdrop-blur-sm
+                hover:bg-white/10 dark:hover:bg-black/30
+                hover:border-white/20 dark:hover:border-white/10
                 transition-all duration-300
-                focus:outline-none
-                group
+                text-neutral-400 hover:text-neutral-200
             `}
             title={`Switch to ${mode === 'dark' ? 'light' : 'dark'} mode`}
         >
-            <div css={tw`relative w-6 h-6`}>
-                {mode === 'dark' ? (
-                    <MoonIcon
-                        css={tw`
-                            w-6 h-6
-                            text-yellow-300
-                            transition-all duration-300
-                            group-hover:scale-110
-                        `}
-                    />
-                ) : (
-                    <SunIcon
-                        css={tw`
-                            w-6 h-6
-                            text-yellow-400
-                            transition-all duration-300
-                            group-hover:scale-110
-                        `}
-                    />
-                )}
-            </div>
+            {mode === 'dark' ? (
+                <FontAwesomeIcon icon={faSun} css={tw`w-5 h-5`} />
+            ) : (
+                <FontAwesomeIcon icon={faMoon} css={tw`w-5 h-5`} />
+            )}
         </button>
     );
 };
