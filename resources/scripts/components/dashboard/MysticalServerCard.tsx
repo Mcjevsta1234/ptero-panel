@@ -114,7 +114,14 @@ const StatItem = styled.div`
 `;
 
 const MysticalServerCard: React.FC<Props> = ({ server, className }) => {
-    const isOnline = server.status === 'running' || server.status === 'starting';
+    // Check if server is suspended or in a special state
+    const isSuspended = server.status === 'suspended';
+    const isInstalling = server.status === 'installing';
+    const isTransferring = server.isTransferring;
+    
+    // For dashboard display, we'll show as "online" unless suspended/installing/transferring
+    const isOnline = !isSuspended && !isInstalling && !isTransferring;
+    
     const resourceUsage = {
         cpu: Math.round(Math.random() * 100),
         memory: Math.round(Math.random() * 100),
@@ -154,8 +161,10 @@ const MysticalServerCard: React.FC<Props> = ({ server, className }) => {
                             <ServerDescription>{server.description || 'No description provided'}</ServerDescription>
                         </ServerInfo>
                         <StatusIndicator>
-                            <RuneCircle status={isOnline ? 'active' : 'inactive'} />
-                            <span>{isOnline ? 'Online' : 'Offline'}</span>
+                            <RuneCircle status={isOnline ? 'active' : isSuspended ? 'error' : 'inactive'} />
+                            <span>
+                                {isSuspended ? 'Suspended' : isInstalling ? 'Installing' : isTransferring ? 'Transferring' : isOnline ? 'Ready' : 'Offline'}
+                            </span>
                         </StatusIndicator>
                     </ServerHeader>
 
