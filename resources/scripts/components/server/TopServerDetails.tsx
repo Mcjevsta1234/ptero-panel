@@ -7,7 +7,6 @@ import CopyOnClick from '@/components/elements/CopyOnClick';
 import { ExternalLinkIcon } from '@heroicons/react/solid';
 import Can from '@/components/elements/Can';
 import { bytesToString, ip, mbToBytes } from '@/lib/formatters';
-import Card from '@/witchyworlds/ui/Card';
 import styled from 'styled-components/macro';
 import tw from 'twin.macro';
 import Title from '@/witchyworlds/ui/Title';
@@ -23,6 +22,18 @@ const Limit = ({ limit, children }: { limit: string | null; children: React.Reac
         <span style={{ fontSize: '0.75rem', color: 'rgba(167, 139, 250, 0.6)' }}>/ {limit || <>&infin;</>}</span>
     </>
 );
+
+const MysticalCard = styled.div`
+    ${tw`rounded-bubble backdrop-blur-md transition-all duration-300 p-4 px-6 mx-auto w-full max-w-[1200px]`}
+    background: linear-gradient(135deg, rgba(15, 40, 24, 0.4), rgba(10, 14, 39, 0.6));
+    border: 1px solid rgba(167, 139, 250, 0.2);
+    box-shadow: 0 0 20px rgba(107, 33, 168, 0.2);
+
+    &:hover {
+        border-color: rgba(167, 139, 250, 0.4);
+        box-shadow: 0 0 30px rgba(107, 33, 168, 0.3);
+    }
+`;
 
 const Container = styled.div`${tw`relative z-10 pt-4 pl-2`}`;
 
@@ -72,7 +83,7 @@ const TopServerDetails = () => {
 
     return (
         <Container>
-            <Card className='!p-4 !px-6 mx-auto w-full max-w-[1200px]' css={tw`bg-cover`} style={{ background: 'linear-gradient(135deg, rgba(15, 40, 24, 0.4), rgba(10, 14, 39, 0.6))', border: '1px solid rgba(167, 139, 250, 0.2)' }}>
+            <MysticalCard>
                 <div className='flex items-center justify-between gap-4 flex-wrap mb-2'>
                     <div className='flex items-center gap-3 flex-wrap'>
                         <Title className='text-2xl'>{name}</Title>
@@ -110,7 +121,7 @@ const TopServerDetails = () => {
                         <CopyOnClick text={id}><span>{id}</span></CopyOnClick>
                     </div>
                 </div>
-            </Card>
+            </MysticalCard>
         </Container>
     );
 };
