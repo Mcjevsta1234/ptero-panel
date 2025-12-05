@@ -44,9 +44,11 @@ export const BubbleModal: React.FC<BubbleModalProps> = ({
                     border border-white/20 dark:border-white/10
                     backdrop-blur-xl
                     shadow-2xl
-                    animate-slideIn
                     transition-all duration-300
                 `}
+                style={{
+                    animation: 'slideIn 0.5s ease-out',
+                }}
                 className={sizeClasses[size]}
                 onClick={(e) => e.stopPropagation()}
             >
