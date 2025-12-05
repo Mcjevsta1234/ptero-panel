@@ -196,7 +196,6 @@ export default () => {
                 title={`Download ${selectedMod?.name}`}
                 confirm={'Download'}
                 onConfirmed={handleDownload}
-                showSpinner={downloading}
             >
                 {selectedMod && (
                     <div>
