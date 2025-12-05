@@ -6,7 +6,8 @@ import Input from '@/components/elements/Input';
 
 export const FileActionCheckbox = styled(Input)`
     && {
-        ${tw`border-gray-500 bg-transparent`};
+        ${tw`bg-transparent`};
+        border: 1px solid rgba(167, 139, 250, 0.3);
 
         &:not(:checked) {
             ${tw`hover:border-gray-300`};

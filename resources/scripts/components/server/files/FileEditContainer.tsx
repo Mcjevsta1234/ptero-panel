@@ -124,17 +124,17 @@ export default () => {
             </ErrorBoundary>
             {hash.replace(/^#/, '').endsWith('.pteroignore') && (
                 <Card className='!rounded-none mb-1'>
-                    <div css={tw`mb-4 p-4 rounded-ui border border-gray-600`}>
-                        <p css={tw`text-neutral-300 text-sm`}>
+                    <div css={tw`mb-4 p-4 rounded-ui`} style={{ border: '1px solid rgba(167, 139, 250, 0.2)' }}>
+                        <p css={tw`text-sm`} style={{ color: 'rgba(255, 255, 255, 0.8)' }}>
                             You&apos;re editing a{' '}
-                            <code css={tw`font-mono bg-gray-900 rounded-ui border border-gray-600 py-px px-1`}>
+                            <code css={tw`font-mono rounded-ui py-px px-1`} style={{ background: 'linear-gradient(135deg, rgba(15, 40, 24, 0.5), rgba(10, 14, 39, 0.7))', border: '1px solid rgba(167, 139, 250, 0.3)' }}>
                                 .pteroignore
                             </code>{' '}
                             file. Any files or directories listed in here will be excluded from backups. Wildcards are
                             supported by using an asterisk (
-                            <code css={tw`font-mono bg-gray-900 rounded-ui border border-gray-600 py-px px-1`}>*</code>
+                            <code css={tw`font-mono rounded-ui py-px px-1`} style={{ background: 'linear-gradient(135deg, rgba(15, 40, 24, 0.5), rgba(10, 14, 39, 0.7))', border: '1px solid rgba(167, 139, 250, 0.3)' }}>*</code>
                             ). You can negate a prior rule by prepending an exclamation point (
-                            <code css={tw`font-mono bg-gray-900 rounded-ui border border-gray-600 py-px px-1`}>!</code>
+                            <code css={tw`font-mono rounded-ui py-px px-1`} style={{ background: 'linear-gradient(135deg, rgba(15, 40, 24, 0.5), rgba(10, 14, 39, 0.7))', border: '1px solid rgba(167, 139, 250, 0.3)' }}>!</code>
                             ).
                         </p>
                     </div>
@@ -168,7 +168,7 @@ export default () => {
                 />
             </Card>
             <Card css={tw`flex justify-end !rounded-t-none !px-2 !py-3`}>
-                <div css={tw`flex-1 sm:flex-none rounded-ui bg-gray-700 border border-gray-600 mr-4`}>
+                <div css={tw`flex-1 sm:flex-none rounded-ui mr-4`} style={{ background: 'linear-gradient(135deg, rgba(15, 40, 24, 0.3), rgba(10, 14, 39, 0.5))', border: '1px solid rgba(167, 139, 250, 0.2)' }}>
                     <Select value={mode} onChange={(e) => setMode(e.currentTarget.value)}>
                         {modes.map((mode) => (
                             <option key={`${mode.name}_${mode.mime}`} value={mode.mime}>

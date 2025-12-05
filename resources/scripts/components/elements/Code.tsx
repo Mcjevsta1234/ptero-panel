@@ -5,7 +5,7 @@ interface CodeProps {
 }
 
 export default ({ children }: CodeProps) => (
-    <code className={'font-mono text-sm px-2 py-1 inline-block rounded-ui bg-gray-800 border border-gray-600'}>
+    <code style={{ fontFamily: 'monospace', fontSize: '0.875rem', padding: '0.25rem 0.5rem', display: 'inline-block', borderRadius: '0.375rem', background: 'linear-gradient(135deg, rgba(15, 40, 24, 0.5), rgba(10, 14, 39, 0.7))', border: '1px solid rgba(167, 139, 250, 0.3)' }}>
         {children}
     </code>
 );

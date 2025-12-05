@@ -113,11 +113,11 @@ export default () => {
 
             {/* Header */}
             <div css={tw`mb-6`}>
-                <h1 css={tw`text-3xl font-bold text-neutral-100 flex items-center gap-3`}>
-                    <FontAwesomeIcon icon={faGamepad} css={tw`text-primary-400`} />
+                <h1 css={tw`text-3xl font-bold flex items-center gap-3`} style={{ color: 'rgba(255, 255, 255, 0.95)' }}>
+                    <FontAwesomeIcon icon={faGamepad} style={{ color: 'rgba(167, 139, 250, 0.8)' }} />
                     Modpack Installer
                 </h1>
-                <p css={tw`text-neutral-400 mt-2`}>
+                <p css={tw`mt-2`} style={{ color: 'rgba(167, 139, 250, 0.6)' }}>
                     Browse and install modpacks from CurseForge. Installing a modpack will stop your server and may take several minutes.
                 </p>
             </div>
@@ -127,20 +127,35 @@ export default () => {
                 <div css={tw`flex-1 relative`}>
                     <FontAwesomeIcon
                         icon={faSearch}
-                        css={tw`absolute left-4 top-1/2 transform -translate-y-1/2 text-neutral-400`}
+                        css={tw`absolute left-4 top-1/2 transform -translate-y-1/2`}
+                        style={{ color: 'rgba(167, 139, 250, 0.4)' }}
                     />
                     <input
                         type="text"
                         placeholder="Search modpacks..."
                         value={searchQuery}
                         onChange={(e) => setSearchQuery(e.target.value)}
-                        css={tw`w-full pl-12 pr-4 py-3 bg-neutral-800 border border-neutral-700 rounded-lg text-neutral-100 placeholder-neutral-500 focus:border-primary-500 focus:outline-none transition-colors`}
+                        css={tw`w-full pl-12 pr-4 py-3 rounded-lg outline-none transition-colors`}
+                        style={{
+                            background: 'linear-gradient(135deg, rgba(15, 40, 24, 0.3), rgba(10, 14, 39, 0.5))',
+                            border: '1px solid rgba(167, 139, 250, 0.2)',
+                            color: 'rgba(255, 255, 255, 0.9)'
+                        }}
+                        onFocus={(e) => e.currentTarget.style.borderColor = 'rgba(6, 182, 212, 0.6)'}
+                        onBlur={(e) => e.currentTarget.style.borderColor = 'rgba(167, 139, 250, 0.2)'}
                     />
                 </div>
                 <button
                     type="submit"
                     disabled={loading}
-                    css={tw`px-6 py-3 bg-primary-500 hover:bg-primary-600 rounded-lg text-white font-medium disabled:opacity-50 disabled:cursor-not-allowed transition-colors`}
+                    css={tw`px-6 py-3 rounded-lg font-medium disabled:opacity-50 disabled:cursor-not-allowed transition-colors`}
+                    style={{
+                        background: 'linear-gradient(135deg, rgba(107, 33, 168, 0.5), rgba(45, 106, 79, 0.4))',
+                        border: '1px solid rgba(167, 139, 250, 0.6)',
+                        color: 'rgba(255, 255, 255, 0.95)'
+                    }}
+                    onMouseEnter={(e) => !loading && (e.currentTarget.style.boxShadow = '0 0 20px rgba(107, 33, 168, 0.4)')}
+                    onMouseLeave={(e) => e.currentTarget.style.boxShadow = 'none'}
                 >
                     {loading ? 'Searching...' : 'Search'}
                 </button>
@@ -153,7 +168,7 @@ export default () => {
                 </div>
             ) : modpacks.length === 0 ? (
                 <div css={tw`text-center py-20`}>
-                    <p css={tw`text-neutral-400 text-lg`}>No modpacks found. Try a different search term.</p>
+                    <p css={tw`text-lg`} style={{ color: 'rgba(167, 139, 250, 0.6)' }}>No modpacks found. Try a different search term.</p>
                 </div>
             ) : (
                 <>
@@ -162,11 +177,23 @@ export default () => {
                             <div
                                 key={modpack.id}
                                 className="group"
-                                css={tw`bg-neutral-800 rounded-lg overflow-hidden hover:ring-2 hover:ring-primary-400 transition-all duration-200 cursor-pointer relative`}
+                                css={tw`rounded-lg overflow-hidden transition-all duration-200 cursor-pointer relative`}
+                                style={{
+                                    background: 'linear-gradient(135deg, rgba(15, 40, 24, 0.3), rgba(10, 14, 39, 0.5))',
+                                    border: '1px solid rgba(167, 139, 250, 0.2)'
+                                }}
+                                onMouseEnter={(e) => {
+                                    e.currentTarget.style.borderColor = 'rgba(6, 182, 212, 0.6)';
+                                    e.currentTarget.style.boxShadow = '0 0 20px rgba(6, 182, 212, 0.3)';
+                                }}
+                                onMouseLeave={(e) => {
+                                    e.currentTarget.style.borderColor = 'rgba(167, 139, 250, 0.2)';
+                                    e.currentTarget.style.boxShadow = 'none';
+                                }}
                                 onClick={() => selectModpack(modpack)}
                             >
                                 {/* Image Container */}
-                                <div css={tw`w-full h-48 bg-neutral-900 flex items-center justify-center overflow-hidden relative`}>
+                                <div css={tw`w-full h-48 flex items-center justify-center overflow-hidden relative`} style={{ background: 'linear-gradient(135deg, rgba(15, 40, 24, 0.5), rgba(10, 14, 39, 0.7))' }}>
                                     {modpack.iconUrl ? (
                                         <img
                                             src={modpack.iconUrl}
@@ -187,14 +214,14 @@ export default () => {
                                 
                                 {/* Info Container */}
                                 <div css={tw`p-3`}>
-                                    <h3 css={tw`text-sm font-bold text-neutral-100 truncate mb-1`} title={modpack.name}>
+                                    <h3 css={tw`text-sm font-bold truncate mb-1`} style={{ color: 'rgba(255, 255, 255, 0.95)' }} title={modpack.name}>
                                         {modpack.name}
                                     </h3>
-                                    <p css={tw`text-xs text-neutral-300 line-clamp-2 mb-2 h-8`}>
+                                    <p css={tw`text-xs line-clamp-2 mb-2 h-8`} style={{ color: 'rgba(255, 255, 255, 0.7)' }}>
                                         {modpack.description}
                                     </p>
                                     <div css={tw`flex items-center justify-between text-xs`}>
-                                        <span css={tw`text-neutral-400`}>
+                                        <span style={{ color: 'rgba(167, 139, 250, 0.6)' }}>
                                             {(modpack.downloadCount / 1000000).toFixed(1)}M downloads
                                         </span>
                                     </div>
@@ -209,17 +236,35 @@ export default () => {
                             <button
                                 disabled={page === 1}
                                 onClick={() => setPage(page - 1)}
-                                css={tw`px-4 py-2 bg-neutral-700 hover:bg-neutral-600 rounded disabled:opacity-50 disabled:cursor-not-allowed transition-colors`}
+                                css={tw`px-4 py-2 rounded disabled:opacity-50 disabled:cursor-not-allowed transition-colors`}
+                                style={{
+                                    background: 'linear-gradient(135deg, rgba(15, 40, 24, 0.3), rgba(10, 14, 39, 0.5))',
+                                    border: '1px solid rgba(167, 139, 250, 0.2)',
+                                    color: 'rgba(255, 255, 255, 0.9)'
+                                }}
+                                onMouseEnter={(e) => page !== 1 && (e.currentTarget.style.borderColor = 'rgba(167, 139, 250, 0.4)')}
+                                onMouseLeave={(e) => e.currentTarget.style.borderColor = 'rgba(167, 139, 250, 0.2)'}
                             >
                                 Previous
                             </button>
-                            <span css={tw`px-4 py-2 bg-neutral-800 rounded`}>
+                            <span css={tw`px-4 py-2 rounded`} style={{
+                                background: 'linear-gradient(135deg, rgba(15, 40, 24, 0.5), rgba(10, 14, 39, 0.7))',
+                                border: '1px solid rgba(167, 139, 250, 0.3)',
+                                color: 'rgba(255, 255, 255, 0.9)'
+                            }}>
                                 Page {page} of {totalPages}
                             </span>
                             <button
                                 disabled={page === totalPages}
                                 onClick={() => setPage(page + 1)}
-                                css={tw`px-4 py-2 bg-neutral-700 hover:bg-neutral-600 rounded disabled:opacity-50 disabled:cursor-not-allowed transition-colors`}
+                                css={tw`px-4 py-2 rounded disabled:opacity-50 disabled:cursor-not-allowed transition-colors`}
+                                style={{
+                                    background: 'linear-gradient(135deg, rgba(15, 40, 24, 0.3), rgba(10, 14, 39, 0.5))',
+                                    border: '1px solid rgba(167, 139, 250, 0.2)',
+                                    color: 'rgba(255, 255, 255, 0.9)'
+                                }}
+                                onMouseEnter={(e) => page !== totalPages && (e.currentTarget.style.borderColor = 'rgba(167, 139, 250, 0.4)')}
+                                onMouseLeave={(e) => e.currentTarget.style.borderColor = 'rgba(167, 139, 250, 0.2)'}
                             >
                                 Next
                             </button>
@@ -238,20 +283,25 @@ export default () => {
             >
                 {selectedModpack && (
                     <div>
-                        <p css={tw`mb-4 text-neutral-300`}>
+                        <p css={tw`mb-4`} style={{ color: 'rgba(255, 255, 255, 0.85)' }}>
                             Select a version of <strong>{selectedModpack.name}</strong> to install.
                         </p>
 
                         {versions.length > 0 ? (
                             <>
-                                <label css={tw`block mb-2 text-sm font-medium text-neutral-200`}>Modpack Version</label>
+                                <label css={tw`block mb-2 text-sm font-medium`} style={{ color: 'rgba(255, 255, 255, 0.9)' }}>Modpack Version</label>
                                 <select
                                     value={selectedVersion?.id || ''}
                                     onChange={(e) => {
                                         const version = versions.find((v) => v.id === e.target.value);
                                         setSelectedVersion(version || null);
                                     }}
-                                    css={tw`w-full px-4 py-2 bg-neutral-800 border border-neutral-700 rounded text-neutral-100 mb-4`}
+                                    css={tw`w-full px-4 py-2 rounded mb-4`}
+                                    style={{
+                                        background: 'linear-gradient(135deg, rgba(15, 40, 24, 0.3), rgba(10, 14, 39, 0.5))',
+                                        border: '1px solid rgba(167, 139, 250, 0.2)',
+                                        color: 'rgba(255, 255, 255, 0.9)'
+                                    }}
                                 >
                                     {versions.map((version) => (
                                         <option key={version.id} value={version.id}>
@@ -281,7 +331,7 @@ export default () => {
                                     </div>
                                 )}
 
-                                <div css={tw`bg-neutral-800 border border-neutral-700 rounded p-4 mb-4`}>
+                                <div css={tw`rounded p-4 mb-4`} style={{ background: 'linear-gradient(135deg, rgba(15, 40, 24, 0.3), rgba(10, 14, 39, 0.5))', border: '1px solid rgba(167, 139, 250, 0.2)' }}>
                                     <label css={tw`flex items-center cursor-pointer`}>
                                         <input
                                             type="checkbox"
@@ -290,8 +340,8 @@ export default () => {
                                             css={tw`mr-3 w-4 h-4`}
                                         />
                                         <div>
-                                            <div css={tw`font-medium text-neutral-100`}>Delete all server files</div>
-                                            <div css={tw`text-sm text-neutral-400`}>
+                                            <div css={tw`font-medium`} style={{ color: 'rgba(255, 255, 255, 0.95)' }}>Delete all server files</div>
+                                            <div css={tw`text-sm`} style={{ color: 'rgba(167, 139, 250, 0.6)' }}>
                                                 Recommended for clean installations. This cannot be undone!
                                             </div>
                                         </div>

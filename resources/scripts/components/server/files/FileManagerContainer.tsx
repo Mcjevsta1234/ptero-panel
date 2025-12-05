@@ -148,26 +148,66 @@ export default () => {
                         <button
                             type={'button'}
                             onClick={() => setShowRecent(false)}
-                            className={`px-3 py-1 rounded ${!showRecent ? 'bg-primary-500 text-white' : 'bg-gray-600 text-gray-300 hover:bg-gray-500'}`}
+                            style={{
+                                padding: '0.25rem 0.75rem',
+                                borderRadius: '0.375rem',
+                                background: !showRecent ? 'linear-gradient(135deg, rgba(107, 33, 168, 0.5), rgba(45, 106, 79, 0.4))' : 'linear-gradient(135deg, rgba(15, 40, 24, 0.3), rgba(10, 14, 39, 0.5))',
+                                border: !showRecent ? '1px solid rgba(167, 139, 250, 0.6)' : '1px solid rgba(167, 139, 250, 0.2)',
+                                color: 'rgba(255, 255, 255, 0.9)',
+                                transition: 'all 0.3s',
+                                boxShadow: !showRecent ? '0 0 20px rgba(107, 33, 168, 0.3)' : 'none'
+                            }}
+                            onMouseEnter={(e) => !showRecent ? null : (e.currentTarget.style.borderColor = 'rgba(167, 139, 250, 0.4)')}
+                            onMouseLeave={(e) => !showRecent ? null : (e.currentTarget.style.borderColor = 'rgba(167, 139, 250, 0.2)')}
                         >
                             Files
                         </button>
                         <button
                             type={'button'}
                             onClick={() => setShowRecent(true)}
-                            className={`px-3 py-1 rounded ${showRecent ? 'bg-primary-500 text-white' : 'bg-gray-600 text-gray-300 hover:bg-gray-500'}`}
+                            style={{
+                                padding: '0.25rem 0.75rem',
+                                borderRadius: '0.375rem',
+                                background: showRecent ? 'linear-gradient(135deg, rgba(107, 33, 168, 0.5), rgba(45, 106, 79, 0.4))' : 'linear-gradient(135deg, rgba(15, 40, 24, 0.3), rgba(10, 14, 39, 0.5))',
+                                border: showRecent ? '1px solid rgba(167, 139, 250, 0.6)' : '1px solid rgba(167, 139, 250, 0.2)',
+                                color: 'rgba(255, 255, 255, 0.9)',
+                                transition: 'all 0.3s',
+                                boxShadow: showRecent ? '0 0 20px rgba(107, 33, 168, 0.3)' : 'none'
+                            }}
+                            onMouseEnter={(e) => showRecent ? null : (e.currentTarget.style.borderColor = 'rgba(167, 139, 250, 0.4)')}
+                            onMouseLeave={(e) => showRecent ? null : (e.currentTarget.style.borderColor = 'rgba(167, 139, 250, 0.2)')}
                         >
                             Recent ({recentFiles.length})
                         </button>
                         {!showRecent && (
                             <div className={'relative flex-1'}>
-                                <FontAwesomeIcon icon={faSearch} className={'absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400'} />
+                                <FontAwesomeIcon icon={faSearch} style={{ position: 'absolute', left: '0.75rem', top: '50%', transform: 'translateY(-50%)', width: '1.25rem', height: '1.25rem', color: 'rgba(167, 139, 250, 0.4)' }} />
                                 <input
                                     type="text"
                                     placeholder={t('search-files', { defaultValue: 'Search files...' })}
                                     value={searchQuery}
                                     onChange={(e) => setSearchQuery(e.target.value)}
-                                    className={'w-full pl-10 pr-4 py-2 bg-gray-700 border border-gray-600 rounded-lg text-gray-100 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent'}
+                                    style={{
+                                        width: '100%',
+                                        paddingLeft: '2.5rem',
+                                        paddingRight: '1rem',
+                                        paddingTop: '0.5rem',
+                                        paddingBottom: '0.5rem',
+                                        background: 'linear-gradient(135deg, rgba(15, 40, 24, 0.3), rgba(10, 14, 39, 0.5))',
+                                        border: '1px solid rgba(167, 139, 250, 0.2)',
+                                        borderRadius: '0.5rem',
+                                        color: 'rgba(255, 255, 255, 0.9)',
+                                        outline: 'none',
+                                        transition: 'all 0.3s'
+                                    }}
+                                    onFocus={(e) => {
+                                        e.currentTarget.style.borderColor = 'rgba(6, 182, 212, 0.6)';
+                                        e.currentTarget.style.boxShadow = '0 0 0 3px rgba(6, 182, 212, 0.1), 0 0 20px rgba(6, 182, 212, 0.2)';
+                                    }}
+                                    onBlur={(e) => {
+                                        e.currentTarget.style.borderColor = 'rgba(167, 139, 250, 0.2)';
+                                        e.currentTarget.style.boxShadow = 'none';
+                                    }}
                                 />
                             </div>
                         )}

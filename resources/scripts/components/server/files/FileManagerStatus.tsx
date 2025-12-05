@@ -41,7 +41,7 @@ const FileUploadList = () => {
     return (
         <div className={'space-y-2 mt-6'}>
             {uploads.map(([name, file]) => (
-                <div key={name} className={'flex items-center space-x-3 bg-gray-700 p-3 rounded'}>
+                <div key={name} style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', background: 'linear-gradient(135deg, rgba(15, 40, 24, 0.3), rgba(10, 14, 39, 0.5))', padding: '0.75rem', borderRadius: '0.375rem', border: '1px solid rgba(167, 139, 250, 0.2)' }}>
                     <Tooltip content={`${Math.floor((file.loaded / file.total) * 100)}%`} placement={'left'}>
                         <div className={'flex-shrink-0'}>
                             <Spinner progress={(file.loaded / file.total) * 100} className={'w-6 h-6'} />
@@ -50,7 +50,9 @@ const FileUploadList = () => {
                     <Code>{name}</Code>
                     <button
                         onClick={cancelFileUpload.bind(this, name)}
-                        className={'text-gray-500 hover:text-gray-200 transition-colors duration-75'}
+                        style={{ color: 'rgba(167, 139, 250, 0.6)', transition: 'color 0.3s' }}
+                        onMouseEnter={(e) => e.currentTarget.style.color = 'rgba(6, 182, 212, 1)'}
+                        onMouseLeave={(e) => e.currentTarget.style.color = 'rgba(167, 139, 250, 0.6)'}
                     >
                         <XIcon className={'w-5 h-5'} />
                     </button>
