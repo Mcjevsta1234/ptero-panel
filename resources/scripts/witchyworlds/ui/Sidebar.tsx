@@ -23,7 +23,10 @@ interface Props {
 }
 
 const Container = styled.div<{ isOpen: boolean }>`
-    ${tw`w-[225px] self-start m-2 border border-gray-600 rounded-ui bg-gray-700 text-white flex flex-col z-40 transition-transform duration-300 ease-in-out`};
+    ${tw`w-[260px] self-start m-2 rounded-bubble bg-white/5 dark:bg-black/20 text-white flex flex-col z-40 transition-transform duration-300 ease-in-out`};
+    backdrop-filter: blur(12px);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    box-shadow: 0 0 20px rgba(var(--color-primary, 59 130 246) / 0.1);
 
     ${({ isOpen }) => (isOpen ? tw`fixed top-16 left-0 translate-x-0` : tw`-translate-x-full hidden`)}
 
@@ -43,7 +46,9 @@ const Container = styled.div<{ isOpen: boolean }>`
 `;
 
 const ProfileHeader = styled.div`
-    ${tw`sticky top-0 z-10 bg-gray-700 p-4 border-b border-gray-600`}
+    ${tw`sticky top-0 z-10 p-4`};
+    background: linear-gradient(135deg, rgba(74, 157, 111, 0.1) 0%, rgba(107, 142, 96, 0.05) 100%);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
 `;
 
 const SidebarContent = styled.div`
@@ -51,37 +56,51 @@ const SidebarContent = styled.div`
 `;
 
 export const SideNavigation = styled.div`
-    ${tw`flex flex-col gap-1 pb-4 -mt-1`};
+    ${tw`flex flex-col gap-2 p-3`};
 
     & .label {
-        ${tw`flex items-center ml-2 mr-2 px-3 pt-2 pb-1 text-sm font-semibold text-gray-100 uppercase rounded-ui transition-all duration-300`};
+        ${tw`flex items-center px-3 pt-2 pb-1 text-xs font-bold text-neutral-300 uppercase tracking-wider rounded-lg transition-all duration-300`};
+        letter-spacing: 0.1em;
     }
     a {
-        ${tw`flex items-center ml-2 mr-2 px-5 py-2 text-sm font-medium text-gray-200 rounded-ui transition-all duration-300`};
+        ${tw`flex items-center px-4 py-3 text-sm font-medium text-neutral-200 rounded-xl transition-all duration-300`};
+        background: rgba(255, 255, 255, 0.03);
 
-        &:hover,
+        &:hover {
+            ${tw`text-nature-leaf bg-nature-leaf/10`};
+        }
+
         &:focus,
         &.active {
-            ${tw`text-witchyworlds`};
-            background-color: rgb(var(--color-primary) / 0.2);
+            ${tw`text-nature-leaf`};
+            background: linear-gradient(135deg, rgba(74, 157, 111, 0.2) 0%, rgba(107, 142, 96, 0.1) 100%);
+            box-shadow: inset 0 0 10px rgba(74, 157, 111, 0.1);
         }
     }
 `;
 
 const SocialLinksContainer = styled.div`
-    ${tw`mt-auto border-t border-gray-600 p-4`};
+    ${tw`mt-auto border-t border-white/10 p-4`};
 `;
 
 const SocialGrid = styled.div`
-    ${tw`grid grid-cols-1 gap-2`};
+    ${tw`grid grid-cols-2 gap-2`};
 `;
 
 const SocialLink = styled.a`
-    ${tw`flex items-center justify-start gap-2 p-3 bg-gray-600 rounded-ui text-white hover:bg-witchyworlds transition-colors duration-200`};
+    ${tw`flex items-center justify-center gap-2 p-3 rounded-xl text-white transition-all duration-300`};
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+
+    &:hover {
+        ${tw`text-nature-leaf`};
+        background: rgba(74, 157, 111, 0.15);
+        border-color: rgba(74, 157, 111, 0.3);
+    }
 `;
 
 const SocialIcon = styled.div`
-    ${tw`w-5 h-5 flex items-center justify-center`};
+    ${tw`w-4 h-4 flex items-center justify-center`};
 `;
 
 const Sidebar = ({ children, isOpen = false, dashboard = false }: Props) => {

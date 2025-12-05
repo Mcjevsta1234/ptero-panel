@@ -6,19 +6,20 @@ import styled from 'styled-components/macro';
 interface TitleProps {
     className?: string;
     children: React.ReactNode;
-    scheme?: 'gray' | 'primary';
+    scheme?: 'gray' | 'primary' | 'nature';
 }
 
 const Gradient = styled.div`
-    ${tw`leading-tight bg-gradient-to-tl bg-clip-text text-transparent font-semibold`}
+    ${tw`leading-tight bg-gradient-to-r bg-clip-text text-transparent font-bold`}
 `;
 
 const gradientClasses: Record<NonNullable<TitleProps['scheme']>, string> = {
-    primary: 'from-witchyworlds/60 via-witchyworlds/80 to-witchyworlds/90',
-    gray: 'from-gray-50 via-gray-100 to-gray-200',
+    primary: 'from-blue-400 via-blue-500 to-blue-600',
+    nature: 'from-nature-leaf via-nature-green to-nature-moss',
+    gray: 'from-neutral-200 via-neutral-300 to-neutral-400',
 };
 
-export const Title = ({ className, children, scheme = 'gray' }: TitleProps) => {
+export const Title = ({ className, children, scheme = 'nature' }: TitleProps) => {
     const colorClass = gradientClasses[scheme];
 
     return <Gradient className={classNames(colorClass, className)}>{children}</Gradient>;
