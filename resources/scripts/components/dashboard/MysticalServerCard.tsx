@@ -114,23 +114,34 @@ const StatItem = styled.div`
 `;
 
 const MysticalServerCard: React.FC<Props> = ({ server, className }) => {
-    const isOnline = server.status === 'running';
+    const isOnline = server.status === 'running' || server.status === 'starting';
     const resourceUsage = {
         cpu: Math.round(Math.random() * 100),
         memory: Math.round(Math.random() * 100),
         disk: Math.round(Math.random() * 100),
     };
 
+    // Extract image name from dockerImage (e.g., "ghcr.io/pterodactyl/yolks:java_17" -> "java")
+    const getImageName = () => {
+        if (!server.dockerImage) return null;
+        const parts = server.dockerImage.split('/');
+        const lastPart = parts[parts.length - 1];
+        const imageName = lastPart.split(':')[0];
+        return imageName;
+    };
+
+    const imageName = getImageName();
+
     return (
         <Link to={`/server/${server.id}`} className={className}>
             <ServerCardWrapper>
                 <ServerImage>
-                    {server.relationships?.image?.attributes?.docker_image && (
+                    {imageName && (
                         <img 
-                            src={`https://raw.githubusercontent.com/serverboards/serverboards-images/master/software/${server.relationships?.image?.attributes?.docker_image?.split('/')[1]?.split(':')[0]}.png`}
+                            src={`https://raw.githubusercontent.com/parkervcp/eggs/master/software-images/${imageName}.png`}
                             alt={server.name}
                             onError={(e) => {
-                                e.currentTarget.src = '';
+                                e.currentTarget.style.display = 'none';
                             }}
                         />
                     )}
