@@ -23,7 +23,7 @@ class InstallModpackJob extends Job implements ShouldQueue
     use SerializesModels;
 
     public $tries = 1;
-    public $timeout = 300;
+    public $timeout = 900;
 
     public function __construct(
         public Server $server,
@@ -83,22 +83,29 @@ class InstallModpackJob extends Job implements ShouldQueue
             $reinstallServerService->handle($this->server);
         });
 
-        // Wait for installation to complete (up to 5 minutes)
+        // Wait for installation to complete (up to 10 minutes)
         $installAttempts = 0;
         $installerOnline = false;
         
-        while ($installAttempts < 300) {  // 300 seconds = 5 minutes
+        \Log::info("Starting modpack installation wait for server {$this->server->uuid}");
+        
+        while ($installAttempts < 600) {  // 600 seconds = 10 minutes
             try {
                 $state = $daemonServerRepository->getDetails()['state'];
                 if ($state === 'offline') {
                     $installerOnline = true;
+                    \Log::info("Modpack installation completed for server {$this->server->uuid}");
                     break;
                 }
             } catch (\Exception $e) {
-                // Ignore errors while checking state
+                \Log::warning("Error checking server state during modpack installation", ['error' => $e->getMessage()]);
             }
             sleep(1);
             $installAttempts++;
+        }
+        
+        if (!$installerOnline) {
+            \Log::warning("Modpack installation timeout after 10 minutes for server {$this->server->uuid}");
         }
 
         // Revert the egg back to original
