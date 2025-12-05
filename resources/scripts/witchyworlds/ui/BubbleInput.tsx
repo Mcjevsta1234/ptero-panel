@@ -41,7 +41,6 @@ export const BubbleInput: React.FC<BubbleInputProps> = ({
                     css={tw`
                         w-full
                         px-4 py-3
-                        ${icon ? 'pl-12' : ''}
                         rounded-xl
                         bg-white/5 dark:bg-black/20
                         border border-white/10 dark:border-white/5
@@ -51,9 +50,9 @@ export const BubbleInput: React.FC<BubbleInputProps> = ({
                         transition-all duration-300
                         focus:bg-white/10 dark:focus:bg-black/30
                         focus:border-blue-500/50
-                        focus:shadow-lg focus:shadow-blue-500/20
                         focus:outline-none
                     `}
+                    style={icon ? { paddingLeft: '3rem' } : {}}
                     className={className}
                     {...props}
                 />

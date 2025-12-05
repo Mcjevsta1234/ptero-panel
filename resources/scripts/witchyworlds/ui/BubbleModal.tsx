@@ -37,7 +37,6 @@ export const BubbleModal: React.FC<BubbleModalProps> = ({
         `} onClick={onClose}>
             <div
                 css={tw`
-                    ${sizeClasses[size]}
                     w-full mx-4
                     rounded-bubble
                     bg-gradient-to-br from-white/10 to-white/5
@@ -48,6 +47,7 @@ export const BubbleModal: React.FC<BubbleModalProps> = ({
                     animate-slideIn
                     transition-all duration-300
                 `}
+                className={sizeClasses[size]}
                 onClick={(e) => e.stopPropagation()}
             >
                 {/* Header */}

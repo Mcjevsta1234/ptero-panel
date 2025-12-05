@@ -29,7 +29,7 @@ export const BubbleCard: React.FC<BubbleCardProps> = ({
                 hover && tw`
                     hover:bg-white/10 dark:hover:bg-black/30
                     hover:border-white/20 dark:hover:border-white/10
-                    hover:shadow-lg hover:shadow-blue-500/20
+                    hover:shadow-glow
                     cursor-pointer
                 `,
             ]}
