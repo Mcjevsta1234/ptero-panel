@@ -50,27 +50,26 @@ const ProfileCard = styled.div`
 `;
 
 const ProfileContent = styled.div`
-    ${tw`flex items-center gap-3 mb-3`}
+    ${tw`flex items-center gap-3`}
 `;
 
-const ProfileActions = styled.div`
-    ${tw`flex gap-2 pt-3`}
-    border-top: 1px solid rgba(167, 139, 250, 0.1);
-`;
-
-const ProfileActionLink = styled(Link)`
-    ${tw`flex-1 py-2 px-3 rounded-lg text-center text-xs font-semibold uppercase tracking-wider transition-all duration-300`}
+const AdminArrow = styled(Link)`
+    ${tw`ml-2 inline-flex items-center justify-center w-5 h-5 rounded transition-all duration-300`}
     background: linear-gradient(135deg, rgba(107, 33, 168, 0.3), rgba(45, 106, 79, 0.2));
-    border: 1px solid rgba(167, 139, 250, 0.2);
-    color: rgba(167, 139, 250, 0.9);
+    border: 1px solid rgba(167, 139, 250, 0.3);
+    color: rgba(167, 139, 250, 0.8);
     text-decoration: none;
+    
+    svg {
+        ${tw`w-3 h-3`}
+    }
     
     &:hover {
         background: linear-gradient(135deg, rgba(107, 33, 168, 0.5), rgba(45, 106, 79, 0.3));
-        border-color: rgba(167, 139, 250, 0.4);
-        color: rgba(167, 139, 250, 1);
-        transform: translateY(-2px);
-        box-shadow: 0 0 15px rgba(167, 139, 250, 0.3);
+        border-color: rgba(6, 182, 212, 0.5);
+        color: rgba(6, 182, 212, 1);
+        box-shadow: 0 0 15px rgba(6, 182, 212, 0.3);
+        transform: scale(1.1);
     }
 `;
 
@@ -162,31 +161,25 @@ const Sidebar = ({ children, isOpen = false, dashboard = false }: Props) => {
                     </Link>
                     <ProfileInfo>
                         <div className='role'>
-                            {rootAdmin ? (
-                                <>
-                                    <RuneCircle status='active' style={{ display: 'inline-block', marginRight: '0.5rem' }} />
-                                    Administrator
-                                </>
-                            ) : (
-                                <>
-                                    <RuneCircle status='active' style={{ display: 'inline-block', marginRight: '0.5rem' }} />
-                                    {name} User
-                                </>
+                            <RuneCircle status='active' style={{ display: 'inline-block', marginRight: '0.5rem' }} />
+                            {rootAdmin ? 'Administrator' : `${name} User`}
+                        </div>
+                        <div css={tw`flex items-center`}>
+                            <Link to='/account' css={tw`no-underline`}>
+                                <span className='name'>
+                                    {nameFirst} {nameLast}
+                                </span>
+                            </Link>
+                            {rootAdmin && (
+                                <AdminArrow to='/admin' title='Admin Panel'>
+                                    <svg fill='none' stroke='currentColor' viewBox='0 0 24 24'>
+                                        <path strokeLinecap='round' strokeLinejoin='round' strokeWidth={2} d='M9 5l7 7-7 7' />
+                                    </svg>
+                                </AdminArrow>
                             )}
                         </div>
-                        <Link to='/account'>
-                            <span className='name'>
-                                {nameFirst} {nameLast}
-                            </span>
-                        </Link>
                     </ProfileInfo>
                 </ProfileContent>
-                <ProfileActions>
-                    <ProfileActionLink to='/account'>Account</ProfileActionLink>
-                    {rootAdmin && (
-                        <ProfileActionLink to='/admin'>Admin Panel</ProfileActionLink>
-                    )}
-                </ProfileActions>
             </ProfileCard>
 
             <SidebarContent>

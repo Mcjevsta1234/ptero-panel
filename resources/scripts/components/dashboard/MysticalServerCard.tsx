@@ -1,14 +1,17 @@
-import React from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import { Link } from 'react-router-dom';
 import styled from 'styled-components/macro';
 import tw from 'twin.macro';
 import { Server } from '@/api/server/getServer';
+import getServerResourceUsage, { ServerStats } from '@/api/server/getServerResourceUsage';
 import { bytesToString } from '@/lib/formatters';
 
 interface Props {
     server: Server;
     className?: string;
 }
+
+type Timer = ReturnType<typeof setInterval>;
 
 const ServerCardWrapper = styled(Link)`
     ${tw`block p-0 overflow-hidden transition-all duration-300 relative`}
@@ -198,28 +201,71 @@ const ResourceBar = styled.div<{ percent: number }>`
 `;
 
 const MysticalServerCard: React.FC<Props> = ({ server, className }) => {
+    const interval = useRef<Timer>(null) as React.MutableRefObject<Timer>;
+    const [isSuspended, setIsSuspended] = useState(server.status === 'suspended');
+    const [stats, setStats] = useState<ServerStats | null>(null);
+
+    const getStats = () =>
+        getServerResourceUsage(server.uuid)
+            .then((data) => setStats(data))
+            .catch((error) => console.error(error));
+
+    useEffect(() => {
+        setIsSuspended(stats?.isSuspended || server.status === 'suspended');
+    }, [stats?.isSuspended, server.status]);
+
+    useEffect(() => {
+        if (isSuspended) return;
+
+        getStats().then(() => {
+            interval.current = setInterval(() => getStats(), 30000);
+        });
+
+        return () => {
+            interval.current && clearInterval(interval.current);
+        };
+    }, [isSuspended]);
+
     // Check server status
-    const isSuspended = server.status === 'suspended';
     const isInstalling = server.status === 'installing';
     const isTransferring = server.isTransferring;
     
-    // Determine display status
+    // Determine display status from stats
     const getStatus = (): 'online' | 'offline' | 'starting' | 'stopping' | 'suspended' | 'installing' => {
         if (isSuspended) return 'suspended';
         if (isInstalling) return 'installing';
         if (isTransferring) return 'starting';
-        return 'offline'; // Default to offline since we don't have real-time stats
+        if (!stats) return 'offline';
+        return stats.status as 'online' | 'offline' | 'starting' | 'stopping';
     };
 
     const status = getStatus();
     const statusText = isSuspended ? 'Suspended' 
         : isInstalling ? 'Installing' 
-        : isTransferring ? 'Transferring' 
+        : isTransferring ? 'Transferring'
+        : !stats ? 'Offline'
+        : stats.status === 'running' ? 'Online'
+        : stats.status === 'offline' ? 'Offline'
+        : stats.status === 'starting' ? 'Starting'
+        : stats.status === 'stopping' ? 'Stopping'
         : 'Offline';
 
-    // Convert limits to GB
+    // Convert limits to GB and calculate usage
     const memoryGB = (server.limits.memory / 1024).toFixed(1);
     const diskGB = (server.limits.disk / 1024).toFixed(1);
+    const memoryUsedGB = stats ? (stats.memoryUsageInBytes / 1024 / 1024 / 1024).toFixed(1) : '0.0';
+    const diskUsedGB = stats ? (stats.diskUsageInBytes / 1024 / 1024 / 1024).toFixed(1) : '0.0';
+    const cpuUsage = stats ? Math.round(stats.cpuUsagePercent) : 0;
+    
+    const memoryPercent = stats && server.limits.memory > 0 
+        ? (stats.memoryUsageInBytes / (server.limits.memory * 1024 * 1024)) * 100 
+        : 0;
+    const diskPercent = stats && server.limits.disk > 0 
+        ? (stats.diskUsageInBytes / (server.limits.disk * 1024 * 1024)) * 100 
+        : 0;
+    const cpuPercent = stats && server.limits.cpu > 0
+        ? (stats.cpuUsagePercent / server.limits.cpu) * 100
+        : stats ? stats.cpuUsagePercent : 0;
 
     return (
         <ServerCardWrapper to={`/server/${server.id}`} className={className}>
@@ -245,8 +291,8 @@ const MysticalServerCard: React.FC<Props> = ({ server, className }) => {
                             </svg>
                             Memory
                         </ResourceLabel>
-                        <ResourceValue>{memoryGB} GB</ResourceValue>
-                        <ResourceBar percent={0} />
+                        <ResourceValue>{memoryUsedGB} / {memoryGB} GB</ResourceValue>
+                        <ResourceBar percent={memoryPercent} />
                     </ResourceItem>
                     
                     <ResourceItem>
@@ -256,8 +302,8 @@ const MysticalServerCard: React.FC<Props> = ({ server, className }) => {
                             </svg>
                             Disk
                         </ResourceLabel>
-                        <ResourceValue>{diskGB} GB</ResourceValue>
-                        <ResourceBar percent={0} />
+                        <ResourceValue>{diskUsedGB} / {diskGB} GB</ResourceValue>
+                        <ResourceBar percent={diskPercent} />
                     </ResourceItem>
                     
                     <ResourceItem>
@@ -267,8 +313,8 @@ const MysticalServerCard: React.FC<Props> = ({ server, className }) => {
                             </svg>
                             CPU
                         </ResourceLabel>
-                        <ResourceValue>{server.limits.cpu}%</ResourceValue>
-                        <ResourceBar percent={0} />
+                        <ResourceValue>{cpuUsage}%</ResourceValue>
+                        <ResourceBar percent={cpuPercent} />
                     </ResourceItem>
                     
                     <ResourceItem>
@@ -276,9 +322,11 @@ const MysticalServerCard: React.FC<Props> = ({ server, className }) => {
                             <svg css={tw`w-4 h-4`} fill="currentColor" viewBox="0 0 20 20">
                                 <path d="M10.894 2.553a1 1 0 00-1.788 0l-7 14a1 1 0 001.169 1.409l5-1.429A1 1 0 009 15.571V11a1 1 0 112 0v4.571a1 1 0 00.725.962l5 1.428a1 1 0 001.17-1.408l-7-14z" />
                             </svg>
-                            Allocations
+                            Uptime
                         </ResourceLabel>
-                        <ResourceValue>{server.allocations.length}</ResourceValue>
+                        <ResourceValue css={tw`text-sm`}>
+                            {stats?.uptime ? Math.floor(stats.uptime / 60) + 'm' : '--'}
+                        </ResourceValue>
                     </ResourceItem>
                 </ResourceGrid>
             </ServerBody>
