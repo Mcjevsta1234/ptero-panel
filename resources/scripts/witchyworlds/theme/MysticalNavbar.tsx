@@ -1,7 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import styled from 'styled-components/macro';
 import tw from 'twin.macro';
-import { ThemeModeSwitcher } from '@/witchyworlds/ui/ThemeModeSwitcher';
 import SearchContainer from '@/components/dashboard/search/SearchContainer';
 
 interface NavbarProps {
@@ -12,7 +11,7 @@ const MysticalNavbarContainer = styled.nav`
   position: fixed;
   top: 0;
   left: 0;
-  width: 100%;
+  right: 0;
   height: 5rem;
   z-index: 50;
   background: linear-gradient(90deg, 
@@ -104,8 +103,6 @@ export default ({ children }: NavbarProps) => {
                 </NavSection>
                 <NavSection>
                     <SearchContainer />
-                    <Divider />
-                    <ThemeModeSwitcher />
                 </NavSection>
             </NavContent>
         </MysticalNavbarContainer>

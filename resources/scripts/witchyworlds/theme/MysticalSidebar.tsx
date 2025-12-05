@@ -23,21 +23,18 @@ interface Props {
 }
 
 const SidebarContainer = styled(EnchantedSidebar)<{ isOpen: boolean }>`
-    ${({ isOpen }) => (isOpen ? tw`fixed top-20 left-0 translate-x-0` : tw`-translate-x-full hidden`)}
-
-    height: calc(100dvh - 80px);
+    ${({ isOpen }) => (isOpen ? tw`fixed left-0 translate-x-0` : tw`-translate-x-full hidden`)}
+    top: 5rem;
+    height: calc(100vh - 5rem);
     overflow-y: auto;
     -webkit-overflow-scrolling: touch;
 
     @media (min-width: 1024px) {
         position: fixed;
-        top: 80px;
         left: 0;
         transform: translateX(0);
         display: flex;
         flex-direction: column;
-        height: calc(100dvh - 100px);
-        overflow-y: auto;
     }
 `;
 
@@ -53,7 +50,28 @@ const ProfileCard = styled.div`
 `;
 
 const ProfileContent = styled.div`
-    ${tw`flex items-center gap-3`}
+    ${tw`flex items-center gap-3 mb-3`}
+`;
+
+const ProfileActions = styled.div`
+    ${tw`flex gap-2 pt-3`}
+    border-top: 1px solid rgba(167, 139, 250, 0.1);
+`;
+
+const ProfileActionLink = styled(Link)`
+    ${tw`flex-1 py-2 px-3 rounded-lg text-center text-xs font-semibold uppercase tracking-wider transition-all duration-300`}
+    background: linear-gradient(135deg, rgba(107, 33, 168, 0.3), rgba(45, 106, 79, 0.2));
+    border: 1px solid rgba(167, 139, 250, 0.2);
+    color: rgba(167, 139, 250, 0.9);
+    text-decoration: none;
+    
+    &:hover {
+        background: linear-gradient(135deg, rgba(107, 33, 168, 0.5), rgba(45, 106, 79, 0.3));
+        border-color: rgba(167, 139, 250, 0.4);
+        color: rgba(167, 139, 250, 1);
+        transform: translateY(-2px);
+        box-shadow: 0 0 15px rgba(167, 139, 250, 0.3);
+    }
 `;
 
 const ProfileInfo = styled.div`
@@ -163,6 +181,12 @@ const Sidebar = ({ children, isOpen = false, dashboard = false }: Props) => {
                         </Link>
                     </ProfileInfo>
                 </ProfileContent>
+                <ProfileActions>
+                    <ProfileActionLink to='/account'>Account</ProfileActionLink>
+                    {rootAdmin && (
+                        <ProfileActionLink to='/admin'>Admin Panel</ProfileActionLink>
+                    )}
+                </ProfileActions>
             </ProfileCard>
 
             <SidebarContent>
@@ -174,14 +198,6 @@ const Sidebar = ({ children, isOpen = false, dashboard = false }: Props) => {
                                 <span>{t('index.dashboard')}</span>
                             </span>
                         </NavLink>
-                        {rootAdmin && (
-                            <NavLink to='/admin' exact>
-                                <span className='flex items-center gap-2'>
-                                    <BeakerIcon className='w-4 h-4' />
-                                    <span>{t('index.admin')}</span>
-                                </span>
-                            </NavLink>
-                        )}
                     </EnchantedNav>
                 )}
                 {children && <EnchantedNav>{children}</EnchantedNav>}
