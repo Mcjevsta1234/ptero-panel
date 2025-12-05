@@ -26,6 +26,7 @@ return [
         'settings' => 'Settings',
         'activity' => 'Activity',
         'modpacks' => 'Modpacks',
+        'mods' => 'Mods',
         'cheatsheet' => 'Cheat Sheet',
     ],
 ];

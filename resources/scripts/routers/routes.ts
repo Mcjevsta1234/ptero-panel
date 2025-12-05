@@ -12,6 +12,7 @@ import ServerPropertiesContainer from '@/components/server/configs/ServerPropert
 import AdvancedConfigContainer from '@/components/server/configs/AdvancedConfigContainer';
 import AnalyticsContainer from '@/components/server/analytics/AnalyticsContainer';
 import ModpackInstaller from '@/components/server/modpacks/ModpackInstaller';
+import ModDownloader from '@/components/server/mods/ModDownloader';
 import MinecraftCheatSheet from '@/components/server/cheatsheet/MinecraftCheatSheet';
 import AccountOverviewContainer from '@/components/dashboard/AccountOverviewContainer';
 import AccountApiContainer from '@/components/dashboard/AccountApiContainer';
@@ -21,7 +22,7 @@ import DedicatedServersContainer from '@/components/dashboard/dedicated/Dedicate
 import DedicatedServerDetailContainer from '@/components/dashboard/dedicated/DedicatedServerDetailContainer';
 import CreateDedicatedServerContainer from '@/components/dashboard/dedicated/CreateDedicatedServerContainer';
 import ServerActivityLogContainer from '@/components/server/ServerActivityLogContainer';
-import { FaBoltLightning, FaBoxArchive, FaCalendar, FaDatabase, FaEye, FaFolder, FaGear, FaKey, FaLock, FaPlay, FaTerminal, FaUser, FaUsers, FaServer, FaWrench, FaChartLine, FaScrewdriverWrench, FaCube, FaBook } from 'react-icons/fa6';
+import { FaBoltLightning, FaBoxArchive, FaBox, FaCalendar, FaDatabase, FaEye, FaFolder, FaGear, FaKey, FaLock, FaPlay, FaTerminal, FaUser, FaUsers, FaServer, FaWrench, FaChartLine, FaScrewdriverWrench, FaCube, FaBook } from 'react-icons/fa6';
 
 // Each of the router files is already code split out appropriately — so
 // all of the items above will only be loaded in when that router is loaded.
@@ -182,6 +183,13 @@ export default {
                 name: 'server.cheatsheet',
                 component: MinecraftCheatSheet,
                 icon: FaBook,
+            },
+            {
+                path: '/mods',
+                permission: 'file.*',
+                name: 'server.mods',
+                component: ModDownloader,
+                icon: FaBox,
             },
             {
                 path: '/modpacks',

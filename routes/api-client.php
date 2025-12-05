@@ -191,4 +191,10 @@ Route::group([
         Route::get('/versions', [Client\Servers\ModpackController::class, 'versions']);
         Route::post('/install', [Client\Servers\ModpackController::class, 'install']);
     });
+
+    Route::group(['prefix' => '/mods'], function () {
+        Route::get('/', [Client\Servers\ModController::class, 'search']);
+        Route::get('/{modId}/versions', [Client\Servers\ModController::class, 'versions']);
+        Route::post('/download', [Client\Servers\ModController::class, 'download']);
+    });
 });
