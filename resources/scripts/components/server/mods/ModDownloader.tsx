@@ -190,85 +190,62 @@ export default () => {
             )}
 
             {/* Version Selection Dialog */}
-            <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
-                <div css={tw`bg-neutral-900 rounded-lg p-6 w-full max-w-2xl`}>
-                    <h2 css={tw`text-2xl font-bold text-neutral-100 mb-4`}>
-                        {selectedMod?.name}
-                    </h2>
+            <Dialog.Confirm
+                open={dialogOpen}
+                onClose={() => setDialogOpen(false)}
+                title={`Download ${selectedMod?.name}`}
+                confirm={'Download'}
+                onConfirmed={handleDownload}
+                showSpinner={downloading}
+            >
+                {selectedMod && (
+                    <div>
+                        <p css={tw`text-neutral-300 mb-6 text-sm`}>
+                            {selectedMod.description}
+                        </p>
 
-                    <p css={tw`text-neutral-400 mb-6 text-sm`}>
-                        {selectedMod?.description}
-                    </p>
-
-                    <div css={tw`mb-6`}>
-                        <label css={tw`block text-sm font-medium text-neutral-300 mb-2`}>
-                            Select Version
-                        </label>
-                        {versions.length === 0 ? (
-                            <div css={tw`text-neutral-500 text-sm`}>Loading versions...</div>
-                        ) : (
-                            <select
-                                value={selectedVersion?.id || ''}
-                                onChange={(e) => {
-                                    const version = versions.find((v) => v.id === e.target.value);
-                                    setSelectedVersion(version || null);
-                                }}
-                                css={tw`w-full px-4 py-2 bg-neutral-800 border border-neutral-700 rounded-lg text-neutral-100 focus:border-primary-500 focus:outline-none`}
-                            >
-                                {versions.map((version) => (
-                                    <option key={version.id} value={version.id}>
-                                        {version.name} ({version.fileName})
-                                    </option>
-                                ))}
-                            </select>
-                        )}
-                    </div>
-
-                    {selectedVersion && (
-                        <div css={tw`mb-6 p-3 bg-neutral-800 rounded-lg text-sm text-neutral-300`}>
-                            <p css={tw`mb-2`}>
-                                <strong>File:</strong> {selectedVersion.fileName}
-                            </p>
-                            <p css={tw`mb-2`}>
-                                <strong>Size:</strong> {(selectedVersion.fileLength / 1024 / 1024).toFixed(2)} MB
-                            </p>
-                            {selectedVersion.gameVersions.length > 0 && (
-                                <p>
-                                    <strong>Minecraft Versions:</strong> {selectedVersion.gameVersions.join(', ')}
-                                </p>
+                        <div css={tw`mb-6`}>
+                            <label css={tw`block text-sm font-medium text-neutral-300 mb-2`}>
+                                Select Version
+                            </label>
+                            {versions.length === 0 ? (
+                                <div css={tw`text-neutral-500 text-sm`}>Loading versions...</div>
+                            ) : (
+                                <select
+                                    value={selectedVersion?.id || ''}
+                                    onChange={(e) => {
+                                        const version = versions.find((v) => v.id === e.target.value);
+                                        setSelectedVersion(version || null);
+                                    }}
+                                    css={tw`w-full px-4 py-2 bg-neutral-800 border border-neutral-700 rounded-lg text-neutral-100 focus:border-primary-500 focus:outline-none`}
+                                >
+                                    {versions.map((version) => (
+                                        <option key={version.id} value={version.id}>
+                                            {version.name} ({version.fileName})
+                                        </option>
+                                    ))}
+                                </select>
                             )}
                         </div>
-                    )}
 
-                    {/* Buttons */}
-                    <div css={tw`flex gap-3 justify-end`}>
-                        <button
-                            onClick={() => setDialogOpen(false)}
-                            disabled={downloading}
-                            css={tw`px-4 py-2 bg-neutral-800 border border-neutral-700 rounded-lg text-neutral-100 hover:bg-neutral-700 disabled:opacity-50 transition-colors`}
-                        >
-                            Cancel
-                        </button>
-                        <button
-                            onClick={handleDownload}
-                            disabled={!selectedVersion || downloading}
-                            css={tw`px-4 py-2 bg-primary-500 hover:bg-primary-600 rounded-lg text-white font-medium disabled:opacity-50 disabled:cursor-not-allowed transition-colors flex items-center gap-2`}
-                        >
-                            {downloading ? (
-                                <>
-                                    <Spinner />
-                                    Downloading...
-                                </>
-                            ) : (
-                                <>
-                                    <FontAwesomeIcon icon={faDownload} />
-                                    Download
-                                </>
-                            )}
-                        </button>
+                        {selectedVersion && (
+                            <div css={tw`p-3 bg-neutral-800 rounded-lg text-sm text-neutral-300`}>
+                                <p css={tw`mb-2`}>
+                                    <strong>File:</strong> {selectedVersion.fileName}
+                                </p>
+                                <p css={tw`mb-2`}>
+                                    <strong>Size:</strong> {(selectedVersion.fileLength / 1024 / 1024).toFixed(2)} MB
+                                </p>
+                                {selectedVersion.gameVersions.length > 0 && (
+                                    <p>
+                                        <strong>Minecraft Versions:</strong> {selectedVersion.gameVersions.join(', ')}
+                                    </p>
+                                )}
+                            </div>
+                        )}
                     </div>
-                </div>
-            </Dialog>
+                )}
+            </Dialog.Confirm>
         </div>
     );
 };
