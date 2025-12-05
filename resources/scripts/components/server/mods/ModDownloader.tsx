@@ -34,11 +34,52 @@ export default () => {
     // Common Minecraft versions for filter
     const minecraftVersions = [
         { label: 'All Versions', value: '' },
+        // 1.20+ versions
+        { label: '1.21.3', value: '1.21.3' },
+        { label: '1.21.2', value: '1.21.2' },
+        { label: '1.21.1', value: '1.21.1' },
+        { label: '1.21', value: '1.21' },
+        { label: '1.20.6', value: '1.20.6' },
+        { label: '1.20.5', value: '1.20.5' },
+        { label: '1.20.4', value: '1.20.4' },
+        { label: '1.20.3', value: '1.20.3' },
+        { label: '1.20.2', value: '1.20.2' },
         { label: '1.20.1', value: '1.20.1' },
         { label: '1.20', value: '1.20' },
+        // 1.19 versions
         { label: '1.19.2', value: '1.19.2' },
+        { label: '1.19.1', value: '1.19.1' },
+        { label: '1.19', value: '1.19' },
+        // 1.18 versions
         { label: '1.18.2', value: '1.18.2' },
+        { label: '1.18.1', value: '1.18.1' },
+        { label: '1.18', value: '1.18' },
+        // 1.17 versions
+        { label: '1.17.1', value: '1.17.1' },
+        { label: '1.17', value: '1.17' },
+        // 1.16 versions
         { label: '1.16.5', value: '1.16.5' },
+        { label: '1.16.4', value: '1.16.4' },
+        { label: '1.16.3', value: '1.16.3' },
+        { label: '1.16.2', value: '1.16.2' },
+        { label: '1.16.1', value: '1.16.1' },
+        { label: '1.16', value: '1.16' },
+        // 1.15 versions
+        { label: '1.15.2', value: '1.15.2' },
+        { label: '1.15.1', value: '1.15.1' },
+        { label: '1.15', value: '1.15' },
+        // 1.14 versions
+        { label: '1.14.4', value: '1.14.4' },
+        { label: '1.14.3', value: '1.14.3' },
+        { label: '1.14.2', value: '1.14.2' },
+        { label: '1.14.1', value: '1.14.1' },
+        { label: '1.14', value: '1.14' },
+        // 1.12 versions
+        { label: '1.12.2', value: '1.12.2' },
+        { label: '1.12.1', value: '1.12.1' },
+        { label: '1.12', value: '1.12' },
+        // Earlier versions
+        { label: '1.8', value: '1.8' },
     ];
 
     // CurseForge mod loaders (categories)
