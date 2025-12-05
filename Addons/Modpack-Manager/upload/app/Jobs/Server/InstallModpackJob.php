@@ -97,12 +97,48 @@ class InstallModpackJob extends Job implements ShouldQueue
             $reinstallServerService->handle($this->server);
         });
 
-        sleep(10); // HACK: Should be enough for the daemon to start the installation process
+        // Wait for installation to complete (up to 5 minutes)
+        $installAttempts = 0;
+        $installerOnline = false;
+        
+        while ($installAttempts < 300) {  // 300 seconds = 5 minutes
+            try {
+                $state = $daemonServerRepository->getDetails()['state'];
+                if ($state === 'offline') {
+                    $installerOnline = true;
+                    break;
+                }
+            } catch (\Exception $e) {
+                // Ignore errors while checking state
+            }
+            sleep(1);
+            $installAttempts++;
+        }
 
         // Revert the egg back to what it was.
         $startupModificationService->handle($this->server, [
             'egg_id' => $currentEgg->id,
         ]);
+
+        // Wait for egg reversion to complete
+        sleep(5);
+
+        // Accept EULA by creating/updating eula.txt
+        try {
+            $fileRepository->setServer($this->server);
+            $fileRepository->putContent('eula.txt', "eula=true\n");
+        } catch (\Exception $e) {
+            \Log::error('Failed to create eula.txt', ['error' => $e->getMessage()]);
+        }
+
+        // Wait a moment then start the server
+        sleep(2);
+        
+        try {
+            $daemonPowerRepository->setServer($this->server)->send('start');
+        } catch (\Exception $e) {
+            \Log::error('Failed to start server after modpack installation', ['error' => $e->getMessage()]);
+        }
 
         // Clear the installing status
         $this->server->update(['status' => null]);
