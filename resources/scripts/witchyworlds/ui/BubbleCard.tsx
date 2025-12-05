@@ -16,16 +16,16 @@ export const BubbleCard: React.FC<BubbleCardProps> = ({
 }) => {
     return (
         <div
-            css={tw`
-                relative rounded-bubble
-                bg-white/5 dark:bg-black/20
-                backdrop-blur-md
-                border border-white/10 dark:border-white/5
-                p-6
-                transition-all duration-300
-                overflow-hidden
-            `}
             css={[
+                tw`
+                    relative rounded-bubble
+                    bg-white/5 dark:bg-black/20
+                    backdrop-blur-md
+                    border border-white/10 dark:border-white/5
+                    p-6
+                    transition-all duration-300
+                    overflow-hidden
+                `,
                 hover && tw`
                     hover:bg-white/10 dark:hover:bg-black/30
                     hover:border-white/20 dark:hover:border-white/10

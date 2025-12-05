@@ -1,6 +1,7 @@
 import React, { SelectHTMLAttributes } from 'react';
 import tw from 'twin.macro';
-import { ChevronDownIcon } from '@heroicons/react/24/outline';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faChevronDown } from '@fortawesome/free-solid-svg-icons';
 
 interface BubbleSelectProps extends SelectHTMLAttributes<HTMLSelectElement> {
     label?: string;
@@ -62,7 +63,7 @@ export const BubbleSelect: React.FC<BubbleSelectProps> = ({
                     absolute right-3 top-1/2 transform -translate-y-1/2
                     text-neutral-400 pointer-events-none
                 `}>
-                    <ChevronDownIcon css={tw`w-5 h-5`} />
+                    <FontAwesomeIcon icon={faChevronDown} css={tw`w-4 h-4`} />
                 </div>
             </div>
             

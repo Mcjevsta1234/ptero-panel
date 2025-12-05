@@ -1,6 +1,7 @@
 import React from 'react';
 import tw from 'twin.macro';
-import { XMarkIcon } from '@heroicons/react/24/outline';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faXmark } from '@fortawesome/free-solid-svg-icons';
 
 interface BubbleModalProps {
     isOpen: boolean;
@@ -74,7 +75,7 @@ export const BubbleModal: React.FC<BubbleModalProps> = ({
                             transition-all duration-200
                         `}
                     >
-                        <XMarkIcon css={tw`w-6 h-6`} />
+                        <FontAwesomeIcon icon={faXmark} css={tw`w-5 h-5`} />
                     </button>
                 </div>
 
