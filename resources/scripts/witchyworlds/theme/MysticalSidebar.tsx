@@ -174,6 +174,14 @@ const Sidebar = ({ children, isOpen = false, dashboard = false }: Props) => {
                                 <span>{t('index.dashboard')}</span>
                             </span>
                         </NavLink>
+                        {rootAdmin && (
+                            <NavLink to='/admin' exact>
+                                <span className='flex items-center gap-2'>
+                                    <BeakerIcon className='w-4 h-4' />
+                                    <span>{t('index.admin')}</span>
+                                </span>
+                            </NavLink>
+                        )}
                     </EnchantedNav>
                 )}
                 {children && <EnchantedNav>{children}</EnchantedNav>}
