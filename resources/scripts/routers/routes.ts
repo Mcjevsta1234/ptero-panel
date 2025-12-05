@@ -8,12 +8,21 @@ import NetworkContainer from '@/components/server/network/NetworkContainer';
 import StartupContainer from '@/components/server/startup/StartupContainer';
 import FileManagerContainer from '@/components/server/files/FileManagerContainer';
 import SettingsContainer from '@/components/server/settings/SettingsContainer';
+import ServerPropertiesContainer from '@/components/server/configs/ServerPropertiesContainer';
+import AdvancedConfigContainer from '@/components/server/configs/AdvancedConfigContainer';
+import AnalyticsContainer from '@/components/server/analytics/AnalyticsContainer';
+import ModpackInstaller from '@/components/server/modpacks/ModpackInstaller';
+import ModDownloader from '@/components/server/mods/ModDownloader';
+import MinecraftCheatSheet from '@/components/server/cheatsheet/MinecraftCheatSheet';
 import AccountOverviewContainer from '@/components/dashboard/AccountOverviewContainer';
 import AccountApiContainer from '@/components/dashboard/AccountApiContainer';
 import AccountSSHContainer from '@/components/dashboard/ssh/AccountSSHContainer';
 import ActivityLogContainer from '@/components/dashboard/activity/ActivityLogContainer';
+import DedicatedServersContainer from '@/components/dashboard/dedicated/DedicatedServersContainer';
+import DedicatedServerDetailContainer from '@/components/dashboard/dedicated/DedicatedServerDetailContainer';
+import CreateDedicatedServerContainer from '@/components/dashboard/dedicated/CreateDedicatedServerContainer';
 import ServerActivityLogContainer from '@/components/server/ServerActivityLogContainer';
-import { FaBoltLightning, FaBoxArchive, FaCalendar, FaDatabase, FaEye, FaFolder, FaGear, FaKey, FaLock, FaPlay, FaTerminal, FaUser, FaUsers } from 'react-icons/fa6';
+import { FaBoltLightning, FaBoxArchive, FaBox, FaCalendar, FaDatabase, FaEye, FaFolder, FaGear, FaKey, FaLock, FaPlay, FaTerminal, FaUser, FaUsers, FaServer, FaWrench, FaChartLine, FaScrewdriverWrench, FaCube, FaBook } from 'react-icons/fa6';
 
 // Each of the router files is already code split out appropriately — so
 // all of the items above will only be loaded in when that router is loaded.
@@ -46,9 +55,10 @@ interface Routes {
     account: RouteDefinition[];
     // All of the routes available under "/server/:id"
     server: {
-        control: ServerRouteDefinition[];
+        overview: ServerRouteDefinition[];
         management: ServerRouteDefinition[];
-        administration: ServerRouteDefinition[];
+        tools: ServerRouteDefinition[];
+        advanced: ServerRouteDefinition[];
     };
 }
 
@@ -79,9 +89,28 @@ export default {
             icon: FaEye,
             component: ActivityLogContainer,
         },
+        {
+            path: '/dedicated',
+            name: 'account.dedicated',
+            icon: FaServer,
+            component: DedicatedServersContainer,
+            exact: true,
+        },
+        {
+            path: '/dedicated/:id/create',
+            name: undefined,
+            component: CreateDedicatedServerContainer,
+            exact: true,
+        },
+        {
+            path: '/dedicated/:id',
+            name: undefined,
+            component: DedicatedServerDetailContainer,
+            exact: true,
+        },
     ],
     server: {
-        control: [
+        overview: [
             {
                 path: '/',
                 permission: null,
@@ -90,6 +119,15 @@ export default {
                 icon: FaTerminal,
                 exact: true,
             },
+            {
+                path: '/analytics',
+                permission: null,
+                name: 'server.analytics',
+                component: AnalyticsContainer,
+                icon: FaChartLine,
+            },
+        ],
+        management: [
             {
                 path: '/files',
                 permission: 'file.*',
@@ -103,22 +141,6 @@ export default {
                 name: undefined,
                 component: FileEditContainer,
             },
-            {
-                path: '/startup',
-                permission: 'startup.*',
-                name: 'server.startup',
-                component: StartupContainer,
-                icon: FaPlay,
-            },
-            {
-                path: '/network',
-                permission: 'allocation.*',
-                name: 'server.network',
-                component: NetworkContainer,
-                icon: FaBoltLightning,
-            },
-        ],
-        management: [
             {
                 path: '/databases',
                 permission: 'database.*',
@@ -146,8 +168,6 @@ export default {
                 component: BackupContainer,
                 icon: FaBoxArchive,
             },
-        ],
-        administration: [
             {
                 path: '/users',
                 permission: 'user.*',
@@ -155,6 +175,59 @@ export default {
                 component: UsersContainer,
                 icon: FaUsers,
             },
+        ],
+        tools: [
+            {
+                path: '/cheat-sheet',
+                permission: null,
+                name: 'server.cheatsheet',
+                component: MinecraftCheatSheet,
+                icon: FaBook,
+            },
+            {
+                path: '/mods',
+                permission: 'file.*',
+                name: 'server.mods',
+                component: ModDownloader,
+                icon: FaBox,
+            },
+            {
+                path: '/modpacks',
+                permission: 'file.*',
+                name: 'server.modpacks',
+                component: ModpackInstaller,
+                icon: FaCube,
+            },
+            {
+                path: '/startup',
+                permission: 'startup.*',
+                name: 'server.startup',
+                component: StartupContainer,
+                icon: FaPlay,
+            },
+            {
+                path: '/network',
+                permission: 'allocation.*',
+                name: 'server.network',
+                component: NetworkContainer,
+                icon: FaBoltLightning,
+            },
+            {
+                path: '/server-properties',
+                permission: 'file.*',
+                name: 'server.properties',
+                component: ServerPropertiesContainer,
+                icon: FaWrench,
+            },
+            {
+                path: '/advanced-config',
+                permission: 'file.*',
+                name: 'server.advanced-config',
+                component: AdvancedConfigContainer,
+                icon: FaScrewdriverWrench,
+            },
+        ],
+        advanced: [
             {
                 path: '/settings',
                 permission: ['settings.*', 'file.sftp'],

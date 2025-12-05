@@ -1,0 +1,181 @@
+<?php
+
+namespace Pterodactyl\Jobs\Server;
+
+use Pterodactyl\Jobs\Job;
+use Pterodactyl\Models\Egg;
+use Pterodactyl\Models\User;
+use Pterodactyl\Models\Server;
+use Illuminate\Queue\SerializesModels;
+use Illuminate\Queue\InteractsWithQueue;
+use Illuminate\Contracts\Queue\ShouldQueue;
+use Illuminate\Foundation\Bus\Dispatchable;
+use Pterodactyl\Repositories\Wings\DaemonFileRepository;
+use Pterodactyl\Repositories\Wings\DaemonPowerRepository;
+use Pterodactyl\Repositories\Wings\DaemonServerRepository;
+use Pterodactyl\Services\Minecraft\MinecraftSoftwareService;
+use Pterodactyl\Services\Servers\ReinstallServerService;
+use Pterodactyl\Services\Servers\StartupModificationService;
+
+class InstallModpackJob extends Job implements ShouldQueue
+{
+    use Dispatchable;
+    use InteractsWithQueue;
+    use SerializesModels;
+
+    /**
+     * The number of times the job may be attempted.
+     *
+     * @var int
+     */
+    public $tries = 1;
+
+    /**
+     * The number of seconds the job can run before timing out.
+     *
+     * @var int
+     */
+    public $timeout = 900;
+
+    /**
+     * Create a new job instance.
+     */
+    public function __construct(
+        public Server $server,
+        public string $provider,
+        public string $modpackId,
+        public string $modpackVersionId,
+        public bool $deleteServerFiles,
+    ) {
+    }
+
+    /**
+     * Execute the job.
+     */
+    public function handle(
+        StartupModificationService $startupModificationService,
+        DaemonFileRepository $fileRepository,
+        ReinstallServerService $reinstallServerService,
+        DaemonPowerRepository $daemonPowerRepository,
+        DaemonServerRepository $daemonServerRepository,
+    ): void {
+        // Kill server if running
+        $daemonPowerRepository->setServer($this->server)->send('kill');
+        $daemonServerRepository->setServer($this->server);
+
+        // Wait for the server to be offline
+        while ($daemonServerRepository->getDetails()['state'] !== 'offline') {
+            sleep(1);
+        }
+
+        if ($this->deleteServerFiles) {
+            $fileRepository->setServer($this->server);
+            $filesToDelete = collect(
+                $fileRepository->getDirectory('/')
+            )->pluck('name')->toArray();
+
+            if (count($filesToDelete) > 0) {
+                $fileRepository->deleteFiles('/', $filesToDelete);
+            }
+        }
+
+        $currentEgg = $this->server->egg;
+
+        $installerEgg = Egg::where('author', 'modpack-installer@ric-rac.org')->firstOrFail();
+
+        $startupModificationService->setUserLevel(User::USER_LEVEL_ADMIN);
+
+        rescue(function () use ($startupModificationService, $installerEgg, $reinstallServerService) {
+            $startupModificationService->handle($this->server, [
+                'egg_id' => $installerEgg->id,
+                'environment' => [
+                    'MODPACK_PROVIDER' => $this->provider,
+                    'MODPACK_ID' => $this->modpackId,
+                    'MODPACK_VERSION_ID' => $this->modpackVersionId,
+                ],
+            ]);
+            $reinstallServerService->handle($this->server);
+        });
+
+        // Wait a bit for the installer to start
+        sleep(3);
+
+        // Wait for installation to complete (up to 10 minutes)
+        $installAttempts = 0;
+        $lastState = 'unknown';
+        $stateChanges = 0;
+        
+        \Log::info("Starting modpack installation wait for server {$this->server->uuid}", [
+            'provider' => $this->provider,
+            'modpack_id' => $this->modpackId,
+            'version_id' => $this->modpackVersionId,
+        ]);
+        
+        while ($installAttempts < 600) {  // 600 seconds = 10 minutes
+            try {
+                $details = $daemonServerRepository->getDetails();
+                $state = $details['state'] ?? 'unknown';
+                
+                // Track state changes to detect crashes
+                if ($state !== $lastState) {
+                    $stateChanges++;
+                    \Log::info("Modpack installer state change for server {$this->server->uuid}: {$lastState} -> {$state}");
+                    $lastState = $state;
+                }
+                
+                // If server goes offline, installation is done
+                if ($state === 'offline') {
+                    \Log::info("Modpack installation completed for server {$this->server->uuid}");
+                    break;
+                }
+            } catch (\Exception $e) {
+                \Log::warning("Error checking server state during modpack installation", ['error' => $e->getMessage()]);
+            }
+            
+            sleep(1);
+            $installAttempts++;
+            
+            // Log progress every 30 seconds
+            if ($installAttempts % 30 === 0) {
+                \Log::info("Modpack installation still running for server {$this->server->uuid}", [
+                    'elapsed_seconds' => $installAttempts,
+                    'last_state' => $lastState,
+                ]);
+            }
+        }
+        
+        \Log::info("Modpack installation wait completed for server {$this->server->uuid}", [
+            'total_attempts' => $installAttempts,
+            'state_changes' => $stateChanges,
+            'final_state' => $lastState,
+        ]);
+
+        // Revert the egg back to what it was.
+        $startupModificationService->handle($this->server, [
+            'egg_id' => $currentEgg->id,
+        ]);
+
+        // Wait for egg reversion to complete
+        sleep(5);
+
+        // Accept EULA by creating/updating eula.txt
+        try {
+            $fileRepository->setServer($this->server);
+            $fileRepository->putContent('eula.txt', "eula=true\n");
+        } catch (\Exception $e) {
+            \Log::error('Failed to create eula.txt', ['error' => $e->getMessage()]);
+        }
+
+        // Wait a moment then start the server
+        sleep(2);
+        
+        try {
+            $daemonPowerRepository->setServer($this->server)->send('start');
+        } catch (\Exception $e) {
+            \Log::error('Failed to start server after modpack installation', ['error' => $e->getMessage()]);
+        }
+
+        // Clear the installing status
+        $this->server->update(['status' => null]);
+    }
+}

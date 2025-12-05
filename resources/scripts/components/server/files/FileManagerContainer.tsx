@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState, useMemo } from 'react';
 import { httpErrorToHuman } from '@/api/http';
 import { CSSTransition } from 'react-transition-group';
 import Spinner from '@/components/elements/Spinner';
@@ -24,6 +24,15 @@ import { hashToPath } from '@/helpers';
 import style from './style.module.css';
 import Card from '@/witchyworlds/ui/Card';
 import { useTranslation } from 'react-i18next';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faSearch } from '@fortawesome/free-solid-svg-icons';
+
+interface RecentFile {
+    name: string;
+    path: string;
+    directory: string;
+    timestamp: number;
+}
 
 const sortFiles = (files: FileObject[]): FileObject[] => {
     const sortedFiles: FileObject[] = files
@@ -44,18 +53,65 @@ export default () => {
     const setSelectedFiles = ServerContext.useStoreActions((actions) => actions.files.setSelectedFiles);
     const selectedFilesLength = ServerContext.useStoreState((state) => state.files.selectedFiles.length);
 
+    const [searchQuery, setSearchQuery] = useState('');
+    const [showRecent, setShowRecent] = useState(false);
+    const [recentFiles, setRecentFiles] = useState<RecentFile[]>([]);
+
     useEffect(() => {
         clearFlashes('files');
         setSelectedFiles([]);
         setDirectory(hashToPath(hash));
+        setSearchQuery('');
+        setShowRecent(false);
+        loadRecentFiles();
     }, [hash]);
+
+    const loadRecentFiles = () => {
+        try {
+            const stored = localStorage.getItem(`recent_files_${id}`);
+            if (stored) {
+                const parsed: RecentFile[] = JSON.parse(stored);
+                setRecentFiles(parsed.filter(f => Date.now() - f.timestamp < 7 * 24 * 60 * 60 * 1000).slice(0, 5));
+            }
+        } catch (e) {
+            console.error('Failed to load recent files', e);
+        }
+    };
+
+    const trackFileView = (file: FileObject) => {
+        if (!file.isFile) return;
+        try {
+            const recent: RecentFile = {
+                name: file.name,
+                path: `${directory}/${file.name}`.replace(/\/+/g, '/'),
+                directory: directory,
+                timestamp: Date.now(),
+            };
+            const stored = localStorage.getItem(`recent_files_${id}`);
+            let recents: RecentFile[] = stored ? JSON.parse(stored) : [];
+            recents = recents.filter(r => r.path !== recent.path);
+            recents.unshift(recent);
+            recents = recents.slice(0, 5);
+            localStorage.setItem(`recent_files_${id}`, JSON.stringify(recents));
+            setRecentFiles(recents);
+        } catch (e) {
+            console.error('Failed to track file view', e);
+        }
+    };
 
     useEffect(() => {
         mutate();
     }, [directory]);
 
+    const filteredFiles = useMemo(() => {
+        if (!files) return [];
+        if (!searchQuery.trim()) return files;
+        const query = searchQuery.toLowerCase();
+        return files.filter(file => file.name.toLowerCase().includes(query));
+    }, [files, searchQuery]);
+
     const onSelectAllClick = (e: React.ChangeEvent<HTMLInputElement>) => {
-        setSelectedFiles(e.currentTarget.checked ? files?.map((file) => file.name) || [] : []);
+        setSelectedFiles(e.currentTarget.checked ? filteredFiles?.map((file) => file.name) || [] : []);
     };
 
     if (error) {
@@ -71,7 +127,7 @@ export default () => {
                             <FileActionCheckbox
                                 type={'checkbox'}
                                 css={tw`mx-4`}
-                                checked={selectedFilesLength === (files?.length === 0 ? -1 : files?.length)}
+                                checked={selectedFilesLength === (filteredFiles?.length === 0 ? -1 : filteredFiles?.length)}
                                 onChange={onSelectAllClick}
                             />
                         }
@@ -87,22 +143,89 @@ export default () => {
                         </div>
                     </Can>
                 </Card>
+                <Card className={'mb-1 !rounded-t-none !rounded-b-none !px-3 !py-2'}>
+                    <div className={'flex items-center gap-2'}>
+                        <button
+                            type={'button'}
+                            onClick={() => setShowRecent(false)}
+                            className={`px-3 py-1 rounded ${!showRecent ? 'bg-primary-500 text-white' : 'bg-gray-600 text-gray-300 hover:bg-gray-500'}`}
+                        >
+                            Files
+                        </button>
+                        <button
+                            type={'button'}
+                            onClick={() => setShowRecent(true)}
+                            className={`px-3 py-1 rounded ${showRecent ? 'bg-primary-500 text-white' : 'bg-gray-600 text-gray-300 hover:bg-gray-500'}`}
+                        >
+                            Recent ({recentFiles.length})
+                        </button>
+                        {!showRecent && (
+                            <div className={'relative flex-1'}>
+                                <FontAwesomeIcon icon={faSearch} className={'absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400'} />
+                                <input
+                                    type="text"
+                                    placeholder={t('search-files', { defaultValue: 'Search files...' })}
+                                    value={searchQuery}
+                                    onChange={(e) => setSearchQuery(e.target.value)}
+                                    className={'w-full pl-10 pr-4 py-2 bg-gray-700 border border-gray-600 rounded-lg text-gray-100 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent'}
+                                />
+                            </div>
+                        )}
+                    </div>
+                </Card>
             </ErrorBoundary>
             {!files ? (
                 <Spinner size={'large'} centered />
             ) : (
                 <Card className='!rounded-t-none !p-3'>
-                    {!files.length ? (
-                        <p css={tw`text-sm text-neutral-400 text-center`}>{t('empty')}</p>
+                    {showRecent ? (
+                        recentFiles.length === 0 ? (
+                            <p css={tw`text-sm text-neutral-400 text-center`}>
+                                {t('no-recent', { defaultValue: 'No recently viewed files.' })}
+                            </p>
+                        ) : (
+                            <div>
+                                {recentFiles.map((rf) => (
+                                    <FileObjectRow
+                                        key={rf.path}
+                                        file={{
+                                            key: rf.path,
+                                            name: rf.name,
+                                            mode: '-rw-r--r--',
+                                            modeBits: '0644',
+                                            size: 0,
+                                            isFile: true,
+                                            isSymlink: false,
+                                            mimetype: 'application/octet-stream',
+                                            createdAt: new Date(rf.timestamp),
+                                            modifiedAt: new Date(rf.timestamp),
+                                            isArchiveType: () => false,
+                                            isEditable: () => true,
+                                        }}
+                                    />
+                                ))}
+                            </div>
+                        )
+                    ) : !filteredFiles.length ? (
+                        <p css={tw`text-sm text-neutral-400 text-center`}>
+                            {searchQuery ? t('no-results', { defaultValue: 'No files match your search.' }) : t('empty')}
+                        </p>
                     ) : (
                         <CSSTransition classNames={'fade'} timeout={150} appear in>
                             <div>
-                                {files.length > 250 && (
+                                {searchQuery && (
+                                    <div css={tw`rounded bg-blue-500/20 mb-2 p-2 border border-blue-500/50`}>
+                                        <p css={tw`text-blue-300 text-sm text-center`}>
+                                            {t('search-results', { defaultValue: 'Showing {{count}} result(s) for "{{query}}"', count: filteredFiles.length, query: searchQuery })}
+                                        </p>
+                                    </div>
+                                )}
+                                {filteredFiles.length > 250 && (
                                     <div css={tw`rounded bg-yellow-400 mb-px p-3`}>
                                         <p css={tw`text-yellow-900 text-sm text-center`}>{t('too-large')}</p>
                                     </div>
                                 )}
-                                {sortFiles(files.slice(0, 250)).map((file) => (
+                                {sortFiles(filteredFiles.slice(0, 250)).map((file) => (
                                     <FileObjectRow key={file.key} file={file} />
                                 ))}
                                 <MassActionsBar />

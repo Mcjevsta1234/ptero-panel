@@ -46,6 +46,27 @@ Route::prefix('/account')->middleware(AccountSubject::class)->group(function () 
 
 /*
 |--------------------------------------------------------------------------
+| Dedicated Server Allocation API
+|--------------------------------------------------------------------------
+|
+| Endpoint: /api/client/dedicated
+|
+*/
+Route::prefix('/dedicated')->group(function () {
+    Route::get('/', [Client\DedicatedController::class, 'index']);
+    Route::post('/', [Client\DedicatedController::class, 'store']);
+    Route::delete('/server/{serverUuid}', [Client\DedicatedController::class, 'destroy']);
+    
+    // Egg routes must come before allocation routes to avoid conflicts
+    Route::get('/eggs/{egg}', [Client\DedicatedController::class, 'egg'])->whereNumber('egg');
+    
+    // Allocation routes
+    Route::get('/{allocation}/nests', [Client\DedicatedController::class, 'nests']);
+    Route::get('/{allocation}/stats', [Client\DedicatedController::class, 'stats']);
+});
+
+/*
+|--------------------------------------------------------------------------
 | Client Control API
 |--------------------------------------------------------------------------
 |
@@ -67,6 +88,17 @@ Route::group([
 
     Route::post('/command', [Client\Servers\CommandController::class, 'index']);
     Route::post('/power', [Client\Servers\PowerController::class, 'index']);
+
+    Route::group(['prefix' => '/analytics'], function () {
+        Route::get('/', [Client\Servers\AnalyticsController::class, 'index']);
+        Route::post('/', [Client\Servers\AnalyticsController::class, 'store']);
+    });
+
+    Route::group(['prefix' => '/crash-logs'], function () {
+        Route::get('/', [Client\Servers\CrashLogController::class, 'index']);
+        Route::post('/', [Client\Servers\CrashLogController::class, 'store']);
+        Route::delete('/cleanup', [Client\Servers\CrashLogController::class, 'cleanup']);
+    });
 
     Route::group(['prefix' => '/databases'], function () {
         Route::get('/', [Client\Servers\DatabaseController::class, 'index']);
@@ -91,6 +123,13 @@ Route::group([
         Route::get('/upload', Client\Servers\FileUploadController::class);
     });
 
+    Route::group(['prefix' => '/configs'], function () {
+        Route::get('/server-properties', [Client\Servers\ConfigController::class, 'getServerProperties']);
+        Route::post('/server-properties', [Client\Servers\ConfigController::class, 'updateServerProperties']);
+        Route::get('/', [Client\Servers\ConfigController::class, 'getConfigs']);
+        Route::post('/update', [Client\Servers\ConfigController::class, 'updateConfig']);
+    });
+
     Route::group(['prefix' => '/schedules'], function () {
         Route::get('/', [Client\Servers\ScheduleController::class, 'index']);
         Route::post('/', [Client\Servers\ScheduleController::class, 'store']);
@@ -102,6 +141,12 @@ Route::group([
         Route::post('/{schedule}/tasks', [Client\Servers\ScheduleTaskController::class, 'store']);
         Route::post('/{schedule}/tasks/{task}', [Client\Servers\ScheduleTaskController::class, 'update']);
         Route::delete('/{schedule}/tasks/{task}', [Client\Servers\ScheduleTaskController::class, 'delete']);
+    });
+
+    // Schedule Presets (list + apply)
+    Route::group(['prefix' => '/schedule-presets'], function () {
+        Route::get('/', [Client\Servers\SchedulePresetController::class, 'index']);
+        Route::post('/apply', [Client\Servers\SchedulePresetController::class, 'apply']);
     });
 
     Route::group(['prefix' => '/network'], function () {
@@ -139,5 +184,17 @@ Route::group([
         Route::post('/rename', [Client\Servers\SettingsController::class, 'rename']);
         Route::post('/reinstall', [Client\Servers\SettingsController::class, 'reinstall']);
         Route::put('/docker-image', [Client\Servers\SettingsController::class, 'dockerImage']);
+    });
+
+    Route::group(['prefix' => '/modpacks'], function () {
+        Route::get('/', [Client\Servers\ModpackController::class, 'index']);
+        Route::get('/versions', [Client\Servers\ModpackController::class, 'versions']);
+        Route::post('/install', [Client\Servers\ModpackController::class, 'install']);
+    });
+
+    Route::group(['prefix' => '/mods'], function () {
+        Route::get('/', [Client\Servers\ModController::class, 'search']);
+        Route::get('/{modId}/versions', [Client\Servers\ModController::class, 'versions']);
+        Route::post('/download', [Client\Servers\ModController::class, 'download']);
     });
 });

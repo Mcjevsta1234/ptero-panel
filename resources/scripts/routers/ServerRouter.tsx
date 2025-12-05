@@ -18,7 +18,7 @@ import ConflictStateRenderer from '@/components/server/ConflictStateRenderer';
 import PermissionRoute from '@/components/elements/PermissionRoute';
 import routes from '@/routers/routes';
 import Sidebar from '@/witchyworlds/ui/Sidebar';
-import { XIcon, MenuIcon } from '@heroicons/react/solid';
+import { XIcon, MenuIcon, ChevronDownIcon, ChevronRightIcon } from '@heroicons/react/solid';
 import { LogoContainer } from '@/witchyworlds/ui/LogoContainer';
 import tw from 'twin.macro';
 import { RouterContainer } from '@/witchyworlds/ui/RouterContainer';
@@ -62,28 +62,52 @@ const NavItem = ({ route }: Props) => {
 
 const ServerNavigation = () => {
     const { t } = useTranslation('server/index');
+    const [collapsedSections, setCollapsedSections] = useState<Record<string, boolean>>({});
+
+    const toggleSection = (label: string) => {
+        setCollapsedSections((prev) => ({
+            ...prev,
+            [label]: !prev[label],
+        }));
+    };
+
     return (
         <>
             {[
-                { label: t('control'), routes: routes.server.control },
+                { label: t('overview'), routes: routes.server.overview },
                 { label: t('management'), routes: routes.server.management },
-                { label: t('administration'), routes: routes.server.administration },
-            ].map(({ label, routes }) => (
+                { label: t('tools'), routes: routes.server.tools },
+                { label: t('advanced'), routes: routes.server.advanced },
+            ].map(({ label, routes: sectionRoutes }) => (
                 <div key={label}>
-                    <span className='label'>{label}</span>
-                    {routes
-                        .filter((route) => !!route.name)
-                        .map((route) =>
-                            route.permission ? (
-                                <Can key={route.path} action={route.permission} matchAny>
-                                    <NavItem route={route} />
-                                </Can>
-                            ) : (
-                                <React.Fragment key={route.path}>
-                                    <NavItem route={route} />
-                                </React.Fragment>
-                            )
+                    <button
+                        onClick={() => toggleSection(label)}
+                        className='label flex items-center justify-between w-full cursor-pointer hover:text-gray-300 transition-colors'
+                    >
+                        <span>{label}</span>
+                        {collapsedSections[label] ? (
+                            <ChevronRightIcon className='w-4 h-4' />
+                        ) : (
+                            <ChevronDownIcon className='w-4 h-4' />
                         )}
+                    </button>
+                    {!collapsedSections[label] && (
+                        <>
+                            {sectionRoutes
+                                .filter((route) => !!route.name)
+                                .map((route) =>
+                                    route.permission ? (
+                                        <Can key={route.path} action={route.permission} matchAny>
+                                            <NavItem route={route} />
+                                        </Can>
+                                    ) : (
+                                        <React.Fragment key={route.path}>
+                                            <NavItem route={route} />
+                                        </React.Fragment>
+                                    )
+                                )}
+                        </>
+                    )}
                 </div>
             ))}
         </>
@@ -199,7 +223,7 @@ export default () => {
                                             <MaintenanceAlert />
                                             <TransitionRouter>
                                                 <Switch location={location}>
-                                                    {routes.server.control.map(
+                                                    {routes.server.overview.map(
                                                         ({
                                                             path,
                                                             permission,
@@ -259,7 +283,37 @@ export default () => {
                                                             );
                                                         }
                                                     )}
-                                                    {routes.server.administration.map(
+                                                    {routes.server.tools.map(
+                                                        ({
+                                                            path,
+                                                            permission,
+                                                            component: Component,
+                                                            nestIds,
+                                                            eggIds,
+                                                            nestId,
+                                                            eggId,
+                                                        }) => {
+                                                            return (
+                                                                ((nestIds && nestIds.includes(serverNestId ?? 0)) ||
+                                                                    (eggIds && eggIds.includes(serverEggId ?? 0)) ||
+                                                                    (nestId && serverNestId === nestId) ||
+                                                                    (eggId && serverEggId === eggId) ||
+                                                                    (!eggIds && !nestIds && !nestId && !eggId)) && (
+                                                                    <PermissionRoute
+                                                                        key={path}
+                                                                        permission={permission}
+                                                                        path={to(path)}
+                                                                        exact
+                                                                    >
+                                                                        <Spinner.Suspense>
+                                                                            <Component />
+                                                                        </Spinner.Suspense>
+                                                                    </PermissionRoute>
+                                                                )
+                                                            );
+                                                        }
+                                                    )}
+                                                    {routes.server.advanced.map(
                                                         ({
                                                             path,
                                                             permission,

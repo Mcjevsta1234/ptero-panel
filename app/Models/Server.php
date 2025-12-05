@@ -223,6 +223,14 @@ class Server extends Model
     }
 
     /**
+     * Gets the dedicated server allocation if this server was created through one.
+     */
+    public function dedicatedAllocation(): BelongsTo
+    {
+        return $this->belongsTo(DedicatedServerAllocation::class, 'dedicated_allocation_id');
+    }
+
+    /**
      * Gets the subusers associated with a server.
      */
     public function subusers(): HasMany

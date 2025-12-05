@@ -15,6 +15,8 @@ import { usePersistedState } from '@/plugins/usePersistedState';
 import { SocketEvent, SocketRequest } from '@/components/server/events';
 import classNames from 'classnames';
 import { ChevronDoubleRightIcon } from '@heroicons/react/solid';
+import uploadLogToMcLogs from '@/api/server/files/uploadLogToMcLogs';
+import useFlash from '@/plugins/useFlash';
 
 import 'xterm/css/xterm.css';
 import styles from './style.module.css';
@@ -71,11 +73,38 @@ export default () => {
     const isTransferring = ServerContext.useStoreState((state) => state.server.data!.isTransferring);
     const [history, setHistory] = usePersistedState<string[]>(`${serverId}:command_history`, []);
     const [historyIndex, setHistoryIndex] = useState(-1);
+    const [uploadingLog, setUploadingLog] = useState(false);
+    const { addFlash, clearFlashes } = useFlash();
+    const uuid = ServerContext.useStoreState((state) => state.server.data!.uuid);
     // SearchBarAddon has hardcoded z-index: 999 :(
     const zIndex = `
     .xterm-search-bar__addon {
         z-index: 10;
     }`;
+
+    const handleUploadLog = async () => {
+        setUploadingLog(true);
+        clearFlashes('console:logs');
+        try {
+            const url = await uploadLogToMcLogs(uuid);
+            addFlash({
+                key: 'console:logs',
+                type: 'success',
+                message: `Log uploaded successfully! Click to view: ${url}`,
+            });
+            // Open in new tab
+            window.open(url, '_blank');
+        } catch (error: any) {
+            console.error(error);
+            addFlash({
+                key: 'console:logs',
+                type: 'error',
+                message: error.message || 'Failed to upload log file',
+            });
+        } finally {
+            setUploadingLog(false);
+        }
+    };
 
     const handleConsoleOutput = (line: string, prelude = false) => {
         terminal.writeln(
@@ -212,25 +241,36 @@ export default () => {
                 </div>
             </div>
             {canSendCommands && (
-                <div className={classNames('relative', styles.overflows_container)}>
-                    <input
-                        className={classNames('peer', styles.command_input)}
-                        type={'text'}
-                        placeholder={t('run-command')}
-                        aria-label={'Console command input.'}
-                        disabled={!instance || !connected}
-                        onKeyDown={handleCommandKeyDown}
-                        autoCorrect={'off'}
-                        autoCapitalize={'none'}
-                    />
-                    <div
-                        className={classNames(
-                            'text-gray-100 peer-focus:text-gray-50 peer-focus:animate-pulse',
-                            styles.command_icon
-                        )}
-                    >
-                        <ChevronDoubleRightIcon className={'w-4 h-4'} />
+                <div className={classNames('flex gap-2 items-center', styles.overflows_container)}>
+                    <div className={'relative flex-1 min-w-0'}>
+                        <input
+                            className={classNames('peer', styles.command_input)}
+                            type={'text'}
+                            placeholder={t('run-command')}
+                            aria-label={'Console command input.'}
+                            disabled={!instance || !connected}
+                            onKeyDown={handleCommandKeyDown}
+                            autoCorrect={'off'}
+                            autoCapitalize={'none'}
+                        />
+                        <div
+                            className={classNames(
+                                'text-gray-100 peer-focus:text-gray-50 peer-focus:animate-pulse',
+                                styles.command_icon
+                            )}
+                        >
+                            <ChevronDoubleRightIcon className={'w-4 h-4'} />
+                        </div>
                     </div>
+                    <button
+                        type={'button'}
+                        onClick={handleUploadLog}
+                        disabled={!instance || !connected || uploadingLog}
+                        className={'flex-shrink-0 px-3 py-2 bg-gray-700 hover:bg-gray-600 disabled:opacity-50 disabled:cursor-not-allowed text-gray-100 text-sm rounded border border-gray-600 transition-colors whitespace-nowrap'}
+                        title={'Upload latest.log to mclo.gs'}
+                    >
+                        {uploadingLog ? 'Uploading...' : 'Upload Log'}
+                    </button>
                 </div>
             )}
         </div>

@@ -60,7 +60,7 @@
             <!-- Knowledgebase -->
             <div class="space-y-3">
                 <label class="block text-sm font-medium text-zinc-300" for="witchcrafter:socialKnowledgebase">
-                    Knowledgebase URL <span class="text-zinc-500 text-xs">(Optional)</span>
+                    Knowledgebase URL
                 </label>
                 <input type="text" id="witchcrafter:socialKnowledgebase" name="witchcrafter:socialKnowledgebase"
                     value="{{ old('witchcrafter:socialKnowledgebase', config('witchcrafter.socialKnowledgebase')) }}"
@@ -68,95 +68,15 @@
                     placeholder="https://docs.witchyworlds.top" />
             </div>
 
-            <!-- Custom Link Title -->
+            <!-- Trials URL -->
             <div class="space-y-3">
-                <label class="block text-sm font-medium text-zinc-300" for="witchcrafter:socialCustomTitle">
-                    Custom Link Title <span class="text-zinc-500 text-xs">(Optional)</span>
+                <label class="block text-sm font-medium text-zinc-300" for="witchcrafter:socialTrials">
+                    Trials URL
                 </label>
-                <input type="text" id="witchcrafter:socialCustomTitle" name="witchcrafter:socialCustomTitle"
-                    value="{{ old('witchcrafter:socialCustomTitle', config('witchcrafter.socialCustomTitle')) }}"
-                    class="w-full px-4 py-3 bg-zinc-800/50 border border-zinc-700 rounded-xl text-white placeholder-zinc-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
-                    placeholder="Trials" />
-                <p class="text-xs text-zinc-500 mt-1">The display name for your custom link</p>
-            </div>
-
-            <!-- Custom Link URL -->
-            <div class="space-y-3">
-                <label class="block text-sm font-medium text-zinc-300" for="witchcrafter:socialCustomUrl">
-                    Custom Link URL <span class="text-zinc-500 text-xs">(Optional)</span>
-                </label>
-                <input type="text" id="witchcrafter:socialCustomUrl" name="witchcrafter:socialCustomUrl"
-                    value="{{ old('witchcrafter:socialCustomUrl', config('witchcrafter.socialCustomUrl')) }}"
+                <input type="text" id="witchcrafter:socialTrials" name="witchcrafter:socialTrials"
+                    value="{{ old('witchcrafter:socialTrials', config('witchcrafter.socialTrials')) }}"
                     class="w-full px-4 py-3 bg-zinc-800/50 border border-zinc-700 rounded-xl text-white placeholder-zinc-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
                     placeholder="https://trials.witchyworlds.top" />
-                <p class="text-xs text-zinc-500 mt-1">Leave both custom fields empty to hide this link</p>
-            </div>
-
-            <!-- Custom Link 2 Title -->
-            <div class="space-y-3">
-                <label class="block text-sm font-medium text-zinc-300" for="witchcrafter:socialCustom2Title">
-                    Custom Link 2 Title <span class="text-zinc-500 text-xs">(Optional)</span>
-                </label>
-                <input type="text" id="witchcrafter:socialCustom2Title" name="witchcrafter:socialCustom2Title"
-                    value="{{ old('witchcrafter:socialCustom2Title', config('witchcrafter.socialCustom2Title')) }}"
-                    class="w-full px-4 py-3 bg-zinc-800/50 border border-zinc-700 rounded-xl text-white placeholder-zinc-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
-                    placeholder="Support" />
-            </div>
-
-            <!-- Custom Link 2 URL -->
-            <div class="space-y-3">
-                <label class="block text-sm font-medium text-zinc-300" for="witchcrafter:socialCustom2Url">
-                    Custom Link 2 URL <span class="text-zinc-500 text-xs">(Optional)</span>
-                </label>
-                <input type="text" id="witchcrafter:socialCustom2Url" name="witchcrafter:socialCustom2Url"
-                    value="{{ old('witchcrafter:socialCustom2Url', config('witchcrafter.socialCustom2Url')) }}"
-                    class="w-full px-4 py-3 bg-zinc-800/50 border border-zinc-700 rounded-xl text-white placeholder-zinc-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
-                    placeholder="https://support.witchyworlds.top" />
-            </div>
-
-            <!-- Custom Link 3 Title -->
-            <div class="space-y-3">
-                <label class="block text-sm font-medium text-zinc-300" for="witchcrafter:socialCustom3Title">
-                    Custom Link 3 Title <span class="text-zinc-500 text-xs">(Optional)</span>
-                </label>
-                <input type="text" id="witchcrafter:socialCustom3Title" name="witchcrafter:socialCustom3Title"
-                    value="{{ old('witchcrafter:socialCustom3Title', config('witchcrafter.socialCustom3Title')) }}"
-                    class="w-full px-4 py-3 bg-zinc-800/50 border border-zinc-700 rounded-xl text-white placeholder-zinc-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
-                    placeholder="Forum" />
-            </div>
-
-            <!-- Custom Link 3 URL -->
-            <div class="space-y-3">
-                <label class="block text-sm font-medium text-zinc-300" for="witchcrafter:socialCustom3Url">
-                    Custom Link 3 URL <span class="text-zinc-500 text-xs">(Optional)</span>
-                </label>
-                <input type="text" id="witchcrafter:socialCustom3Url" name="witchcrafter:socialCustom3Url"
-                    value="{{ old('witchcrafter:socialCustom3Url', config('witchcrafter.socialCustom3Url')) }}"
-                    class="w-full px-4 py-3 bg-zinc-800/50 border border-zinc-700 rounded-xl text-white placeholder-zinc-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
-                    placeholder="https://forum.witchyworlds.top" />
-            </div>
-
-            <!-- Custom Link 4 Title -->
-            <div class="space-y-3">
-                <label class="block text-sm font-medium text-zinc-300" for="witchcrafter:socialCustom4Title">
-                    Custom Link 4 Title <span class="text-zinc-500 text-xs">(Optional)</span>
-                </label>
-                <input type="text" id="witchcrafter:socialCustom4Title" name="witchcrafter:socialCustom4Title"
-                    value="{{ old('witchcrafter:socialCustom4Title', config('witchcrafter.socialCustom4Title')) }}"
-                    class="w-full px-4 py-3 bg-zinc-800/50 border border-zinc-700 rounded-xl text-white placeholder-zinc-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
-                    placeholder="Store" />
-            </div>
-
-            <!-- Custom Link 4 URL -->
-            <div class="space-y-3">
-                <label class="block text-sm font-medium text-zinc-300" for="witchcrafter:socialCustom4Url">
-                    Custom Link 4 URL <span class="text-zinc-500 text-xs">(Optional)</span>
-                </label>
-                <input type="text" id="witchcrafter:socialCustom4Url" name="witchcrafter:socialCustom4Url"
-                    value="{{ old('witchcrafter:socialCustom4Url', config('witchcrafter.socialCustom4Url')) }}"
-                    class="w-full px-4 py-3 bg-zinc-800/50 border border-zinc-700 rounded-xl text-white placeholder-zinc-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
-                    placeholder="https://store.witchyworlds.top" />
-                <p class="text-xs text-zinc-500 mt-1">Custom links will automatically hide if both fields are empty</p>
             </div>
         </div>
     </form>

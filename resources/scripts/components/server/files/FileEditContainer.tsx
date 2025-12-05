@@ -48,7 +48,37 @@ export default () => {
         const path = hashToPath(hash);
         setDirectory(dirname(path));
         getFileContents(uuid, path)
-            .then(setContent)
+            .then((content) => {
+                setContent(content);
+                
+                // Track file view in recent files
+                const fileName = path.split('/').pop() || '';
+                const directory = dirname(path);
+                
+                try {
+                    const key = `recent_files_${id}`;
+                    const stored = localStorage.getItem(key);
+                    const recent = stored ? JSON.parse(stored) : [];
+                    
+                    // Remove duplicate if exists
+                    const filtered = recent.filter((f: any) => f.path !== path);
+                    
+                    // Add to front
+                    filtered.unshift({
+                        path,
+                        name: fileName,
+                        directory: directory === '.' ? '/' : directory,
+                        timestamp: Date.now(),
+                    });
+                    
+                    // Keep only 5 most recent
+                    const trimmed = filtered.slice(0, 5);
+                    
+                    localStorage.setItem(key, JSON.stringify(trimmed));
+                } catch (e) {
+                    console.error('Failed to track recent file:', e);
+                }
+            })
             .catch((error) => {
                 console.error(error);
                 setError(httpErrorToHuman(error));

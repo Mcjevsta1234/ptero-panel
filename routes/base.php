@@ -19,5 +19,20 @@ Route::get('/locales/list.json', [Base\LocaleController::class, 'list'])
 Route::get('/manifest.json', [Base\PwaManifestController::class, 'index'])
     ->withoutMiddleware(['auth', RequireTwoFactorAuthentication::class]);
 
+/*
+|--------------------------------------------------------------------------
+| Dedicated Server Management Routes
+|--------------------------------------------------------------------------
+|
+| Endpoint: /dedicated
+|
+*/
+Route::group(['prefix' => 'dedicated'], function () {
+    Route::get('/', [Base\DedicatedServerController::class, 'index'])->name('dedicated.index');
+    Route::get('/create/{allocation}', [Base\DedicatedServerController::class, 'create'])->name('dedicated.create');
+    Route::post('/create/{allocation}', [Base\DedicatedServerController::class, 'store']);
+    Route::get('/egg/{egg}', [Base\DedicatedServerController::class, 'getEgg'])->name('dedicated.egg');
+});
+
 Route::get('/{react}', [Base\IndexController::class, 'index'])
     ->where('react', '^(?!(\/)?(api|auth|admin|daemon)).+');

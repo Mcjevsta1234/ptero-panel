@@ -259,3 +259,39 @@ Route::group(['prefix' => 'witchcrafter'], function () {
     Route::get('/socials', [Admin\Witchcrafter\SocialsController::class, 'index'])->name('admin.witchcrafter.socials');
     Route::patch('/socials', [Admin\Witchcrafter\SocialsController::class, 'update']);
 });
+
+/*
+|--------------------------------------------------------------------------
+| Dedicated Server Allocation Routes
+|--------------------------------------------------------------------------
+|
+| Endpoint: /admin/dedicated
+|
+*/
+Route::group(['prefix' => 'dedicated'], function () {
+    Route::get('/', [Admin\DedicatedAllocationsController::class, 'index'])->name('admin.dedicated.index');
+    Route::get('/create', [Admin\DedicatedAllocationsController::class, 'create'])->name('admin.dedicated.create');
+    Route::get('/{allocation}', [Admin\DedicatedAllocationsController::class, 'show'])->name('admin.dedicated.show');
+    Route::get('/{allocation}/edit', [Admin\DedicatedAllocationsController::class, 'edit'])->name('admin.dedicated.edit');
+    
+    Route::post('/', [Admin\DedicatedAllocationsController::class, 'store'])->name('admin.dedicated.store');
+    Route::patch('/{allocation}', [Admin\DedicatedAllocationsController::class, 'update'])->name('admin.dedicated.update');
+    Route::delete('/{allocation}', [Admin\DedicatedAllocationsController::class, 'destroy'])->name('admin.dedicated.destroy');
+});
+
+/*
+|--------------------------------------------------------------------------
+| Schedule Presets Routes
+|--------------------------------------------------------------------------
+|
+| Endpoint: /admin/schedule-presets
+|
+*/
+Route::group(['prefix' => 'schedule-presets'], function () {
+    Route::get('/', [Admin\SchedulePresetController::class, 'index'])->name('admin.schedule-presets.index');
+    Route::get('/create', [Admin\SchedulePresetController::class, 'create'])->name('admin.schedule-presets.create');
+    Route::post('/', [Admin\SchedulePresetController::class, 'store'])->name('admin.schedule-presets.store');
+    Route::get('/{preset}/edit', [Admin\SchedulePresetController::class, 'edit'])->name('admin.schedule-presets.edit');
+    Route::patch('/{preset}', [Admin\SchedulePresetController::class, 'update'])->name('admin.schedule-presets.update');
+    Route::delete('/{preset}', [Admin\SchedulePresetController::class, 'destroy'])->name('admin.schedule-presets.destroy');
+});
