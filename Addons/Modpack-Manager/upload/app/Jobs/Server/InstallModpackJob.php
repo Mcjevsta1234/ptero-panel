@@ -97,9 +97,13 @@ class InstallModpackJob extends Job implements ShouldQueue
             $reinstallServerService->handle($this->server);
         });
 
+        // Wait a bit for the installer to start
+        sleep(3);
+
         // Wait for installation to complete (up to 10 minutes)
         $installAttempts = 0;
-        $installerOnline = false;
+        $lastState = 'unknown';
+        $stateChanges = 0;
         
         \Log::info("Starting modpack installation wait for server {$this->server->uuid}", [
             'provider' => $this->provider,
@@ -109,22 +113,42 @@ class InstallModpackJob extends Job implements ShouldQueue
         
         while ($installAttempts < 600) {  // 600 seconds = 10 minutes
             try {
-                $state = $daemonServerRepository->getDetails()['state'];
+                $details = $daemonServerRepository->getDetails();
+                $state = $details['state'] ?? 'unknown';
+                
+                // Track state changes to detect crashes
+                if ($state !== $lastState) {
+                    $stateChanges++;
+                    \Log::info("Modpack installer state change for server {$this->server->uuid}: {$lastState} -> {$state}");
+                    $lastState = $state;
+                }
+                
+                // If server goes offline, installation is done
                 if ($state === 'offline') {
-                    $installerOnline = true;
                     \Log::info("Modpack installation completed for server {$this->server->uuid}");
                     break;
                 }
             } catch (\Exception $e) {
                 \Log::warning("Error checking server state during modpack installation", ['error' => $e->getMessage()]);
             }
+            
             sleep(1);
             $installAttempts++;
+            
+            // Log progress every 30 seconds
+            if ($installAttempts % 30 === 0) {
+                \Log::info("Modpack installation still running for server {$this->server->uuid}", [
+                    'elapsed_seconds' => $installAttempts,
+                    'last_state' => $lastState,
+                ]);
+            }
         }
         
-        if (!$installerOnline) {
-            \Log::warning("Modpack installation timeout after 10 minutes for server {$this->server->uuid}");
-        }
+        \Log::info("Modpack installation wait completed for server {$this->server->uuid}", [
+            'total_attempts' => $installAttempts,
+            'state_changes' => $stateChanges,
+            'final_state' => $lastState,
+        ]);
 
         // Revert the egg back to what it was.
         $startupModificationService->handle($this->server, [
