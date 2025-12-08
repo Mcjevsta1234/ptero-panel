@@ -1,14 +1,27 @@
 {{-- Inject compiled frontend assets (Webpack bundle) for client-facing pages only --}}
 @if (!request()->is('admin') && !request()->is('admin/*'))
     @php
-        $assetDir = public_path('assets');
+        // Use webpack manifest for reliable asset loading
+        $manifestPath = public_path('assets/manifest.json');
         $bundle = null;
-        if (is_dir($assetDir)) {
-            $files = scandir($assetDir);
-            foreach ($files as $file) {
-                if (preg_match('/^bundle\..+\.js$/', $file)) {
-                    $bundle = '/assets/' . $file;
-                    break;
+        
+        if (file_exists($manifestPath)) {
+            $manifest = json_decode(file_get_contents($manifestPath), true);
+            if (isset($manifest['bundle.js'])) {
+                $bundle = $manifest['bundle.js'];
+            }
+        }
+        
+        // Fallback: scan directory if manifest not found
+        if (!$bundle) {
+            $assetDir = public_path('assets');
+            if (is_dir($assetDir)) {
+                $files = scandir($assetDir);
+                foreach ($files as $file) {
+                    if (preg_match('/^bundle\..+\.js$/', $file)) {
+                        $bundle = '/assets/' . $file;
+                        break;
+                    }
                 }
             }
         }
@@ -17,7 +30,7 @@
     @if ($bundle)
         <script src="{{ $bundle }}" crossorigin="anonymous"></script>
     @else
-        {{-- Fallback for development builds or missing assets --}}
+        {{-- Final fallback for development builds --}}
         <script src="/assets/bundle.js" crossorigin="anonymous"></script>
     @endif
 @endif

@@ -309,6 +309,13 @@ rm -rf storage/framework/cache/*
 rm -rf bootstrap/cache/*.php
 print_success "All caches cleared"
 
+# Clear OPcache if enabled
+if command -v php &> /dev/null; then
+    print_step "Clearing OPcache"
+    php -r "if (function_exists('opcache_reset')) { opcache_reset(); echo 'OPcache cleared'; } else { echo 'OPcache not enabled'; }"
+    echo ""
+fi
+
 # Clear composer autoload cache to prevent duplicate class declarations
 print_step "Clearing composer autoload cache"
 COMPOSER_ALLOW_SUPERUSER=1 composer dump-autoload --no-dev --optimize
