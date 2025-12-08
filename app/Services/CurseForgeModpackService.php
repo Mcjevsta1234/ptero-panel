@@ -53,7 +53,16 @@ class CurseForgeModpackService
             }
 
             $data = $response->json();
-            $totalFromApi = $data['pagination']['total'] ?? 0;
+            
+            // CurseForge API returns pagination info - use a large number for total to enable pagination
+            // The actual total from CurseForge might not be accurate, so we use a large default
+            $totalFromApi = $data['pagination']['total'] ?? 10000;
+            
+            // Log the API response structure for debugging
+            \Log::debug('CurseForge API response pagination:', [
+                'pagination' => $data['pagination'] ?? 'missing',
+                'data_count' => count($data['data'] ?? []),
+            ]);
             
             // Filter modpacks
             $filteredModpacks = collect($data['data'] ?? [])->filter(function ($modpack) {

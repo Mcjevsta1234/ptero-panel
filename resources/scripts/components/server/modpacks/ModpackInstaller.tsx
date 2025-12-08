@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import tw from 'twin.macro';
 import { ServerContext } from '@/state/server';
 import getModpacks, { Modpack } from '@/api/server/modpacks/getModpacks';
@@ -35,11 +35,11 @@ export default () => {
     const [dialogOpen, setDialogOpen] = useState(false);
 
     useEffect(() => {
-        // Load modpacks on mount
+        // Load modpacks on mount and when page changes
         loadModpacks();
     }, [page]);
 
-    const loadModpacks = async () => {
+    const loadModpacks = useCallback(async () => {
         setLoading(true);
         clearFlashes();
         try {
@@ -68,12 +68,12 @@ export default () => {
         } finally {
             setLoading(false);
         }
-    };
+    }, [uuid, searchQuery, pageSize, page]);
 
     const handleSearch = (e: React.FormEvent) => {
         e.preventDefault();
         setPage(1);
-        loadModpacks();
+        // Don't call loadModpacks here - let the useEffect handle it when page changes to 1
     };
 
     const selectModpack = async (modpack: Modpack) => {
