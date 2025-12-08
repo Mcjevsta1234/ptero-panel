@@ -114,7 +114,6 @@ export default () => {
     const [loading, setLoading] = useState(true);
     const [period, setPeriod] = useState('24h');
     const [analytics, setAnalytics] = useState<ServerAnalytics[]>([]);
-    const [countdown, setCountdown] = useState(30);
     const { clearFlashes, clearAndAddHttpError } = useFlash();
 
     const fetchAnalytics = () => {
@@ -128,22 +127,14 @@ export default () => {
         setLoading(true);
         clearFlashes('analytics');
         fetchAnalytics();
-        setCountdown(30);
 
-        // Refresh every 30 seconds to match collection rate
+        // Refresh every 60 seconds to match backend collection rate
         const interval = setInterval(() => {
             fetchAnalytics();
-            setCountdown(30);
-        }, 30000);
-
-        // Countdown timer - use separate state update to avoid re-rendering charts
-        const countdownInterval = setInterval(() => {
-            setCountdown((prev) => (prev > 0 ? prev - 1 : 30));
-        }, 1000);
+        }, 60000);
 
         return () => {
             clearInterval(interval);
-            clearInterval(countdownInterval);
         };
     }, [uuid, period]);
 
@@ -162,24 +153,24 @@ export default () => {
         });
     }, [analytics]);
 
-    // Memoize downsampled data to avoid recalculating on countdown updates
+    // Memoize downsampled data - aggressively limit points for smooth performance
     const displayData = useMemo(() => {
-        // Fewer points for longer periods to maintain smooth performance
+        // Very limited points to ensure smooth scrolling and interaction
         const maxPointsByPeriod: Record<string, number> = {
-            '1h': 100,
-            '3h': 90,
-            '6h': 80,
-            '12h': 70,
-            '24h': 60,
-            '1d': 60,
-            '2d': 50,
-            '3d': 50,
-            '4d': 40,
-            '5d': 40,
-            '6d': 40,
-            '7d': 40,
+            '1h': 60,
+            '3h': 60,
+            '6h': 50,
+            '12h': 50,
+            '24h': 40,
+            '1d': 40,
+            '2d': 35,
+            '3d': 30,
+            '4d': 30,
+            '5d': 25,
+            '6d': 25,
+            '7d': 25,
         };
-        const maxPoints = maxPointsByPeriod[period] || 50;
+        const maxPoints = maxPointsByPeriod[period] || 30;
         
         if (chartData.length <= maxPoints) {
             return chartData;
@@ -208,40 +199,12 @@ export default () => {
         <ContentBlock title={'Resource Analytics'}>
             <FlashMessageRender byKey={'analytics'} css={tw`mb-4`} />
 
-            {/* Period Selector with Refresh Timer */}
+            {/* Period Selector */}
             <Card css={tw`p-4 mb-4`}>
                 <div css={tw`flex flex-wrap items-center justify-between gap-4`}>
                     <div css={tw`flex items-center gap-3`}>
                         <h3 css={tw`text-lg font-bold text-gray-100`}>Time Period</h3>
-                        <div css={tw`flex items-center gap-2`}>
-                            <div css={tw`relative w-8 h-8`}>
-                                <svg css={tw`w-8 h-8 transform -rotate-90`} viewBox="0 0 32 32">
-                                    <circle
-                                        cx="16"
-                                        cy="16"
-                                        r="14"
-                                        fill="none"
-                                        stroke="currentColor"
-                                        strokeWidth="2"
-                                        css={tw`text-gray-700`}
-                                    />
-                                    <circle
-                                        cx="16"
-                                        cy="16"
-                                        r="14"
-                                        fill="none"
-                                        stroke="currentColor"
-                                        strokeWidth="2"
-                                        strokeDasharray={`${(countdown / 30) * 87.96} 87.96`}
-                                        css={tw`text-blue-500 transition-all duration-1000`}
-                                    />
-                                </svg>
-                                <span css={tw`absolute inset-0 flex items-center justify-center text-xs font-bold text-gray-300`}>
-                                    {countdown}
-                                </span>
-                            </div>
-                            <span css={tw`text-sm text-gray-400`}>Next refresh</span>
-                        </div>
+                        <span css={tw`text-sm text-gray-400`}>Auto-refreshes every minute</span>
                     </div>
                     <div css={tw`flex flex-wrap gap-2`}>
                         {periods.map((p) => (
