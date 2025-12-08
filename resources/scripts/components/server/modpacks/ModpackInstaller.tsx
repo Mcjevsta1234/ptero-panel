@@ -222,7 +222,7 @@ export default () => {
                     </div>
 
                     {/* Pagination - Show if there are multiple pages */}
-                    {totalPages > 1 && (
+                    {(totalPages > 1 || modpacks.length >= pageSize) && (
                         <div css={tw`flex justify-center items-center gap-6 mt-10 pt-8 border-t border-neutral-700`}>
                             <button
                                 disabled={page === 1}
