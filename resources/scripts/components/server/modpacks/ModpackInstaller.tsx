@@ -36,7 +36,17 @@ export default () => {
     const [dialogOpen, setDialogOpen] = useState(false);
 
     useEffect(() => {
-        loadModpacks();
+        // Load modpacks on component mount
+        if (modpacks.length === 0 && !hasSearched) {
+            loadModpacks();
+        }
+    }, []);
+
+    useEffect(() => {
+        // Load modpacks when page changes
+        if (hasSearched) {
+            loadModpacks();
+        }
     }, [page]);
 
     const loadModpacks = async () => {
@@ -74,6 +84,7 @@ export default () => {
     const handleSearch = (e: React.FormEvent) => {
         e.preventDefault();
         setPage(1);
+        setHasSearched(true);
         loadModpacks();
     };
 
