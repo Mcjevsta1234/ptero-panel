@@ -75,9 +75,24 @@ export default () => {
     }));
 
     // Downsample data for better performance with large datasets
-    // For periods > 24h, reduce data points by averaging every N samples
+    // Dynamically adjust max points based on time period
     const getDownsampledData = () => {
-        const maxPoints = 500; // Max data points to render for performance
+        // Fewer points for longer periods to maintain smooth performance
+        const maxPointsByPeriod: Record<string, number> = {
+            '1h': 200,
+            '3h': 200,
+            '6h': 180,
+            '12h': 150,
+            '24h': 120,
+            '1d': 120,
+            '2d': 100,
+            '3d': 100,
+            '4d': 80,
+            '5d': 80,
+            '6d': 80,
+            '7d': 80,
+        };
+        const maxPoints = maxPointsByPeriod[period] || 100;
         
         if (chartData.length <= maxPoints) {
             return chartData;
@@ -185,9 +200,10 @@ export default () => {
                                 <Tooltip
                                     contentStyle={{ backgroundColor: '#1F2937', border: '1px solid #374151' }}
                                     labelStyle={{ color: '#F3F4F6' }}
+                                    animationDuration={0}
                                 />
                                 <Legend />
-                                <Line type="monotone" dataKey="cpu" stroke="#3B82F6" strokeWidth={2} dot={false} name="CPU %" />
+                                <Line type="monotone" dataKey="cpu" stroke="#3B82F6" strokeWidth={2} dot={false} name="CPU %" isAnimationActive={false} />
                             </LineChart>
                         </ResponsiveContainer>
                     </Card>
@@ -203,9 +219,10 @@ export default () => {
                                 <Tooltip
                                     contentStyle={{ backgroundColor: '#1F2937', border: '1px solid #374151' }}
                                     labelStyle={{ color: '#F3F4F6' }}
+                                    animationDuration={0}
                                 />
                                 <Legend />
-                                <Line type="monotone" dataKey="memory" stroke="#10B981" strokeWidth={2} dot={false} name="Memory (GB)" />
+                                <Line type="monotone" dataKey="memory" stroke="#10B981" strokeWidth={2} dot={false} name="Memory (GB)" isAnimationActive={false} />
                             </LineChart>
                         </ResponsiveContainer>
                     </Card>
@@ -221,9 +238,10 @@ export default () => {
                                 <Tooltip
                                     contentStyle={{ backgroundColor: '#1F2937', border: '1px solid #374151' }}
                                     labelStyle={{ color: '#F3F4F6' }}
+                                    animationDuration={0}
                                 />
                                 <Legend />
-                                <Line type="monotone" dataKey="disk" stroke="#F59E0B" strokeWidth={2} dot={false} name="Disk (GB)" />
+                                <Line type="monotone" dataKey="disk" stroke="#F59E0B" strokeWidth={2} dot={false} name="Disk (GB)" isAnimationActive={false} />
                             </LineChart>
                         </ResponsiveContainer>
                     </Card>
@@ -239,10 +257,11 @@ export default () => {
                                 <Tooltip
                                     contentStyle={{ backgroundColor: '#1F2937', border: '1px solid #374151' }}
                                     labelStyle={{ color: '#F3F4F6' }}
+                                    animationDuration={0}
                                 />
                                 <Legend />
-                                <Line type="monotone" dataKey="networkRx" stroke="#8B5CF6" strokeWidth={2} dot={false} name="Download (MB)" />
-                                <Line type="monotone" dataKey="networkTx" stroke="#EC4899" strokeWidth={2} dot={false} name="Upload (MB)" />
+                                <Line type="monotone" dataKey="networkRx" stroke="#8B5CF6" strokeWidth={2} dot={false} name="Download (MB)" isAnimationActive={false} />
+                                <Line type="monotone" dataKey="networkTx" stroke="#EC4899" strokeWidth={2} dot={false} name="Upload (MB)" isAnimationActive={false} />
                             </LineChart>
                         </ResponsiveContainer>
                     </Card>
