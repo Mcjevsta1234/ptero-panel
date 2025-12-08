@@ -26,6 +26,7 @@ export default () => {
     const [page, setPage] = useState(1);
     const [totalPages, setTotalPages] = useState(1);
     const [pageSize] = useState(50);
+    const [hasSearched, setHasSearched] = useState(false);
 
     const [selectedModpack, setSelectedModpack] = useState<Modpack | null>(null);
     const [versions, setVersions] = useState<ModpackVersion[]>([]);
@@ -43,7 +44,16 @@ export default () => {
         clearFlashes();
         try {
             const data = await getModpacks(uuid, searchQuery, pageSize, page);
-            setModpacks(data.data);
+            const newModpacks = data.data;
+            
+            // If we got fewer than 50 modpacks and there are still pages, load the next page to fill gaps
+            if (newModpacks.length < pageSize && page < data.meta.pagination.total_pages) {
+                const nextPageData = await getModpacks(uuid, searchQuery, pageSize, page + 1);
+                setModpacks([...newModpacks, ...nextPageData.data].slice(0, pageSize));
+            } else {
+                setModpacks(newModpacks);
+            }
+            
             setTotalPages(data.meta.pagination.total_pages);
         } catch (error) {
             clearAndAddHttpError(error as Error);
@@ -203,8 +213,8 @@ export default () => {
                         ))}
                     </div>
 
-                    {/* Pagination */}
-                    {totalPages > 1 && (
+                    {/* Pagination - Always show if totalPages > 0 */}
+                    {totalPages > 0 && (
                         <div css={tw`flex justify-center items-center gap-4 mt-8 pt-6 border-t border-neutral-700`}>
                             <button
                                 disabled={page === 1}
