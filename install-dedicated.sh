@@ -12,6 +12,7 @@ set -e
 ASSUME_YES=${ASSUME_YES:-0}
 AUTO_GIT=${AUTO_GIT:-0}
 DEFAULT_REPO="${REPO:-https://github.com/Mcjevsta1234/ptero-panel.git}"
+TARGET_BRANCH="${BRANCH:-main}"
 
 for arg in "$@"; do
     case "$arg" in
@@ -202,19 +203,19 @@ git config --global --add safe.directory "$PANEL_DIR" 2>/dev/null || true
 
 if [ ! -d ".git" ]; then
     if [ "$AUTO_GIT" -eq 1 ] || [ "$ASSUME_YES" -eq 1 ]; then
-        print_warning "Git not initialized in $PANEL_DIR. Auto-initializing with $DEFAULT_REPO"
+        print_warning "Git not initialized in $PANEL_DIR. Auto-initializing with $DEFAULT_REPO (branch: $TARGET_BRANCH)"
         git init
         git remote add origin "$DEFAULT_REPO" 2>/dev/null || print_warning "Origin already exists"
-        print_step "Fetching experimental from origin"
-        git fetch origin experimental || print_error "Failed to fetch 'experimental' from origin"
-        # Force sync to origin/experimental; clean untracked if running non-interactively
-        git reset --hard origin/experimental || print_error "Failed to sync files to origin/experimental"
+        print_step "Fetching $TARGET_BRANCH from origin"
+        git fetch origin "$TARGET_BRANCH" || print_error "Failed to fetch '$TARGET_BRANCH' from origin"
+        # Force sync to origin/$TARGET_BRANCH; clean untracked if running non-interactively
+        git reset --hard "origin/$TARGET_BRANCH" || print_error "Failed to sync files to origin/$TARGET_BRANCH"
         # Disabled: git clean to preserve .env and other untracked files
         # if [ "$AUTO_GIT" -eq 1 ] || [ "$ASSUME_YES" -eq 1 ]; then
         #     git clean -fdx || true
         # fi
-        git checkout -B experimental >/dev/null 2>&1 || true
-        print_success "Repository initialized and synced to experimental"
+        git checkout -B "$TARGET_BRANCH" >/dev/null 2>&1 || true
+        print_success "Repository initialized and synced to $TARGET_BRANCH"
     else
         print_warning "Git not initialized in $PANEL_DIR. Initialize now? (y/n)"
         read -r init_git
@@ -223,22 +224,22 @@ if [ ! -d ".git" ]; then
             REPO_URL=${REPO_URL:-$DEFAULT_REPO}
             git init
             git remote add origin "$REPO_URL" || print_warning "Origin already exists"
-            print_step "Fetching experimental from origin"
-            git fetch origin experimental || print_error "Failed to fetch 'experimental' from origin"
-            if ! git checkout -B experimental origin/experimental; then
+            print_step "Fetching $TARGET_BRANCH from origin"
+            git fetch origin "$TARGET_BRANCH" || print_error "Failed to fetch '$TARGET_BRANCH' from origin"
+            if ! git checkout -B "$TARGET_BRANCH" "origin/$TARGET_BRANCH"; then
                 print_warning "Checkout failed due to existing files. Clean untracked files and force sync? (y/n)"
                 read -r clean_choice
                 if [[ "$clean_choice" =~ ^[Yy]$ ]]; then
-                    git reset --hard origin/experimental || print_error "Failed to reset to origin/experimental"
+                    git reset --hard "origin/$TARGET_BRANCH" || print_error "Failed to reset to origin/$TARGET_BRANCH"
                     # Disabled: git clean to preserve .env and other untracked files
                     # git clean -fdx || true
-                    git checkout -B experimental >/dev/null 2>&1 || true
-                    print_success "Repository initialized and synced to experimental"
+                    git checkout -B "$TARGET_BRANCH" >/dev/null 2>&1 || true
+                    print_success "Repository initialized and synced to $TARGET_BRANCH"
                 else
-                    print_error "Failed to checkout experimental due to untracked files"
+                    print_error "Failed to checkout $TARGET_BRANCH due to untracked files"
                 fi
             else
-                print_success "Repository initialized and experimental branch checked out"
+                print_success "Repository initialized and $TARGET_BRANCH branch checked out"
             fi
         else
             print_error "Cannot proceed without git repository setup"
@@ -255,18 +256,18 @@ else
             git remote add origin "$REPO_URL"
         fi
     fi
-    git fetch origin experimental || print_error "Failed to fetch experimental"
-    # Checkout experimental if not current
+    git fetch origin "$TARGET_BRANCH" || print_error "Failed to fetch $TARGET_BRANCH"
+    # Checkout $TARGET_BRANCH if not current
     CURRENT_BRANCH=$(git rev-parse --abbrev-ref HEAD 2>/dev/null || echo "")
-    if [ "$CURRENT_BRANCH" != "experimental" ]; then
-        git checkout -B experimental || print_error "Failed to switch to experimental"
+    if [ "$CURRENT_BRANCH" != "$TARGET_BRANCH" ]; then
+        git checkout -B "$TARGET_BRANCH" || print_error "Failed to switch to $TARGET_BRANCH"
     fi
-    git reset --hard origin/experimental || print_error "Failed to sync to origin/experimental"
+    git reset --hard "origin/$TARGET_BRANCH" || print_error "Failed to sync to origin/$TARGET_BRANCH"
     # Disabled: git clean to preserve .env and other untracked files
     # if [ "$ASSUME_YES" -eq 1 ]; then
     #     git clean -fdx || true
     # fi
-    print_success "Code synced to origin/experimental"
+    print_success "Code synced to origin/$TARGET_BRANCH"
 fi
 
 # Install/update composer dependencies
