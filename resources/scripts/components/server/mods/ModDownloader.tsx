@@ -38,7 +38,17 @@ export default () => {
         clearFlashes();
         try {
             const data = await searchMods(uuid, searchQuery, pageSize, page);
-            setMods(data.data);
+            let newMods = data.data;
+            
+            // If we got fewer than 12 mods and there are still pages, keep loading until we fill the page or reach the end
+            let currentPage = page;
+            while (newMods.length < pageSize && currentPage < data.meta.pagination.total_pages) {
+                currentPage++;
+                const nextPageData = await searchMods(uuid, searchQuery, pageSize, currentPage);
+                newMods = [...newMods, ...nextPageData.data];
+            }
+            
+            setMods(newMods.slice(0, pageSize));
             setTotalPages(data.meta.pagination.total_pages);
         } catch (error) {
             clearAndAddHttpError(error as Error);
@@ -50,6 +60,7 @@ export default () => {
     const handleSearch = (e: React.FormEvent) => {
         e.preventDefault();
         setPage(1);
+        loadMods();
     };
 
     const selectMod = async (mod: Mod) => {
@@ -141,52 +152,87 @@ export default () => {
                 </div>
             ) : (
                 <>
-                    <div css={tw`grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4 mb-6`}>
+                    <div css={tw`grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 xl:grid-cols-8 gap-4 mb-6`}>
                         {mods.map((mod) => (
                             <div
                                 key={mod.id}
-                                css={tw`bg-neutral-800 border border-neutral-700 rounded-lg p-3 hover:border-primary-500 transition-colors cursor-pointer flex flex-col`}
+                                className="group"
+                                css={tw`bg-neutral-800 rounded-lg overflow-hidden hover:ring-2 hover:ring-primary-400 transition-all duration-200 cursor-pointer relative`}
                                 onClick={() => selectMod(mod)}
                             >
-                                {mod.icon && (
-                                    <div css={tw`w-full mb-2 bg-neutral-700 rounded-md overflow-hidden flex-shrink-0`} style={{ paddingBottom: '100%', position: 'relative' }}>
+                                {/* Image Container */}
+                                <div css={tw`w-full h-48 bg-neutral-900 flex items-center justify-center overflow-hidden relative`}>
+                                    {mod.icon ? (
                                         <img
                                             src={mod.icon}
                                             alt={mod.name}
-                                            css={tw`absolute inset-0 w-full h-full object-cover`}
+                                            css={tw`w-full h-full object-cover group-hover:scale-110 transition-transform duration-200`}
+                                        />
+                                    ) : (
+                                        <FontAwesomeIcon icon={faBox} css={tw`text-6xl text-neutral-700`} />
+                                    )}
+                                    {/* Overlay on hover */}
+                                    <div css={tw`absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-50 transition-all duration-200 flex items-center justify-center`}>
+                                        <FontAwesomeIcon
+                                            icon={faDownload}
+                                            css={tw`text-white text-3xl opacity-0 group-hover:opacity-100 transition-opacity duration-200`}
                                         />
                                     </div>
-                                )}
-                                <h3 css={tw`font-semibold text-neutral-100 truncate text-sm mb-1`}>{mod.name}</h3>
-                                <p css={tw`text-xs text-neutral-400 line-clamp-1 mb-2 flex-grow`}>{mod.description}</p>
-                                <div css={tw`text-xs text-neutral-500 flex items-center justify-between`}>
-                                    <span css={tw`truncate`}>{(mod.downloadCount / 1000).toFixed(0)}k</span>
-                                    <FontAwesomeIcon icon={faDownload} css={tw`text-primary-400 flex-shrink-0`} />
+                                </div>
+                                
+                                {/* Info Container */}
+                                <div css={tw`p-3`}>
+                                    <h3 css={tw`text-sm font-bold text-neutral-100 truncate mb-1`} title={mod.name}>
+                                        {mod.name}
+                                    </h3>
+                                    <p css={tw`text-xs text-neutral-300 line-clamp-2 mb-2 h-8`}>
+                                        {mod.description}
+                                    </p>
+                                    <div css={tw`flex items-center justify-between text-xs`}>
+                                        <span css={tw`text-neutral-400`}>
+                                            {(mod.downloadCount / 1000000).toFixed(1)}M downloads
+                                        </span>
+                                    </div>
                                 </div>
                             </div>
                         ))}
                     </div>
 
-                    {/* Pagination */}
-                    <div css={tw`flex justify-center gap-2 mb-6`}>
-                        <button
-                            onClick={() => setPage(Math.max(1, page - 1))}
-                            disabled={page === 1 || loading}
-                            css={tw`px-4 py-2 bg-neutral-800 border border-neutral-700 rounded-lg text-neutral-100 disabled:opacity-50 disabled:cursor-not-allowed hover:bg-neutral-700 transition-colors`}
-                        >
-                            Previous
-                        </button>
-                        <div css={tw`flex items-center gap-2 text-neutral-400`}>
-                            <span>Page {page} of {totalPages}</span>
+                    {/* Pagination - Always show if totalPages > 0 */}
+                    {totalPages > 0 && (
+                        <div css={tw`flex justify-center items-center gap-6 mt-10 pt-8 border-t border-neutral-700`}>
+                            <button
+                                disabled={page === 1}
+                                onClick={() => setPage(page - 1)}
+                                className={`px-8 py-3 font-bold text-white rounded-lg transition-all duration-200 ${
+                                    page === 1
+                                        ? 'bg-neutral-600 cursor-not-allowed opacity-50'
+                                        : 'bg-blue-600 hover:bg-blue-700 hover:shadow-lg active:scale-95'
+                                }`}
+                            >
+                                ← Previous
+                            </button>
+                            <div css={tw`flex flex-col items-center gap-2`}>
+                                <span css={tw`text-lg font-bold text-blue-400`}>
+                                    Page {page} of {totalPages}
+                                </span>
+                                <span css={tw`text-sm text-neutral-400`}>
+                                    Showing {(page - 1) * pageSize + 1}-{Math.min(page * pageSize, mods.length + (page - 1) * pageSize)} mods
+                                </span>
+                            </div>
+                            <button
+                                disabled={page === totalPages}
+                                onClick={() => setPage(page + 1)}
+                                className={`px-8 py-3 font-bold text-white rounded-lg transition-all duration-200 ${
+                                    page === totalPages
+                                        ? 'bg-neutral-600 cursor-not-allowed opacity-50'
+                                        : 'bg-blue-600 hover:bg-blue-700 hover:shadow-lg active:scale-95'
+                                }`}
+                            >
+                                Next →
+                            </button>
                         </div>
-                        <button
-                            onClick={() => setPage(Math.min(totalPages, page + 1))}
-                            disabled={page === totalPages || loading}
-                            css={tw`px-4 py-2 bg-neutral-800 border border-neutral-700 rounded-lg text-neutral-100 disabled:opacity-50 disabled:cursor-not-allowed hover:bg-neutral-700 transition-colors`}
-                        >
-                            Next
-                        </button>
-                    </div>
+                    )}
                 </>
             )}
 
