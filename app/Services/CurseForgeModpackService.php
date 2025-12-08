@@ -53,6 +53,7 @@ class CurseForgeModpackService
             }
 
             $data = $response->json();
+            $totalFromApi = $data['pagination']['total'] ?? 0;
             
             // Filter modpacks
             $filteredModpacks = collect($data['data'] ?? [])->filter(function ($modpack) {
@@ -74,7 +75,7 @@ class CurseForgeModpackService
                     'url' => $modpack['links']['websiteUrl'] ?? null,
                     'downloadCount' => $modpack['downloadCount'] ?? 0,
                 ])->values()->toArray(),
-                'total' => $filteredModpacks->count(),
+                'total' => $totalFromApi,
             ];
         } catch (\Exception $e) {
             Log::error('CurseForge API search exception', ['error' => $e->getMessage()]);

@@ -44,16 +44,17 @@ export default () => {
         clearFlashes();
         try {
             const data = await getModpacks(uuid, searchQuery, pageSize, page);
-            const newModpacks = data.data;
+            let newModpacks = data.data;
             
-            // If we got fewer than 50 modpacks and there are still pages, load the next page to fill gaps
-            if (newModpacks.length < pageSize && page < data.meta.pagination.total_pages) {
-                const nextPageData = await getModpacks(uuid, searchQuery, pageSize, page + 1);
-                setModpacks([...newModpacks, ...nextPageData.data].slice(0, pageSize));
-            } else {
-                setModpacks(newModpacks);
+            // If we got fewer than 50 modpacks and there are still pages, keep loading until we fill the page or reach the end
+            let currentPage = page;
+            while (newModpacks.length < pageSize && currentPage < data.meta.pagination.total_pages) {
+                currentPage++;
+                const nextPageData = await getModpacks(uuid, searchQuery, pageSize, currentPage);
+                newModpacks = [...newModpacks, ...nextPageData.data];
             }
             
+            setModpacks(newModpacks.slice(0, pageSize));
             setTotalPages(data.meta.pagination.total_pages);
         } catch (error) {
             clearAndAddHttpError(error as Error);
@@ -215,28 +216,36 @@ export default () => {
 
                     {/* Pagination - Always show if totalPages > 0 */}
                     {totalPages > 0 && (
-                        <div css={tw`flex justify-center items-center gap-4 mt-8 pt-6 border-t border-neutral-700`}>
+                        <div css={tw`flex justify-center items-center gap-6 mt-10 pt-8 border-t border-neutral-700`}>
                             <button
                                 disabled={page === 1}
                                 onClick={() => setPage(page - 1)}
-                                css={tw`px-6 py-3 bg-primary-600 hover:bg-primary-700 text-white font-medium rounded-lg disabled:opacity-50 disabled:cursor-not-allowed disabled:bg-neutral-700 transition-colors`}
+                                css={tw`px-8 py-3 font-bold text-white rounded-lg transition-all duration-200 ${
+                                    page === 1
+                                        ? 'bg-neutral-600 cursor-not-allowed opacity-50'
+                                        : 'bg-blue-600 hover:bg-blue-700 hover:shadow-lg active:scale-95'
+                                }`}
                             >
-                                ← Previous Page
+                                ← Previous
                             </button>
-                            <div css={tw`flex items-center gap-2`}>
-                                <span css={tw`text-neutral-300 font-medium`}>
+                            <div css={tw`flex flex-col items-center gap-2`}>
+                                <span css={tw`text-lg font-bold text-blue-400`}>
                                     Page {page} of {totalPages}
                                 </span>
-                                <span css={tw`text-neutral-400 text-sm`}>
-                                    ({(page - 1) * 50 + 1} - {Math.min(page * 50, totalPages * 50)} modpacks)
+                                <span css={tw`text-sm text-neutral-400`}>
+                                    Showing {(page - 1) * 50 + 1}-{Math.min(page * 50, modpacks.length + (page - 1) * 50)} modpacks
                                 </span>
                             </div>
                             <button
                                 disabled={page === totalPages}
                                 onClick={() => setPage(page + 1)}
-                                css={tw`px-6 py-3 bg-primary-600 hover:bg-primary-700 text-white font-medium rounded-lg disabled:opacity-50 disabled:cursor-not-allowed disabled:bg-neutral-700 transition-colors`}
+                                css={tw`px-8 py-3 font-bold text-white rounded-lg transition-all duration-200 ${
+                                    page === totalPages
+                                        ? 'bg-neutral-600 cursor-not-allowed opacity-50'
+                                        : 'bg-blue-600 hover:bg-blue-700 hover:shadow-lg active:scale-95'
+                                }`}
                             >
-                                Next Page →
+                                Next →
                             </button>
                         </div>
                     )}
