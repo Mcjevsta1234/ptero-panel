@@ -220,7 +220,7 @@ export default () => {
                             <button
                                 disabled={page === 1}
                                 onClick={() => setPage(page - 1)}
-                                css={tw`px-8 py-3 font-bold text-white rounded-lg transition-all duration-200 ${
+                                className={`px-8 py-3 font-bold text-white rounded-lg transition-all duration-200 ${
                                     page === 1
                                         ? 'bg-neutral-600 cursor-not-allowed opacity-50'
                                         : 'bg-blue-600 hover:bg-blue-700 hover:shadow-lg active:scale-95'
@@ -239,7 +239,7 @@ export default () => {
                             <button
                                 disabled={page === totalPages}
                                 onClick={() => setPage(page + 1)}
-                                css={tw`px-8 py-3 font-bold text-white rounded-lg transition-all duration-200 ${
+                                className={`px-8 py-3 font-bold text-white rounded-lg transition-all duration-200 ${
                                     page === totalPages
                                         ? 'bg-neutral-600 cursor-not-allowed opacity-50'
                                         : 'bg-blue-600 hover:bg-blue-700 hover:shadow-lg active:scale-95'
