@@ -66,6 +66,8 @@ class CurseForgeModpackService
                 return true;
             });
             
+            // Since we filter out some modpacks (FTB), we can't rely on the API's total for pagination
+            // For now, return the API's total and let the frontend handle loading multiple pages to fill gaps
             return [
                 'data' => $filteredModpacks->map(fn($modpack) => [
                     'id' => (string) $modpack['id'],

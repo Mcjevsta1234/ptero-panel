@@ -46,6 +46,13 @@ export default () => {
             const data = await getModpacks(uuid, searchQuery, pageSize, page);
             let newModpacks = data.data;
             
+            console.log('Modpacks API Response:', { 
+                data, 
+                totalPages: data.meta.pagination.total_pages,
+                total: data.meta.pagination.total,
+                count: data.meta.pagination.count
+            });
+            
             // If we got fewer than 50 modpacks and there are still pages, keep loading until we fill the page or reach the end
             let currentPage = page;
             while (newModpacks.length < pageSize && currentPage < data.meta.pagination.total_pages) {
@@ -56,6 +63,7 @@ export default () => {
             
             setModpacks(newModpacks.slice(0, pageSize));
             setTotalPages(data.meta.pagination.total_pages);
+            console.log('Setting totalPages to:', data.meta.pagination.total_pages);
         } catch (error) {
             clearAndAddHttpError(error as Error);
         } finally {
