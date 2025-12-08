@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useMemo, memo } from 'react';
 import { ServerContext } from '@/state/server';
 import ContentBlock from '@/witchyworlds/ui/ContentBlock';
 import Card from '@/witchyworlds/ui/Card';
@@ -25,6 +25,88 @@ const periods = [
     { value: '6d', label: '6 Days' },
     { value: '7d', label: '7 Days' },
 ];
+
+// Memoized chart components to prevent re-renders from countdown timer
+const CPUChart = memo(({ data }: { data: any[] }) => (
+    <Card css={tw`p-4`}>
+        <h3 css={tw`text-lg font-bold text-gray-100 mb-4`}>CPU Usage (%)</h3>
+        <ResponsiveContainer width="100%" height={300}>
+            <LineChart data={data}>
+                <CartesianGrid strokeDasharray="3 3" stroke="#374151" />
+                <XAxis dataKey="time" stroke="#9CA3AF" />
+                <YAxis stroke="#9CA3AF" />
+                <Tooltip
+                    contentStyle={{ backgroundColor: '#1F2937', border: '1px solid #374151' }}
+                    labelStyle={{ color: '#F3F4F6' }}
+                    animationDuration={0}
+                />
+                <Legend />
+                <Line type="monotone" dataKey="cpu" stroke="#3B82F6" strokeWidth={2} dot={false} name="CPU %" isAnimationActive={false} />
+            </LineChart>
+        </ResponsiveContainer>
+    </Card>
+));
+
+const MemoryChart = memo(({ data }: { data: any[] }) => (
+    <Card css={tw`p-4`}>
+        <h3 css={tw`text-lg font-bold text-gray-100 mb-4`}>Memory Usage (GB)</h3>
+        <ResponsiveContainer width="100%" height={300}>
+            <LineChart data={data}>
+                <CartesianGrid strokeDasharray="3 3" stroke="#374151" />
+                <XAxis dataKey="time" stroke="#9CA3AF" />
+                <YAxis stroke="#9CA3AF" />
+                <Tooltip
+                    contentStyle={{ backgroundColor: '#1F2937', border: '1px solid #374151' }}
+                    labelStyle={{ color: '#F3F4F6' }}
+                    animationDuration={0}
+                />
+                <Legend />
+                <Line type="monotone" dataKey="memory" stroke="#10B981" strokeWidth={2} dot={false} name="Memory (GB)" isAnimationActive={false} />
+            </LineChart>
+        </ResponsiveContainer>
+    </Card>
+));
+
+const DiskChart = memo(({ data }: { data: any[] }) => (
+    <Card css={tw`p-4`}>
+        <h3 css={tw`text-lg font-bold text-gray-100 mb-4`}>Disk Usage (GB)</h3>
+        <ResponsiveContainer width="100%" height={300}>
+            <LineChart data={data}>
+                <CartesianGrid strokeDasharray="3 3" stroke="#374151" />
+                <XAxis dataKey="time" stroke="#9CA3AF" />
+                <YAxis stroke="#9CA3AF" />
+                <Tooltip
+                    contentStyle={{ backgroundColor: '#1F2937', border: '1px solid #374151' }}
+                    labelStyle={{ color: '#F3F4F6' }}
+                    animationDuration={0}
+                />
+                <Legend />
+                <Line type="monotone" dataKey="disk" stroke="#F59E0B" strokeWidth={2} dot={false} name="Disk (GB)" isAnimationActive={false} />
+            </LineChart>
+        </ResponsiveContainer>
+    </Card>
+));
+
+const NetworkChart = memo(({ data }: { data: any[] }) => (
+    <Card css={tw`p-4`}>
+        <h3 css={tw`text-lg font-bold text-gray-100 mb-4`}>Network Usage (MB)</h3>
+        <ResponsiveContainer width="100%" height={300}>
+            <LineChart data={data}>
+                <CartesianGrid strokeDasharray="3 3" stroke="#374151" />
+                <XAxis dataKey="time" stroke="#9CA3AF" />
+                <YAxis stroke="#9CA3AF" />
+                <Tooltip
+                    contentStyle={{ backgroundColor: '#1F2937', border: '1px solid #374151' }}
+                    labelStyle={{ color: '#F3F4F6' }}
+                    animationDuration={0}
+                />
+                <Legend />
+                <Line type="monotone" dataKey="networkRx" stroke="#8B5CF6" strokeWidth={2} dot={false} name="Download (MB)" isAnimationActive={false} />
+                <Line type="monotone" dataKey="networkTx" stroke="#EC4899" strokeWidth={2} dot={false} name="Upload (MB)" isAnimationActive={false} />
+            </LineChart>
+        </ResponsiveContainer>
+    </Card>
+));
 
 export default () => {
     const { t } = useTranslation('server/analytics');
@@ -54,7 +136,7 @@ export default () => {
             setCountdown(30);
         }, 30000);
 
-        // Countdown timer
+        // Countdown timer - use separate state update to avoid re-rendering charts
         const countdownInterval = setInterval(() => {
             setCountdown((prev) => (prev > 0 ? prev - 1 : 30));
         }, 1000);
@@ -65,34 +147,39 @@ export default () => {
         };
     }, [uuid, period]);
 
-    const chartData = analytics.map((record) => ({
-        time: new Date(record.timestamp).toLocaleTimeString(),
-        cpu: record.cpu,
-        memory: record.memory / (1024 * 1024 * 1024), // Convert to GB
-        disk: record.disk / (1024 * 1024 * 1024), // Convert to GB
-        networkRx: record.network_rx / (1024 * 1024), // Convert to MB
-        networkTx: record.network_tx / (1024 * 1024), // Convert to MB
-    }));
+    // Memoize chart data transformation to avoid recalculating on every render
+    const chartData = useMemo(() => {
+        return analytics.map((record) => {
+            const date = new Date(record.timestamp);
+            return {
+                time: date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+                cpu: record.cpu,
+                memory: record.memory / (1024 * 1024 * 1024), // Convert to GB
+                disk: record.disk / (1024 * 1024 * 1024), // Convert to GB
+                networkRx: record.network_rx / (1024 * 1024), // Convert to MB
+                networkTx: record.network_tx / (1024 * 1024), // Convert to MB
+            };
+        });
+    }, [analytics]);
 
-    // Downsample data for better performance with large datasets
-    // Dynamically adjust max points based on time period
-    const getDownsampledData = () => {
+    // Memoize downsampled data to avoid recalculating on countdown updates
+    const displayData = useMemo(() => {
         // Fewer points for longer periods to maintain smooth performance
         const maxPointsByPeriod: Record<string, number> = {
-            '1h': 200,
-            '3h': 200,
-            '6h': 180,
-            '12h': 150,
-            '24h': 120,
-            '1d': 120,
-            '2d': 100,
-            '3d': 100,
-            '4d': 80,
-            '5d': 80,
-            '6d': 80,
-            '7d': 80,
+            '1h': 100,
+            '3h': 90,
+            '6h': 80,
+            '12h': 70,
+            '24h': 60,
+            '1d': 60,
+            '2d': 50,
+            '3d': 50,
+            '4d': 40,
+            '5d': 40,
+            '6d': 40,
+            '7d': 40,
         };
-        const maxPoints = maxPointsByPeriod[period] || 100;
+        const maxPoints = maxPointsByPeriod[period] || 50;
         
         if (chartData.length <= maxPoints) {
             return chartData;
@@ -104,7 +191,7 @@ export default () => {
         for (let i = 0; i < chartData.length; i += sampleRate) {
             const batch = chartData.slice(i, i + sampleRate);
             const avgPoint = {
-                time: batch[Math.floor(batch.length / 2)].time, // Use middle time for label
+                time: batch[Math.floor(batch.length / 2)].time,
                 cpu: batch.reduce((sum, p) => sum + p.cpu, 0) / batch.length,
                 memory: batch.reduce((sum, p) => sum + p.memory, 0) / batch.length,
                 disk: batch.reduce((sum, p) => sum + p.disk, 0) / batch.length,
@@ -115,9 +202,7 @@ export default () => {
         }
 
         return downsampled;
-    };
-
-    const displayData = getDownsampledData();
+    }, [chartData, period]);
 
     return (
         <ContentBlock title={'Resource Analytics'}>
@@ -189,82 +274,10 @@ export default () => {
                 </Card>
             ) : (
                 <div css={tw`space-y-4`}>
-                    {/* CPU Usage Chart */}
-                    <Card css={tw`p-4`}>
-                        <h3 css={tw`text-lg font-bold text-gray-100 mb-4`}>CPU Usage (%)</h3>
-                        <ResponsiveContainer width="100%" height={300}>
-                            <LineChart data={displayData}>
-                                <CartesianGrid strokeDasharray="3 3" stroke="#374151" />
-                                <XAxis dataKey="time" stroke="#9CA3AF" />
-                                <YAxis stroke="#9CA3AF" />
-                                <Tooltip
-                                    contentStyle={{ backgroundColor: '#1F2937', border: '1px solid #374151' }}
-                                    labelStyle={{ color: '#F3F4F6' }}
-                                    animationDuration={0}
-                                />
-                                <Legend />
-                                <Line type="monotone" dataKey="cpu" stroke="#3B82F6" strokeWidth={2} dot={false} name="CPU %" isAnimationActive={false} />
-                            </LineChart>
-                        </ResponsiveContainer>
-                    </Card>
-
-                    {/* Memory Usage Chart */}
-                    <Card css={tw`p-4`}>
-                        <h3 css={tw`text-lg font-bold text-gray-100 mb-4`}>Memory Usage (GB)</h3>
-                        <ResponsiveContainer width="100%" height={300}>
-                            <LineChart data={displayData}>
-                                <CartesianGrid strokeDasharray="3 3" stroke="#374151" />
-                                <XAxis dataKey="time" stroke="#9CA3AF" />
-                                <YAxis stroke="#9CA3AF" />
-                                <Tooltip
-                                    contentStyle={{ backgroundColor: '#1F2937', border: '1px solid #374151' }}
-                                    labelStyle={{ color: '#F3F4F6' }}
-                                    animationDuration={0}
-                                />
-                                <Legend />
-                                <Line type="monotone" dataKey="memory" stroke="#10B981" strokeWidth={2} dot={false} name="Memory (GB)" isAnimationActive={false} />
-                            </LineChart>
-                        </ResponsiveContainer>
-                    </Card>
-
-                    {/* Disk Usage Chart */}
-                    <Card css={tw`p-4`}>
-                        <h3 css={tw`text-lg font-bold text-gray-100 mb-4`}>Disk Usage (GB)</h3>
-                        <ResponsiveContainer width="100%" height={300}>
-                            <LineChart data={displayData}>
-                                <CartesianGrid strokeDasharray="3 3" stroke="#374151" />
-                                <XAxis dataKey="time" stroke="#9CA3AF" />
-                                <YAxis stroke="#9CA3AF" />
-                                <Tooltip
-                                    contentStyle={{ backgroundColor: '#1F2937', border: '1px solid #374151' }}
-                                    labelStyle={{ color: '#F3F4F6' }}
-                                    animationDuration={0}
-                                />
-                                <Legend />
-                                <Line type="monotone" dataKey="disk" stroke="#F59E0B" strokeWidth={2} dot={false} name="Disk (GB)" isAnimationActive={false} />
-                            </LineChart>
-                        </ResponsiveContainer>
-                    </Card>
-
-                    {/* Network Usage Chart */}
-                    <Card css={tw`p-4`}>
-                        <h3 css={tw`text-lg font-bold text-gray-100 mb-4`}>Network Usage (MB)</h3>
-                        <ResponsiveContainer width="100%" height={300}>
-                            <LineChart data={displayData}>
-                                <CartesianGrid strokeDasharray="3 3" stroke="#374151" />
-                                <XAxis dataKey="time" stroke="#9CA3AF" />
-                                <YAxis stroke="#9CA3AF" />
-                                <Tooltip
-                                    contentStyle={{ backgroundColor: '#1F2937', border: '1px solid #374151' }}
-                                    labelStyle={{ color: '#F3F4F6' }}
-                                    animationDuration={0}
-                                />
-                                <Legend />
-                                <Line type="monotone" dataKey="networkRx" stroke="#8B5CF6" strokeWidth={2} dot={false} name="Download (MB)" isAnimationActive={false} />
-                                <Line type="monotone" dataKey="networkTx" stroke="#EC4899" strokeWidth={2} dot={false} name="Upload (MB)" isAnimationActive={false} />
-                            </LineChart>
-                        </ResponsiveContainer>
-                    </Card>
+                    <CPUChart data={displayData} />
+                    <MemoryChart data={displayData} />
+                    <DiskChart data={displayData} />
+                    <NetworkChart data={displayData} />
                 </div>
             )}
         </ContentBlock>
