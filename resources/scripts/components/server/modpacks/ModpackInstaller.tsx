@@ -26,7 +26,6 @@ export default () => {
     const [page, setPage] = useState(1);
     const [totalPages, setTotalPages] = useState(1);
     const [pageSize] = useState(50);
-    const [hasSearched, setHasSearched] = useState(false);
 
     const [selectedModpack, setSelectedModpack] = useState<Modpack | null>(null);
     const [versions, setVersions] = useState<ModpackVersion[]>([]);
@@ -36,17 +35,8 @@ export default () => {
     const [dialogOpen, setDialogOpen] = useState(false);
 
     useEffect(() => {
-        // Load modpacks on component mount
-        if (modpacks.length === 0 && !hasSearched) {
-            loadModpacks();
-        }
-    }, []);
-
-    useEffect(() => {
-        // Load modpacks when page changes
-        if (hasSearched) {
-            loadModpacks();
-        }
+        // Load modpacks on mount
+        loadModpacks();
     }, [page]);
 
     const loadModpacks = async () => {
@@ -54,27 +44,26 @@ export default () => {
         clearFlashes();
         try {
             const data = await getModpacks(uuid, searchQuery, pageSize, page);
-            let newModpacks = data.data;
+            console.log('Full API response:', data);
+            console.log('Pagination object:', data.meta?.pagination);
+            console.log('Total pages:', data.meta?.pagination?.total_pages);
             
-            console.log('Modpacks API Response:', { 
-                data, 
-                totalPages: data.meta.pagination.total_pages,
-                total: data.meta.pagination.total,
-                count: data.meta.pagination.count
-            });
+            let newModpacks = data.data || [];
             
             // If we got fewer than 50 modpacks and there are still pages, keep loading until we fill the page or reach the end
             let currentPage = page;
-            while (newModpacks.length < pageSize && currentPage < data.meta.pagination.total_pages) {
+            const totalPages = data.meta?.pagination?.total_pages || 1;
+            while (newModpacks.length < pageSize && currentPage < totalPages) {
                 currentPage++;
                 const nextPageData = await getModpacks(uuid, searchQuery, pageSize, currentPage);
                 newModpacks = [...newModpacks, ...nextPageData.data];
             }
             
             setModpacks(newModpacks.slice(0, pageSize));
-            setTotalPages(data.meta.pagination.total_pages);
-            console.log('Setting totalPages to:', data.meta.pagination.total_pages);
+            setTotalPages(totalPages);
+            console.log('Final totalPages state:', totalPages);
         } catch (error) {
+            console.error('Error loading modpacks:', error);
             clearAndAddHttpError(error as Error);
         } finally {
             setLoading(false);
@@ -84,7 +73,6 @@ export default () => {
     const handleSearch = (e: React.FormEvent) => {
         e.preventDefault();
         setPage(1);
-        setHasSearched(true);
         loadModpacks();
     };
 
