@@ -12,7 +12,7 @@ set -e
 ASSUME_YES=${ASSUME_YES:-0}
 AUTO_GIT=${AUTO_GIT:-0}
 DEFAULT_REPO="${REPO:-https://github.com/Mcjevsta1234/ptero-panel.git}"
-TARGET_BRANCH="${BRANCH:-main}"
+TARGET_BRANCH="main"
 
 for arg in "$@"; do
     case "$arg" in
