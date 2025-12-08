@@ -74,6 +74,36 @@ export default () => {
         networkTx: record.network_tx / (1024 * 1024), // Convert to MB
     }));
 
+    // Downsample data for better performance with large datasets
+    // For periods > 24h, reduce data points by averaging every N samples
+    const getDownsampledData = () => {
+        const maxPoints = 500; // Max data points to render for performance
+        
+        if (chartData.length <= maxPoints) {
+            return chartData;
+        }
+
+        const sampleRate = Math.ceil(chartData.length / maxPoints);
+        const downsampled = [];
+
+        for (let i = 0; i < chartData.length; i += sampleRate) {
+            const batch = chartData.slice(i, i + sampleRate);
+            const avgPoint = {
+                time: batch[Math.floor(batch.length / 2)].time, // Use middle time for label
+                cpu: batch.reduce((sum, p) => sum + p.cpu, 0) / batch.length,
+                memory: batch.reduce((sum, p) => sum + p.memory, 0) / batch.length,
+                disk: batch.reduce((sum, p) => sum + p.disk, 0) / batch.length,
+                networkRx: batch.reduce((sum, p) => sum + p.networkRx, 0) / batch.length,
+                networkTx: batch.reduce((sum, p) => sum + p.networkTx, 0) / batch.length,
+            };
+            downsampled.push(avgPoint);
+        }
+
+        return downsampled;
+    };
+
+    const displayData = getDownsampledData();
+
     return (
         <ContentBlock title={'Resource Analytics'}>
             <FlashMessageRender byKey={'analytics'} css={tw`mb-4`} />
@@ -148,7 +178,7 @@ export default () => {
                     <Card css={tw`p-4`}>
                         <h3 css={tw`text-lg font-bold text-gray-100 mb-4`}>CPU Usage (%)</h3>
                         <ResponsiveContainer width="100%" height={300}>
-                            <LineChart data={chartData}>
+                            <LineChart data={displayData}>
                                 <CartesianGrid strokeDasharray="3 3" stroke="#374151" />
                                 <XAxis dataKey="time" stroke="#9CA3AF" />
                                 <YAxis stroke="#9CA3AF" />
@@ -166,7 +196,7 @@ export default () => {
                     <Card css={tw`p-4`}>
                         <h3 css={tw`text-lg font-bold text-gray-100 mb-4`}>Memory Usage (GB)</h3>
                         <ResponsiveContainer width="100%" height={300}>
-                            <LineChart data={chartData}>
+                            <LineChart data={displayData}>
                                 <CartesianGrid strokeDasharray="3 3" stroke="#374151" />
                                 <XAxis dataKey="time" stroke="#9CA3AF" />
                                 <YAxis stroke="#9CA3AF" />
@@ -184,7 +214,7 @@ export default () => {
                     <Card css={tw`p-4`}>
                         <h3 css={tw`text-lg font-bold text-gray-100 mb-4`}>Disk Usage (GB)</h3>
                         <ResponsiveContainer width="100%" height={300}>
-                            <LineChart data={chartData}>
+                            <LineChart data={displayData}>
                                 <CartesianGrid strokeDasharray="3 3" stroke="#374151" />
                                 <XAxis dataKey="time" stroke="#9CA3AF" />
                                 <YAxis stroke="#9CA3AF" />
@@ -202,7 +232,7 @@ export default () => {
                     <Card css={tw`p-4`}>
                         <h3 css={tw`text-lg font-bold text-gray-100 mb-4`}>Network Usage (MB)</h3>
                         <ResponsiveContainer width="100%" height={300}>
-                            <LineChart data={chartData}>
+                            <LineChart data={displayData}>
                                 <CartesianGrid strokeDasharray="3 3" stroke="#374151" />
                                 <XAxis dataKey="time" stroke="#9CA3AF" />
                                 <YAxis stroke="#9CA3AF" />

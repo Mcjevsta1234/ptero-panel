@@ -25,7 +25,7 @@ export default () => {
     const [loading, setLoading] = useState(false);
     const [page, setPage] = useState(1);
     const [totalPages, setTotalPages] = useState(1);
-    const [pageSize] = useState(20);
+    const [pageSize] = useState(50);
 
     const [selectedModpack, setSelectedModpack] = useState<Modpack | null>(null);
     const [versions, setVersions] = useState<ModpackVersion[]>([]);

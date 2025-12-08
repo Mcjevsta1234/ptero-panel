@@ -40,16 +40,31 @@ class InstallModpackJob extends Job implements ShouldQueue
         DaemonPowerRepository $daemonPowerRepository,
         DaemonServerRepository $daemonServerRepository,
     ): void {
+        $waitForState = function (string $desiredState, int $maxSeconds) use ($daemonServerRepository): bool {
+            $elapsed = 0;
+            while ($elapsed < $maxSeconds) {
+                try {
+                    $state = $daemonServerRepository->getDetails()['state'] ?? null;
+                    if ($state === $desiredState) {
+                        return true;
+                    }
+                } catch (\Exception $e) {
+                    // ignore transient daemon errors
+                }
+
+                sleep(1);
+                $elapsed++;
+            }
+
+            return false;
+        };
+
         // Kill server if running
         $daemonPowerRepository->setServer($this->server)->send('kill');
         $daemonServerRepository->setServer($this->server);
 
         // Wait for the server to be offline
-        $attempts = 0;
-        while ($daemonServerRepository->getDetails()['state'] !== 'offline' && $attempts < 30) {
-            sleep(1);
-            $attempts++;
-        }
+        $waitForState('offline', 30);
 
         // Delete files if requested
         if ($this->deleteServerFiles) {
@@ -84,22 +99,7 @@ class InstallModpackJob extends Job implements ShouldQueue
         });
 
         // Wait for installation to complete (up to 5 minutes)
-        $installAttempts = 0;
-        $installerOnline = false;
-        
-        while ($installAttempts < 300) {  // 300 seconds = 5 minutes
-            try {
-                $state = $daemonServerRepository->getDetails()['state'];
-                if ($state === 'offline') {
-                    $installerOnline = true;
-                    break;
-                }
-            } catch (\Exception $e) {
-                // Ignore errors while checking state
-            }
-            sleep(1);
-            $installAttempts++;
-        }
+        $waitForState('offline', 300); // wait up to 5 minutes for install to finish
 
         // Revert the egg back to original
         $startupModificationService->handle($this->server, [
@@ -107,7 +107,7 @@ class InstallModpackJob extends Job implements ShouldQueue
         ]);
 
         // Wait for egg reversion to complete
-        sleep(5);
+        $waitForState('offline', 60);
 
         // Accept EULA by creating/updating eula.txt
         try {
@@ -117,13 +117,30 @@ class InstallModpackJob extends Job implements ShouldQueue
             \Log::error('Failed to create eula.txt', ['error' => $e->getMessage()]);
         }
 
-        // Wait a moment then start the server
-        sleep(2);
-        
-        try {
-            $daemonPowerRepository->setServer($this->server)->send('start');
-        } catch (\Exception $e) {
-            \Log::error('Failed to start server after modpack installation', ['error' => $e->getMessage()]);
+        // Attempt to start the server with retries (helps when version switching)
+        $daemonPowerRepository->setServer($this->server);
+        $startAttempts = 0;
+        while ($startAttempts < 3) {
+            try {
+                $daemonPowerRepository->send('start');
+                // wait for running state
+                if ($waitForState('running', 30)) {
+                    return;
+                }
+            } catch (\Exception $e) {
+                \Log::warning('Failed to start server after modpack installation', [
+                    'attempt' => $startAttempts + 1,
+                    'error' => $e->getMessage(),
+                    'server_id' => $this->server->id,
+                ]);
+            }
+
+            $startAttempts++;
+            sleep(5);
         }
+
+        \Log::error('Server failed to reach running state after modpack installation', [
+            'server_id' => $this->server->id,
+        ]);
     }
 }
