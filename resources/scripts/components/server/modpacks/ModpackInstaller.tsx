@@ -157,7 +157,7 @@ export default () => {
                 </div>
             ) : (
                 <>
-                    <div css={tw`grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4 mb-6`}>
+                    <div css={tw`grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 xl:grid-cols-8 gap-4 mb-6`}>
                         {modpacks.map((modpack) => (
                             <div
                                 key={modpack.id}
@@ -205,23 +205,28 @@ export default () => {
 
                     {/* Pagination */}
                     {totalPages > 1 && (
-                        <div css={tw`flex justify-center gap-2`}>
+                        <div css={tw`flex justify-center items-center gap-4 mt-8 pt-6 border-t border-neutral-700`}>
                             <button
                                 disabled={page === 1}
                                 onClick={() => setPage(page - 1)}
-                                css={tw`px-4 py-2 bg-neutral-700 hover:bg-neutral-600 rounded disabled:opacity-50 disabled:cursor-not-allowed transition-colors`}
+                                css={tw`px-6 py-3 bg-primary-600 hover:bg-primary-700 text-white font-medium rounded-lg disabled:opacity-50 disabled:cursor-not-allowed disabled:bg-neutral-700 transition-colors`}
                             >
-                                Previous
+                                ← Previous Page
                             </button>
-                            <span css={tw`px-4 py-2 bg-neutral-800 rounded`}>
-                                Page {page} of {totalPages}
-                            </span>
+                            <div css={tw`flex items-center gap-2`}>
+                                <span css={tw`text-neutral-300 font-medium`}>
+                                    Page {page} of {totalPages}
+                                </span>
+                                <span css={tw`text-neutral-400 text-sm`}>
+                                    ({(page - 1) * 50 + 1} - {Math.min(page * 50, totalPages * 50)} modpacks)
+                                </span>
+                            </div>
                             <button
                                 disabled={page === totalPages}
                                 onClick={() => setPage(page + 1)}
-                                css={tw`px-4 py-2 bg-neutral-700 hover:bg-neutral-600 rounded disabled:opacity-50 disabled:cursor-not-allowed transition-colors`}
+                                css={tw`px-6 py-3 bg-primary-600 hover:bg-primary-700 text-white font-medium rounded-lg disabled:opacity-50 disabled:cursor-not-allowed disabled:bg-neutral-700 transition-colors`}
                             >
-                                Next
+                                Next Page →
                             </button>
                         </div>
                     )}
