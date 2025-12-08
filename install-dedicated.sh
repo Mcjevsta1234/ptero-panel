@@ -328,6 +328,12 @@ print_success "Permissions updated"
 # Install npm dependencies and build assets (if needed)
 print_step "Building frontend assets"
 if [ -f "package.json" ]; then
+    # Clear webpack and build caches to force fresh rebuild
+    print_step "Clearing build caches"
+    rm -rf node_modules/.cache
+    rm -rf public/assets/*
+    print_success "Build caches cleared"
+    
     if command -v yarn &> /dev/null; then
         # Install recharts for analytics charts
         print_step "Installing recharts dependency"
