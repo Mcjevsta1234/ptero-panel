@@ -11,6 +11,8 @@ import { bytesToString } from '@/lib/formatters';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
 import { useTranslation } from 'react-i18next';
 
+// Performance optimized analytics with memoization - v2.0
+
 const periods = [
     { value: '1h', label: '1 Hour' },
     { value: '3h', label: '3 Hours' },
