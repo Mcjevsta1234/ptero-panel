@@ -214,8 +214,8 @@ export default () => {
                         ))}
                     </div>
 
-                    {/* Pagination - Always show if totalPages > 0 */}
-                    {totalPages > 0 && (
+                    {/* Pagination - Show if there are multiple pages */}
+                    {totalPages > 1 && (
                         <div css={tw`flex justify-center items-center gap-6 mt-10 pt-8 border-t border-neutral-700`}>
                             <button
                                 disabled={page === 1}

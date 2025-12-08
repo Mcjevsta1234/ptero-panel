@@ -21,7 +21,7 @@ export default () => {
     const [loading, setLoading] = useState(false);
     const [page, setPage] = useState(1);
     const [totalPages, setTotalPages] = useState(1);
-    const [pageSize] = useState(12);
+    const [pageSize] = useState(50);
 
     const [selectedMod, setSelectedMod] = useState<Mod | null>(null);
     const [versions, setVersions] = useState<ModVersion[]>([]);
@@ -198,8 +198,8 @@ export default () => {
                         ))}
                     </div>
 
-                    {/* Pagination - Always show if totalPages > 0 */}
-                    {totalPages > 0 && (
+                    {/* Pagination - Show if there are multiple pages */}
+                    {totalPages > 1 && (
                         <div css={tw`flex justify-center items-center gap-6 mt-10 pt-8 border-t border-neutral-700`}>
                             <button
                                 disabled={page === 1}
