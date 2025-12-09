@@ -85,10 +85,17 @@ class CurseForgeModpackService extends AbstractModpackService
         // https://docs.curseforge.com/#search-mods
         // index + pageSize <= 10000
         $maximumPage = (10000 - $pageSize) / $pageSize + 1;
+        
+        // CurseForge API totalCount might be 0 or inaccurate, so use a large fallback
+        $totalCount = $response['pagination']['totalCount'] ?? 0;
+        if ($totalCount === 0 && count($modpacks) > 0) {
+            // If we got results but totalCount is 0, use the maximum possible
+            $totalCount = $maximumPage * $pageSize;
+        }
 
         return [
             'data' => $modpacks,
-            'total' => min($maximumPage * $pageSize, $response['pagination']['totalCount']),
+            'total' => min($maximumPage * $pageSize, max($totalCount, count($modpacks))),
         ];
     }
 
