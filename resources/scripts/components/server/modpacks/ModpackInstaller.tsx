@@ -35,18 +35,20 @@ export default () => {
     const [dialogOpen, setDialogOpen] = useState(false);
 
     useEffect(() => {
-        // Load modpacks on mount and when page changes
+        // Reset to page 1 when search query changes
+        setPage(1);
+    }, [searchQuery]);
+
+    useEffect(() => {
+        // Load modpacks when page changes
         loadModpacks();
-    }, [page]);
+    }, [page, loadModpacks]);
 
     const loadModpacks = useCallback(async () => {
         setLoading(true);
         clearFlashes();
         try {
             const data = await getModpacks(uuid, searchQuery, pageSize, page);
-            console.log('Full API response:', data);
-            console.log('Pagination object:', data.meta?.pagination);
-            console.log('Total pages:', data.meta?.pagination?.total_pages);
             
             let newModpacks = data.data || [];
             
@@ -61,7 +63,6 @@ export default () => {
             
             setModpacks(newModpacks.slice(0, pageSize));
             setTotalPages(totalPages);
-            console.log('Final totalPages state:', totalPages);
         } catch (error) {
             console.error('Error loading modpacks:', error);
             clearAndAddHttpError(error as Error);
@@ -72,8 +73,7 @@ export default () => {
 
     const handleSearch = (e: React.FormEvent) => {
         e.preventDefault();
-        setPage(1);
-        // Don't call loadModpacks here - let the useEffect handle it when page changes to 1
+        // Just submit the form - the useEffect will handle resetting to page 1 when searchQuery changes
     };
 
     const selectModpack = async (modpack: Modpack) => {
