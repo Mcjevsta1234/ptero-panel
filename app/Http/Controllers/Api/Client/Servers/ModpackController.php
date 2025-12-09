@@ -40,6 +40,12 @@ class ModpackController extends ClientApiController
 
         $data = $this->curseForgeService->search($searchQuery, $pageSize, $page);
 
+        \Log::debug('ModpackController response data:', [
+            'total' => $data['total'],
+            'data_count' => count($data['data']),
+            'calculated_pages' => ceil($data['total'] / $pageSize),
+        ]);
+
         return new JsonResponse([
             'object' => 'list',
             'data' => $data['data'],
